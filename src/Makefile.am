@@ -14,11 +14,11 @@ interface_vr_xml := harrier_dbus_interface.xml
 
 
 harrier_server_stub.h: $(interface_vr_xml)
-
 	dbus-binding-tool --prefix=harrier_object --mode=glib-server \
 	$< > $@
 
 harrier_client_stub.h: $(interface_vr_xml)
+	mkdir -p ../include
 	dbus-binding-tool --prefix=harrier_object --mode=glib-client \
 	$< > ../include/$@
 
