@@ -1,0 +1,1 @@
+!filesrc!source!dvddemux!dvd-demuxer!mpeg2dec!video-decoder!ffmpegcolorspace!ffmpeg!xvimagesink!vsink

@@ -1,0 +1,26 @@
+<!-- This file defines the D-Bus interface for a simple object.
+     The interface name is "ridgerun.gstreamer.harrier".
+     One known reference implementation is provided for it by the
+     "ridgerun/gstreamer/harrier" object found via a well-known name of
+     "ridgerun.gstreamer.harrier". -->
+
+<node>
+
+  <interface name="ridgerun.gstreamer.harrier">
+
+    <!-- Method definitions -->
+
+    <method name="recording">
+	<arg type = "i" name = "stream" direction = "in" />
+    </method>
+    
+    <method name="playing">
+	<arg type = "i" name = "stream" direction = "in" />
+    </method>
+    
+    <method name="change_state">
+    	<arg type = "i" name = "state" direction = "in" />
+    </method>   
+
+  </interface>
+</node>
