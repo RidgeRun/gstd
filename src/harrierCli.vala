@@ -9,14 +9,12 @@ public class HarrierCli : GLib.Object {
         harrier = conn.get_object ("com.ti.sdo.HarrierService",
                                    "/com/ti/sdo/HarrierObject",
                                    "com.ti.sdo.HarrierInterface");
-	stdout.printf("Ready to call hello 2\n");
+	stdout.printf("Ready to call hello\n");
 	harrier.hello();
 	stdout.printf("Hello called\n");
     }
 
     static int main (string[] args) {
-        var loop = new MainLoop (null, false);
-
         var test = new HarrierCli ();
         try {
             test.run ();
@@ -27,8 +25,6 @@ public class HarrierCli : GLib.Object {
             stderr.printf ("Dynamic method failure");
             return 1;
         }
-
-        loop.run ();
 
         return 0;
     }

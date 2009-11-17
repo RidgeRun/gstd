@@ -24,7 +24,6 @@ typedef struct _HarrierCliPrivate HarrierCliPrivate;
 #define _dbus_g_connection_unref0(var) ((var == NULL) ? NULL : (var = (dbus_g_connection_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
-#define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
 
 struct _HarrierCli {
 	GObject parent_instance;
@@ -79,7 +78,7 @@ void harrier_cli_run (HarrierCli* self, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->harrier = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ti.sdo.HarrierService", "/com/ti/sdo/HarrierObject", "com.ti.sdo.HarrierInterface"), _g_object_unref0 (self->priv->harrier), _tmp2_);
-	fprintf (stdout, "Ready to call hello 2\n");
+	fprintf (stdout, "Ready to call hello\n");
 	_dynamic_hello0 (self->priv->harrier, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_propagate_error (error, _inner_error_);
@@ -92,10 +91,8 @@ void harrier_cli_run (HarrierCli* self, GError** error) {
 static gint harrier_cli_main (char** args, int args_length1) {
 	gint result;
 	GError * _inner_error_;
-	GMainLoop* loop;
 	HarrierCli* test;
 	_inner_error_ = NULL;
-	loop = g_main_loop_new (NULL, FALSE);
 	test = harrier_cli_new ();
 	{
 		harrier_cli_run (test, &_inner_error_);
@@ -117,7 +114,6 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			fprintf (stderr, "Failed to initialize");
 			result = 1;
 			_g_error_free0 (e);
-			_g_main_loop_unref0 (loop);
 			_g_object_unref0 (test);
 			return result;
 		}
@@ -132,22 +128,18 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			fprintf (stderr, "Dynamic method failure");
 			result = 1;
 			_g_error_free0 (e);
-			_g_main_loop_unref0 (loop);
 			_g_object_unref0 (test);
 			return result;
 		}
 	}
 	__finally0:
 	if (_inner_error_ != NULL) {
-		_g_main_loop_unref0 (loop);
 		_g_object_unref0 (test);
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
 		return 0;
 	}
-	g_main_loop_run (loop);
 	result = 0;
-	_g_main_loop_unref0 (loop);
 	_g_object_unref0 (test);
 	return result;
 }
