@@ -34,7 +34,7 @@ struct _DBusObjectVTable {
 
 
 
-guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
+static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
 Harrier* harrier_new (void);
 Harrier* harrier_construct (GType object_type);
 GType harrier_get_type (void);
@@ -44,7 +44,7 @@ static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
 
 
 
-guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
+static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
 	guint result;
 	dbus_g_proxy_call (self, "RequestName", error, G_TYPE_STRING, param1, G_TYPE_UINT, param2, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID);
 	if (*error) {

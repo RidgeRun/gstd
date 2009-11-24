@@ -37,6 +37,7 @@ struct _HarrierCliClass {
 struct _HarrierCliPrivate {
 	DBusGConnection* conn;
 	DBusGProxy* harrier;
+	gint counter;
 };
 
 
@@ -47,7 +48,11 @@ GType harrier_cli_get_type (void);
 enum  {
 	HARRIER_CLI_DUMMY_PROPERTY
 };
-void _dynamic_hello0 (DBusGProxy* self, GError** error);
+void harrier_cli_birdIsDead (HarrierCli* self, DBusGProxy* harrier);
+static void _harrier_cli_birdIsDead_dynamic_Dying0_ (DBusGProxy* _sender, gpointer self);
+void _dynamic_Dying1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
+static void _dynamic_hello0 (DBusGProxy* self, gint param1, GError** error);
+static void _dynamic_bye1 (DBusGProxy* self, GError** error);
 void harrier_cli_run (HarrierCli* self, GError** error);
 HarrierCli* harrier_cli_new (void);
 HarrierCli* harrier_cli_construct (GType object_type);
@@ -56,8 +61,37 @@ static void harrier_cli_finalize (GObject* obj);
 
 
 
-void _dynamic_hello0 (DBusGProxy* self, GError** error) {
-	dbus_g_proxy_call (self, "Hello", error, G_TYPE_INVALID, G_TYPE_INVALID);
+void harrier_cli_birdIsDead (HarrierCli* self, DBusGProxy* harrier) {
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (harrier != NULL);
+	fprintf (stdout, "Our bird just died :'( \n");
+	fprintf (stdout, "\n\n");
+	self->priv->counter++;
+}
+
+
+static void _harrier_cli_birdIsDead_dynamic_Dying0_ (DBusGProxy* _sender, gpointer self) {
+	harrier_cli_birdIsDead (self, _sender);
+}
+
+
+void _dynamic_Dying1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (obj, "Dying", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (obj, signal_name, handler, data, NULL);
+}
+
+
+static void _dynamic_hello0 (DBusGProxy* self, gint param1, GError** error) {
+	dbus_g_proxy_call (self, "Hello", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INVALID);
+	if (*error) {
+		return;
+	}
+}
+
+
+static void _dynamic_bye1 (DBusGProxy* self, GError** error) {
+	dbus_g_proxy_call (self, "Bye", error, G_TYPE_INVALID, G_TYPE_INVALID);
 	if (*error) {
 		return;
 	}
@@ -78,13 +112,19 @@ void harrier_cli_run (HarrierCli* self, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->harrier = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ti.sdo.HarrierService", "/com/ti/sdo/HarrierObject", "com.ti.sdo.HarrierInterface"), _g_object_unref0 (self->priv->harrier), _tmp2_);
-	fprintf (stdout, "Ready to call hello\n");
-	_dynamic_hello0 (self->priv->harrier, &_inner_error_);
+	_dynamic_Dying1_connect (self->priv->harrier, "Dying", (GCallback) _harrier_cli_birdIsDead_dynamic_Dying0_, self);
+	_dynamic_hello0 (self->priv->harrier, self->priv->counter, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_propagate_error (error, _inner_error_);
 		return;
 	}
-	fprintf (stdout, "Hello called\n");
+	fprintf (stdout, "Counter is %d\n", self->priv->counter);
+	_dynamic_bye1 (self->priv->harrier, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		g_propagate_error (error, _inner_error_);
+		return;
+	}
+	fprintf (stdout, "Counter is %d\n", self->priv->counter);
 }
 
 
@@ -172,6 +212,7 @@ static void harrier_cli_class_init (HarrierCliClass * klass) {
 
 static void harrier_cli_instance_init (HarrierCli * self) {
 	self->priv = HARRIER_CLI_GET_PRIVATE (self);
+	self->priv->counter = 0;
 }
 
 

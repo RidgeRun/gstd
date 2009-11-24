@@ -1,4 +1,4 @@
-AC_INIT([harrier],[1.0],[harrier-devel@lists.sourceforge.net])
+AC_INIT([harrier],[1.0.0],[harrier-devel@lists.sourceforge.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -6,6 +6,7 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES(harrier.pc:harrier.pc.in)
 
 AM_PROG_VALAC([0.7.7])
 

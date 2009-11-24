@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: Harrier
+Description: Harrier Streaming Media Server
+Version: @VERSION@
+Requires: dbus-glib-1
+Libs: -L${libdir}
+Libs.private: -L${libdir}
+Cflags: -I${includedir}/harrierd -I${includedir}/harrier

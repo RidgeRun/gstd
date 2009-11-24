@@ -42,7 +42,8 @@ GType harrier_get_type (void);
 enum  {
 	HARRIER_DUMMY_PROPERTY
 };
-void harrier_hello (Harrier* self);
+void harrier_hello (Harrier* self, gint count);
+void harrier_bye (Harrier* self);
 Harrier* harrier_new (void);
 Harrier* harrier_construct (GType object_type);
 void harrier_dbus_register_object (DBusConnection* connection, const char* path, void* object);
@@ -51,6 +52,8 @@ DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage*
 static DBusHandlerResult _dbus_harrier_introspect (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_property_get_all (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_hello (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_bye (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static void _dbus_harrier_dying (GObject* _sender, DBusConnection* _connection);
 static void _vala_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
 
@@ -58,9 +61,16 @@ static const DBusObjectPathVTable _harrier_dbus_path_vtable = {_harrier_dbus_unr
 static const _DBusObjectVTable _harrier_dbus_vtable = {harrier_dbus_register_object};
 
 
-void harrier_hello (Harrier* self) {
+void harrier_hello (Harrier* self, gint count) {
 	g_return_if_fail (self != NULL);
-	fprintf (stdout, "Hello World\n");
+	fprintf (stdout, "Hello World, and counter is:%d\n", count);
+}
+
+
+void harrier_bye (Harrier* self) {
+	g_return_if_fail (self != NULL);
+	fprintf (stdout, "See you later world!\n");
+	g_signal_emit_by_name (self, "dying");
 }
 
 
@@ -89,7 +99,7 @@ static DBusHandlerResult _dbus_harrier_introspect (Harrier* self, DBusConnection
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"Hello\">\n  </method>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"Hello\">\n    <arg name=\"count\" type=\"i\" direction=\"in\"/>\n  </method>\n  <method name=\"Bye\">\n  </method>\n  <signal name=\"Dying\">\n  </signal>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -143,13 +153,40 @@ static DBusHandlerResult _dbus_harrier_property_get_all (Harrier* self, DBusConn
 static DBusHandlerResult _dbus_harrier_hello (Harrier* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
+	gint count = 0;
+	dbus_int32_t _tmp1_;
+	DBusMessage* reply;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "i")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp1_);
+	dbus_message_iter_next (&iter);
+	count = _tmp1_;
+	harrier_hello (self, count);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_harrier_bye (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
 	DBusMessage* reply;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	harrier_hello (self);
+	harrier_bye (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	if (reply) {
@@ -171,6 +208,8 @@ DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage*
 		result = _dbus_harrier_property_get_all (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "Hello")) {
 		result = _dbus_harrier_hello (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "Bye")) {
+		result = _dbus_harrier_bye (object, connection, message);
 	}
 	if (result == DBUS_HANDLER_RESULT_HANDLED) {
 		return result;
@@ -180,17 +219,31 @@ DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage*
 }
 
 
+static void _dbus_harrier_dying (GObject* _sender, DBusConnection* _connection) {
+	const char * _path;
+	DBusMessage *_message;
+	DBusMessageIter _iter;
+	_path = g_object_get_data (_sender, "dbus_object_path");
+	_message = dbus_message_new_signal (_path, "com.ti.sdo.HarrierInterface", "Dying");
+	dbus_message_iter_init_append (_message, &_iter);
+	dbus_connection_send (_connection, _message, NULL);
+	dbus_message_unref (_message);
+}
+
+
 void harrier_dbus_register_object (DBusConnection* connection, const char* path, void* object) {
 	if (!g_object_get_data (object, "dbus_object_path")) {
 		g_object_set_data (object, "dbus_object_path", g_strdup (path));
 		dbus_connection_register_object_path (connection, path, &_harrier_dbus_path_vtable, object);
 		g_object_weak_ref (object, _vala_dbus_unregister_object, connection);
 	}
+	g_signal_connect (object, "dying", (GCallback) _dbus_harrier_dying, connection);
 }
 
 
 static void harrier_class_init (HarrierClass * klass) {
 	harrier_parent_class = g_type_class_peek_parent (klass);
+	g_signal_new ("dying", TYPE_HARRIER, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 	g_type_set_qdata (TYPE_HARRIER, g_quark_from_static_string ("DBusObjectVTable"), (void*) (&_harrier_dbus_vtable));
 }
 

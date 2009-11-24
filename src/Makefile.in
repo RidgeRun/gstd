@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -34,8 +35,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = harrierd$(EXEEXT) harrier$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in harrier.c \
-	harrierCli.c harrier_vala.stamp harrierd_vala.stamp main.c
+DIST_COMMON = $(harrierd_HEADERS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in harrier.c harrierCli.c \
+	harrier_vala.stamp harrierd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -44,7 +46,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(harrierddir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_harrier_OBJECTS = harrier-harrierCli.$(OBJEXT)
 harrier_OBJECTS = $(am_harrier_OBJECTS)
@@ -86,6 +88,28 @@ am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(harrier_SOURCES) $(harrierd_SOURCES)
 DIST_SOURCES = $(harrier_SOURCES) $(harrierd_SOURCES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+HEADERS = $(harrierd_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -180,7 +204,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-harrierd_SOURCES = main.vala harrier.vala
+harrierd_SOURCES = main.vala harrier.vala harrier_common_defs.h
 harrierd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
 harrierd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
 harrierd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
@@ -188,7 +212,14 @@ harrier_SOURCES = harrierCli.vala
 harrier_VALAFLAGS = --pkg posix --pkg dbus-glib-1
 harrier_CFLAGS = @DBUS_GLIB_CFLAGS@
 harrier_LDADD = @DBUS_GLIB_LIBS@
-all: all-am
+harrierddir = $(includedir)/harrier
+harrierd_HEADERS = harrier_common_defs.h harrier_client_stub.h 
+BUILT_SOURCES = harrier_client_stub.h
+CLEANFILES = harrier_client_stub.h
+EXTRA_DIST = harrier_dbus_interface.xml harrier_common_defs.h
+interface_xml := harrier_dbus_interface.xml
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
@@ -360,6 +391,26 @@ $(srcdir)/harrierCli.c: $(srcdir)/harrier_vala.stamp
 harrier_vala.stamp: $(harrier_SOURCES)
 	$(AM_V_VALAC)$(VALAC) $(harrier_VALAFLAGS) $(VALAFLAGS) -C $(harrier_SOURCES)
 	$(AM_V_at)touch $@
+install-harrierdHEADERS: $(harrierd_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(harrierddir)" || $(MKDIR_P) "$(DESTDIR)$(harrierddir)"
+	@list='$(harrierd_HEADERS)'; test -n "$(harrierddir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(harrierddir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(harrierddir)" || exit $$?; \
+	done
+
+uninstall-harrierdHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(harrierd_HEADERS)'; test -n "$(harrierddir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(harrierddir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(harrierddir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -444,13 +495,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(PROGRAMS)
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
+all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(harrierddir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -467,6 +520,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -480,6 +534,7 @@ maintainer-clean-generic:
 	-rm -f harrier_vala.stamp
 	-rm -f harrierd_vala.stamp
 	-rm -f main.c
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
@@ -502,7 +557,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-harrierdHEADERS
 
 install-dvi: install-dvi-am
 
@@ -547,23 +602,33 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-harrierdHEADERS
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
 	clean-generic ctags distclean distclean-compile \
 	distclean-generic distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS
+	install-exec install-exec-am install-harrierdHEADERS \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-harrierdHEADERS
 
+
+#Preparing headers for harrier clients
+harrier_client_stub.h: $(interface_xml)
+	dbus-binding-tool --prefix=harrier --mode=glib-client \
+	$< > $@
+
+checkxml: $(interface_xml)
+	@xmllint --valid --noout $<
+	@echo $< checks out ok
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
