@@ -8,7 +8,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES(harrier.pc:harrier.pc.in)
 
-AM_PROG_VALAC([0.7.7])
+AM_PROG_VALAC([0.7.6])
 
 dnl Check for pkgconfig first
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
