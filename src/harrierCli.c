@@ -6,9 +6,10 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 
 
 #define TYPE_HARRIER_CLI (harrier_cli_get_type ())
@@ -37,7 +38,6 @@ struct _HarrierCliClass {
 struct _HarrierCliPrivate {
 	DBusGConnection* conn;
 	DBusGProxy* harrier;
-	gint counter;
 };
 
 
@@ -48,11 +48,9 @@ GType harrier_cli_get_type (void);
 enum  {
 	HARRIER_CLI_DUMMY_PROPERTY
 };
-void harrier_cli_birdIsDead (HarrierCli* self, DBusGProxy* harrier);
-static void _harrier_cli_birdIsDead_dynamic_Dying0_ (DBusGProxy* _sender, gpointer self);
-void _dynamic_Dying1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-static void _dynamic_hello0 (DBusGProxy* self, gint param1, GError** error);
-static void _dynamic_bye1 (DBusGProxy* self, GError** error);
+static gint _dynamic_CreatePipeline0 (DBusGProxy* self, const char* param1, GError** error);
+static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, gint param1, GError** error);
+static gboolean _dynamic_DestroyPipeline2 (DBusGProxy* self, gint param1, GError** error);
 void harrier_cli_run (HarrierCli* self, GError** error);
 HarrierCli* harrier_cli_new (void);
 HarrierCli* harrier_cli_construct (GType object_type);
@@ -61,40 +59,33 @@ static void harrier_cli_finalize (GObject* obj);
 
 
 
-void harrier_cli_birdIsDead (HarrierCli* self, DBusGProxy* harrier) {
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (harrier != NULL);
-	fprintf (stdout, "Our bird just died :'( \n");
-	fprintf (stdout, "\n\n");
-	self->priv->counter++;
-}
-
-
-static void _harrier_cli_birdIsDead_dynamic_Dying0_ (DBusGProxy* _sender, gpointer self) {
-	harrier_cli_birdIsDead (self, _sender);
-}
-
-
-void _dynamic_Dying1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (obj, "Dying", G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (obj, signal_name, handler, data, NULL);
-}
-
-
-static void _dynamic_hello0 (DBusGProxy* self, gint param1, GError** error) {
-	dbus_g_proxy_call (self, "Hello", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INVALID);
+static gint _dynamic_CreatePipeline0 (DBusGProxy* self, const char* param1, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "CreatePipeline", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return;
+		return 0;
 	}
+	return result;
 }
 
 
-static void _dynamic_bye1 (DBusGProxy* self, GError** error) {
-	dbus_g_proxy_call (self, "Bye", error, G_TYPE_INVALID, G_TYPE_INVALID);
+static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, gint param1, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelinePlay", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
-		return;
+		return FALSE;
 	}
+	return result;
+}
+
+
+static gboolean _dynamic_DestroyPipeline2 (DBusGProxy* self, gint param1, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "DestroyPipeline", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
 }
 
 
@@ -103,6 +94,7 @@ void harrier_cli_run (HarrierCli* self, GError** error) {
 	DBusGConnection* _tmp0_;
 	DBusGConnection* _tmp1_;
 	DBusGProxy* _tmp2_;
+	gint id;
 	g_return_if_fail (self != NULL);
 	_inner_error_ = NULL;
 	_tmp0_ = dbus_g_bus_get (DBUS_BUS_SESSION, &_inner_error_);
@@ -112,19 +104,33 @@ void harrier_cli_run (HarrierCli* self, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->harrier = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ti.sdo.HarrierService", "/com/ti/sdo/HarrierObject", "com.ti.sdo.HarrierInterface"), _g_object_unref0 (self->priv->harrier), _tmp2_);
-	_dynamic_Dying1_connect (self->priv->harrier, "Dying", (GCallback) _harrier_cli_birdIsDead_dynamic_Dying0_, self);
-	_dynamic_hello0 (self->priv->harrier, self->priv->counter, &_inner_error_);
+	id = _dynamic_CreatePipeline0 (self->priv->harrier, "videotestsrc ! ximagesink", &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_propagate_error (error, _inner_error_);
 		return;
 	}
-	fprintf (stdout, "Counter is %d\n", self->priv->counter);
-	_dynamic_bye1 (self->priv->harrier, &_inner_error_);
-	if (_inner_error_ != NULL) {
-		g_propagate_error (error, _inner_error_);
-		return;
+	if (id < 0) {
+		fprintf (stdout, "Failed to create pipeline");
+	} else {
+		gboolean r;
+		gboolean _tmp3_;
+		fprintf (stdout, "Pipe id is %d\n", id);
+		r = _dynamic_PipelinePlay1 (self->priv->harrier, id, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			g_propagate_error (error, _inner_error_);
+			return;
+		}
+		if (!r) {
+			fprintf (stdout, "Failed to put the pipe to play");
+		}
+		sleep ((guint) 5);
+		_tmp3_ = _dynamic_DestroyPipeline2 (self->priv->harrier, id, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			g_propagate_error (error, _inner_error_);
+			return;
+		}
+		r = _tmp3_;
 	}
-	fprintf (stdout, "Counter is %d\n", self->priv->counter);
 }
 
 
@@ -151,7 +157,7 @@ static gint harrier_cli_main (char** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Failed to initialize");
+			fprintf (stderr, "DBus failure: %s\n", e->message);
 			result = 1;
 			_g_error_free0 (e);
 			_g_object_unref0 (test);
@@ -165,7 +171,7 @@ static gint harrier_cli_main (char** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Dynamic method failure");
+			fprintf (stderr, "Dynamic method failure\n");
 			result = 1;
 			_g_error_free0 (e);
 			_g_object_unref0 (test);
@@ -212,7 +218,6 @@ static void harrier_cli_class_init (HarrierCliClass * klass) {
 
 static void harrier_cli_instance_init (HarrierCli * self) {
 	self->priv = HARRIER_CLI_GET_PRIVATE (self);
-	self->priv->counter = 0;
 }
 
 

@@ -87,6 +87,7 @@ void _main (char** args, int args_length1) {
 			_g_object_unref0 (hawk);
 		} else {
 			fprintf (stderr, "Failed to obtain primary ownership of the service\n");
+			fprintf (stderr, "%s", "This usually means there is another instance of " "harrier already running\n");
 		}
 		_dbus_g_connection_unref0 (conn);
 		_g_object_unref0 (bus);
