@@ -16,6 +16,7 @@ public class Harrier : GLib.Object {
     }
     
     /**
+     Creates a pipeline from a gst-launch like descrition
      @param description, gst-launch like description of the pipeline
      @return integer identifier for the pipeline, -1 on failure
      */
@@ -31,6 +32,9 @@ public class Harrier : GLib.Object {
             newpipe.ref_count++;
             
             /* Store the pipe */
+//            while (pipelines.lookup(&next_id) != null){
+//                next_id++;
+//            }
             pipelines.insert(&next_id,newpipe);
             next_id++;
             ret = next_id;
@@ -52,8 +56,14 @@ public class Harrier : GLib.Object {
         GLib.Object *o;
         Element pipe = pipelines.lookup(&id) as Element;
 
+        if (pipe == null) {
+            stdout.printf("Pipe not found by id %d\n",id);
+            return false;
+        }
+        
         /* Destroy the pipeline */
-        PipelineSetState(id,State.NULL);
+        if (!PipelineSetState(id,State.NULL))
+            return false;
 
         /* Remove from the hash */
         pipelines.remove(&id);
@@ -69,8 +79,10 @@ public class Harrier : GLib.Object {
         Element pipe = pipelines.lookup(&id) as Element;
         State current, pending;
         
-        if (pipe == null)
+        if (pipe == null){
+            stdout.printf("Pipe not found by id %d\n",id);
             return false;
+        }
         pipe.set_state(state);
         /* Wait for the transition at most 2 secs */
         pipe.get_state(out current,out pending, 2000000000);

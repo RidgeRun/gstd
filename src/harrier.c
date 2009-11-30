@@ -156,7 +156,17 @@ gboolean harrier_DestroyPipeline (Harrier* self, gint id) {
 	GstElement* pipe;
 	g_return_val_if_fail (self != NULL, FALSE);
 	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
-	harrier_PipelineSetState (self, id, GST_STATE_NULL);
+	if (pipe == NULL) {
+		fprintf (stdout, "Pipe not found by id %d\n", id);
+		result = FALSE;
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	if (!harrier_PipelineSetState (self, id, GST_STATE_NULL)) {
+		result = FALSE;
+		_gst_object_unref0 (pipe);
+		return result;
+	}
 	g_hash_table_remove (self->priv->pipelines, &id);
 	o = G_OBJECT (pipe);
 	g_object_unref (o);
@@ -175,6 +185,7 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 	g_return_val_if_fail (self != NULL, FALSE);
 	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
 	if (pipe == NULL) {
+		fprintf (stdout, "Pipe not found by id %d\n", id);
 		result = FALSE;
 		_gst_object_unref0 (pipe);
 		return result;
