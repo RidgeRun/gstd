@@ -163,6 +163,8 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 	gboolean result;
 	gpointer _tmp0_;
 	GstElement* pipe;
+	GstState current = 0;
+	GstState pending = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, G_OBJECT (id)), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
 	if (pipe == NULL) {
@@ -171,6 +173,7 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 		return result;
 	}
 	gst_element_set_state (pipe, state);
+	gst_element_get_state (pipe, &current, &pending, (GstClockTime) 2000000000);
 	result = TRUE;
 	_gst_object_unref0 (pipe);
 	return result;
@@ -180,7 +183,6 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 gboolean harrier_PipelinePlay (Harrier* self, gint id) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
-	fprintf (stdout, "ID is %d\n", id);
 	result = harrier_PipelineSetState (self, id, GST_STATE_PLAYING);
 	return result;
 }
@@ -189,7 +191,6 @@ gboolean harrier_PipelinePlay (Harrier* self, gint id) {
 gboolean harrier_PipelinePause (Harrier* self, gint id) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
-	fprintf (stdout, "ID is %d\n", id);
 	result = harrier_PipelineSetState (self, id, GST_STATE_PAUSED);
 	return result;
 }
@@ -198,7 +199,6 @@ gboolean harrier_PipelinePause (Harrier* self, gint id) {
 gboolean harrier_PipelineNull (Harrier* self, gint id) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
-	fprintf (stdout, "ID is %d\n", id);
 	result = harrier_PipelineSetState (self, id, GST_STATE_NULL);
 	return result;
 }

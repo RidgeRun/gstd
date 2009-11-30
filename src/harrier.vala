@@ -61,11 +61,19 @@ public class Harrier : GLib.Object {
         return true;
     }
 
-    private bool PipelineSetState(int id, Gst.State state){
+    private bool PipelineSetState(int id, State state){
         Element pipe = pipelines.lookup((GLib.Object)id) as Element;
+        State current, pending;
+        
         if (pipe == null)
             return false;
         pipe.set_state(state);
+        /* Wait for the transition at most 2 secs */
+        pipe.get_state(out current,out pending, 2000000000);
+        if (current != state) {
+            stderr.printf("Element %d, failed to change state %s\n",id,state);
+            return false;
+        }
      
         return true;
     }
@@ -77,7 +85,6 @@ public class Harrier : GLib.Object {
      @see CreatePipeline
     */
     public bool PipelinePlay(int id){
-        stdout.printf("ID is %d\n",id);
         return PipelineSetState(id,State.PLAYING);
     }
     
@@ -88,7 +95,6 @@ public class Harrier : GLib.Object {
      @see CreatePipeline
     */
     public bool PipelinePause(int id){
-        stdout.printf("ID is %d\n",id);
         return PipelineSetState(id,State.PAUSED);
     }
 
@@ -101,7 +107,6 @@ public class Harrier : GLib.Object {
      @see CreatePipeline
     */
     public bool PipelineNull(int id){
-        stdout.printf("ID is %d\n",id);
         return PipelineSetState(id,State.NULL);
     }
 }
