@@ -71,7 +71,8 @@ public class Harrier : GLib.Object {
         /* Wait for the transition at most 2 secs */
         pipe.get_state(out current,out pending, 2000000000);
         if (current != state) {
-            stderr.printf("Element %d, failed to change state %s\n",id,state);
+            stderr.printf("Element %d, failed to change state %s\n",id,
+                state.to_string());
             return false;
         }
      

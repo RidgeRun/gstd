@@ -174,6 +174,12 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 	}
 	gst_element_set_state (pipe, state);
 	gst_element_get_state (pipe, &current, &pending, (GstClockTime) 2000000000);
+	if (current != state) {
+		fprintf (stderr, "Element %d, failed to change state %s\n", id, gst_element_state_get_name (state));
+		result = FALSE;
+		_gst_object_unref0 (pipe);
+		return result;
+	}
 	result = TRUE;
 	_gst_object_unref0 (pipe);
 	return result;
