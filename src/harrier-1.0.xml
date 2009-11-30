@@ -13,22 +13,32 @@
 
     <!-- Method definitions -->
 
-    <method name="Hello">
-	<arg type = "i" name = "count" direction = "in" />
-    </method>
-    <method name="Bye">
-    </method>
     <method name="CreatePipeline">
+	<arg type="s" name ="description" direction = "in" />
+	<arg type="i" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
-    <method name="PlayPipeline">
+    <method name="PipelineSetState">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="i" name ="state" direction = "in" />
     </method>
-    <method name="StopPipeline">
+    <method name="DestroyPipeline">
+	<arg type="i" name ="id" direction = "in" />
     </method>
-    <method name="PausePipeline">
+    <method name="PipelinePlay">
+	<arg type="i" name ="id" direction = "in" />
     </method>
+    <method name="PipelinePause">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+    <method name="PipelineNull">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+
     <!-- Signals definitions -->
-    <signal name="Dying">
-      <arg type="s" name="dying" direction="out"/>
+    <signal name="Sample">
+      <arg type="s" name="sample" direction="out"/>
     </signal>
 
   </interface>
