@@ -40,6 +40,7 @@ struct _HarrierClass {
 
 struct _HarrierPrivate {
 	GHashTable* pipelines;
+	gint next_id;
 };
 
 struct _DBusObjectVTable {
@@ -84,7 +85,8 @@ Harrier* harrier_construct (GType object_type) {
 	Harrier * self;
 	GHashTable* _tmp0_;
 	self = (Harrier*) g_object_new (object_type, NULL);
-	self->priv->pipelines = (_tmp0_ = g_hash_table_new (NULL, NULL), _g_hash_table_unref0 (self->priv->pipelines), _tmp0_);
+	self->priv->pipelines = (_tmp0_ = g_hash_table_new (g_int_hash, g_int_equal), _g_hash_table_unref0 (self->priv->pipelines), _tmp0_);
+	self->priv->next_id = 0;
 	return self;
 }
 
@@ -114,8 +116,9 @@ gint harrier_CreatePipeline (Harrier* self, const char* description) {
 		newpipe = (_tmp1_ = _tmp0_, GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL);
 		g_assert (newpipe != NULL);
 		((GObject*) newpipe)->ref_count++;
-		g_hash_table_insert (self->priv->pipelines, newpipe, newpipe);
-		ret = (gint) newpipe;
+		g_hash_table_insert (self->priv->pipelines, &self->priv->next_id, newpipe);
+		self->priv->next_id++;
+		ret = self->priv->next_id;
 		fprintf (stdout, "Pipeline %d created: %s\n", ret, description);
 		_gst_object_unref0 (newpipe);
 	}
@@ -141,21 +144,25 @@ gint harrier_CreatePipeline (Harrier* self, const char* description) {
 }
 
 
-gboolean harrier_DestroyPipeline (Harrier* self, gint id) {
-	gboolean result;
-	GObject* o = NULL;
-	g_return_val_if_fail (self != NULL, FALSE);
-	harrier_PipelineSetState (self, id, GST_STATE_NULL);
-	g_hash_table_remove (self->priv->pipelines, G_OBJECT (id));
-	o = G_OBJECT (id);
-	g_object_unref (o);
-	result = TRUE;
-	return result;
+static gpointer _gst_object_ref0 (gpointer self) {
+	return self ? gst_object_ref (self) : NULL;
 }
 
 
-static gpointer _gst_object_ref0 (gpointer self) {
-	return self ? gst_object_ref (self) : NULL;
+gboolean harrier_DestroyPipeline (Harrier* self, gint id) {
+	gboolean result;
+	GObject* o = NULL;
+	gpointer _tmp0_;
+	GstElement* pipe;
+	g_return_val_if_fail (self != NULL, FALSE);
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
+	harrier_PipelineSetState (self, id, GST_STATE_NULL);
+	g_hash_table_remove (self->priv->pipelines, &id);
+	o = G_OBJECT (pipe);
+	g_object_unref (o);
+	result = TRUE;
+	_gst_object_unref0 (pipe);
+	return result;
 }
 
 
@@ -166,7 +173,7 @@ static gboolean harrier_PipelineSetState (Harrier* self, gint id, GstState state
 	GstState current = 0;
 	GstState pending = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
-	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, G_OBJECT (id)), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
 	if (pipe == NULL) {
 		result = FALSE;
 		_gst_object_unref0 (pipe);

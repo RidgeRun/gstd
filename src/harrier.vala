@@ -5,12 +5,14 @@ using GLib.List;
 public class Harrier : GLib.Object {
     /* Private data */
     private HashTable pipelines;
+    private int next_id;
 
     /**
      Create a new instance of a harrier server 
      */
     public Harrier(){
-        pipelines =  new HashTable<GLib.Object,Pipeline> (null,null);
+        pipelines =  new HashTable<int,Pipeline> (int_hash,int_equal);
+        next_id = 0;
     }
     
     /**
@@ -29,8 +31,9 @@ public class Harrier : GLib.Object {
             newpipe.ref_count++;
             
             /* Store the pipe */
-            pipelines.insert(newpipe,newpipe);
-            ret = (int) newpipe;
+            pipelines.insert(&next_id,newpipe);
+            next_id++;
+            ret = next_id;
             stdout.printf("Pipeline %d created: %s\n",ret,description);
         } catch (GLib.Error e) {
             stderr.printf("Failed to create pipeline with description: %s.\n" +
@@ -47,22 +50,23 @@ public class Harrier : GLib.Object {
     */
     public bool DestroyPipeline(int id){
         GLib.Object *o;
+        Element pipe = pipelines.lookup(&id) as Element;
 
         /* Destroy the pipeline */
         PipelineSetState(id,State.NULL);
 
         /* Remove from the hash */
-        pipelines.remove((GLib.Object)id);
+        pipelines.remove(&id);
         
         /* Release our reference */        
-        o = (GLib.Object)id;
+        o = (GLib.Object)pipe;
         delete o;
      
         return true;
     }
 
     private bool PipelineSetState(int id, State state){
-        Element pipe = pipelines.lookup((GLib.Object)id) as Element;
+        Element pipe = pipelines.lookup(&id) as Element;
         State current, pending;
         
         if (pipe == null)
