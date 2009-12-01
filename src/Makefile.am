@@ -12,8 +12,9 @@ harrier_VALAFLAGS = --pkg posix --pkg dbus-glib-1
 harrier_CFLAGS = @DBUS_GLIB_CFLAGS@
 harrier_LDADD = @DBUS_GLIB_LIBS@
 
-interface_xml := harrier_dbus_interface.xml
-harrierdir = $(includedir)/harrier
+
+interface_xml := harrier-1.0.xml
+harrierdir = $(includedir)/harrier-1.0
 
 EXTRA_DIST= $(interface_xml)
 harrier_DATA = $(interface_xml)

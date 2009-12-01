@@ -1,0 +1,46 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+	"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<!-- This file defines the D-Bus interface for a simple object.
+     The interface name is "com.ti.sdo.HarrierInterface".
+     One known reference implementation is provided for it by the
+     "/com/ti/sdo/HarrierObject" object found via a well-known name of
+     "com.ti.sdo.HarrierService". -->
+
+<node name="/com/freondemo/interface/v1_0">
+
+  <interface name="com.ti.sdo.HarrierInterface">
+
+    <!-- Method definitions -->
+
+    <method name="CreatePipeline">
+	<arg type="s" name ="description" direction = "in" />
+	<arg type="i" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
+    </method>
+    <method name="PipelineSetState">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="i" name ="state" direction = "in" />
+    </method>
+    <method name="DestroyPipeline">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+    <method name="PipelinePlay">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+    <method name="PipelinePause">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+    <method name="PipelineNull">
+	<arg type="i" name ="id" direction = "in" />
+    </method>
+
+    <!-- Signals definitions -->
+    <signal name="Sample">
+      <arg type="s" name="sample" direction="out"/>
+    </signal>
+
+  </interface>
+</node>
+
