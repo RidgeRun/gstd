@@ -1,18 +1,26 @@
 using Gst;
-using GLib.List;
 
 [DBus (name = "com.ti.sdo.HarrierInterface")]
 public class Harrier : GLib.Object {
     /* Private data */
     private HashTable pipelines;
     private int next_id;
+    private int ids_available;
+    private int[] ids;
 
     /**
      Create a new instance of a harrier server 
      */
     public Harrier(){
+        int i;
+        
         pipelines =  new HashTable<int,Pipeline> (int_hash,int_equal);
         next_id = 0;
+        ids = new int[20];
+        ids_available=20;
+        for (i=0;i<20;i++){
+            ids[i]=i;
+        }
     }
     
     /**
@@ -23,6 +31,11 @@ public class Harrier : GLib.Object {
     public int CreatePipeline(string description){
         int ret = -1;
 
+        if (ids_available <= 0){
+            stderr.printf("Failed to create pipeline, no more ids available");
+            return -1;
+        }
+        
         try {
             /* Create the pipe */
             Element newpipe = parse_launch(description) as Element;
@@ -32,12 +45,13 @@ public class Harrier : GLib.Object {
             newpipe.ref_count++;
             
             /* Store the pipe */
-//            while (pipelines.lookup(&next_id) != null){
-//                next_id++;
-//            }
-            pipelines.insert(&next_id,newpipe);
-            next_id++;
+            while (pipelines.lookup(&next_id) != null){
+                next_id = next_id++ % 20;
+            }
+            pipelines.insert(&(ids[next_id]),newpipe);
             ret = next_id;
+            next_id++;
+            ids_available--;
             stdout.printf("Pipeline %d created: %s\n",ret,description);
         } catch (GLib.Error e) {
             stderr.printf("Failed to create pipeline with description: %s.\n" +
@@ -126,4 +140,24 @@ public class Harrier : GLib.Object {
     public bool PipelineNull(int id){
         return PipelineSetState(id,State.NULL);
     }
+    
+    /**
+     Sets a property for an element on the pipeline
+     */
+    public bool PipelineSetPropertyBool(int id,string element, string property, 
+        bool val){
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+        Element e;
+        
+        if (pipe == null){
+            stdout.printf("Pipe not found by id %d\n",id);
+            return false;
+        }
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stdout.printf("Element %s not found on pipe id %d",element,id);
+        }
+        e.set_property(property,val);
+        return true;
+    } 
 }

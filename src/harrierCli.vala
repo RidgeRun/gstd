@@ -70,6 +70,10 @@ public class HarrierCli : GLib.Object {
         return ret;
     }
     
+    private bool pipeline_set_property(int id,string[] args){
+
+        return false;
+    }
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
         int id;
 
@@ -121,6 +125,15 @@ public class HarrierCli : GLib.Object {
         case "null_id":
             id = args[2].to_int();
             return pipeline_null(id);
+        case "set":
+            if (active_id == 0){
+               stdout.printf("No valid active pipeline id\n");
+               return false;
+            }
+            return pipeline_set_property(active_id,args);
+        case "set_id":
+            id = args[2].to_int();
+            return pipeline_set_property(id,args);
         case "help":
             if (args.length > 2) {
                 /* Help about some command */
