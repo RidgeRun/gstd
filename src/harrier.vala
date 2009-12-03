@@ -2,6 +2,9 @@ using Gst;
 
 [DBus (name = "com.ti.sdo.HarrierInterface")]
 public class Harrier : GLib.Object {
+    /* Private constants */
+    //private static const int MAX_AVAIL_IDS = 20;
+
     /* Private data */
     private HashTable pipelines;
     private int next_id;
@@ -14,12 +17,12 @@ public class Harrier : GLib.Object {
     public Harrier(){
         int i;
         
-        pipelines =  new HashTable<int,Pipeline> (int_hash,int_equal);
+        pipelines = new HashTable<int,Pipeline> (int_hash,int_equal);
         next_id = 0;
         ids = new int[20];
-        ids_available=20;
-        for (i=0;i<20;i++){
-            ids[i]=i;
+        ids_available = 20;
+        for (i = 0; i < 20; i++){
+            ids[i] = i;
         }
     }
     
@@ -140,24 +143,120 @@ public class Harrier : GLib.Object {
     public bool PipelineNull(int id){
         return PipelineSetState(id,State.NULL);
     }
-    
+
     /**
-     Sets a property for an element on the pipeline
+     Sets a boolean property for an element on the pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property needs to be set
+     @param property,property name
+     @param val, bool property value
+     @see CreatePipeline
      */
-    public bool PipelineSetPropertyBool(int id,string element, string property, 
-        bool val){
-        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+    public bool PipelineSetPropertyBoolean(int id, string element,
+        string property, bool val){
         Element e;
-        
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
         if (pipe == null){
-            stdout.printf("Pipe not found by id %d\n",id);
+            stderr.printf("Pipe not found by id %d\n",id);
             return false;
         }
+
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stdout.printf("Element %s not found on pipe id %d",element,id);
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+            return false;
         }
-        e.set_property(property,val);
+
+        e.set(property,val,null);
+
         return true;
-    } 
+    }
+
+    /**
+     Sets an int property for an element on the pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property needs to be set
+     @param property,property name
+     @param val, int property value
+     @see CreatePipeline
+     */
+    public bool PipelineSetPropertyInt(int id, string element,
+        string property, int val){
+        Element e;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+            return false;
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d\n",element,id);
+            return false;
+        }
+
+        e.set(property,val,null);
+
+        return true;
+    }
+    
+    /**
+     Sets an long property for an element on the pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property needs to be set
+     @param property,property name
+     @param val, long property value
+     @see CreatePipeline
+     */
+    public bool PipelineSetPropertyLong(int id, string element,
+        string property, long val){
+        Element e;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+            return false;
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+            return false;
+        }
+
+        e.set(property,val,null);
+
+        return true;
+    }
+
+    /**
+     Sets a string property for an element on the pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property needs to be set
+     @param property,property name
+     @param val,string property value
+     @see CreatePipeline
+     */
+    public bool PipelineSetPropertyString(int id, string element,
+        string property, string val){
+        Element e;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+            return false;
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+            return false;
+        }
+
+        e.set(property,val,null);
+
+        return true;
+    }
 }

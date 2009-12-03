@@ -24,7 +24,7 @@ public class HarrierCli : GLib.Object {
         harrier = conn.get_object ("com.ti.sdo.HarrierService",
                                    "/com/ti/sdo/HarrierObject",
                                    "com.ti.sdo.HarrierInterface");
-        active_id = 0;
+        active_id = -1;
         env_id = Environment.get_variable("HARRIER_ACTIVE_ID");
         if (env_id != null){
             active_id = env_id.to_int();
@@ -71,7 +71,56 @@ public class HarrierCli : GLib.Object {
     }
     
     private bool pipeline_set_property(int id,string[] args){
+	
+	bool ret;
+	
+	string element = args[2];
+    	string property = args[3];
+	
+	switch (args[4].down()){
+        case "boolean":
+    		bool boolean_v = args[5].down().to_bool();
+    		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
+    		    property,element,boolean_v?"true":"false");
+    		ret = harrier.PipelineSetPropertyBoolean(id,element,property,boolean_v);
+           	break;
+        case "integer":
+    		int integer_v = args[5].to_int();
+    		stdout.printf("Trying to set '%s' on element '%s' to %d\n",
+    		    property,element,integer_v);
+    		ret = harrier.PipelineSetPropertyInt(id,element,property,integer_v);
+           	break;
+        case "long":
+    		long long_v = args[5].to_long();
+    		stdout.printf("Trying to set '%s' on element '%s' to %ld\n",
+    		    property,element,long_v);
+    		ret = harrier.PipelineSetPropertyLong(id,element,property,long_v);
+           	break;
+        case "string":
+    		string string_v = args[5];
+    		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
+    		    property,element,string_v);
+    		ret = harrier.PipelineSetPropertyString(id,element,property,string_v);
+           	break;
+        default:
+    		stderr.printf("Datatype not supported: %s\n",args[4]);
+        	return false;
+        }
 
+        if (!ret){
+            stdout.printf("Failed to set property\n");
+            return false;
+        }
+        return ret;
+    }
+    
+private bool pipeline_get_property(int id,string[] args){
+	/*bool ret = harrier.PipelineGetProperty(id);
+        if (!ret){
+            stdout.printf("Failed to destroy the pipeline\n");
+            return false;
+        }
+        return ret;*/
         return false;
     }
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
@@ -90,7 +139,7 @@ public class HarrierCli : GLib.Object {
            	stdout.printf("Active id is now %d\n",active_id);
            	break;
         case "destroy":
-            if (active_id == 0){
+            if (active_id == -1){
                 stdout.printf("No valid active pipeline id\n");
                 return false;
             }
@@ -99,7 +148,7 @@ public class HarrierCli : GLib.Object {
             id = args[2].to_int();
             return pipeline_destroy(id);
         case "play":
-            if (active_id == 0){
+            if (active_id == -1){
                stdout.printf("No valid active pipeline id\n");
                return false;
             }
@@ -108,7 +157,7 @@ public class HarrierCli : GLib.Object {
             id = args[2].to_int();
             return pipeline_play(id);
         case "pause":
-            if (active_id == 0){
+            if (active_id == -1){
                stdout.printf("No valid active pipeline id\n");
                return false;
             }
@@ -117,7 +166,7 @@ public class HarrierCli : GLib.Object {
             id = args[2].to_int();
             return pipeline_pause(id);
         case "null":
-            if (active_id == 0){
+            if (active_id == -1){
                stdout.printf("No valid active pipeline id\n");
                return false;
             }
@@ -126,14 +175,19 @@ public class HarrierCli : GLib.Object {
             id = args[2].to_int();
             return pipeline_null(id);
         case "set":
-            if (active_id == 0){
+            if (active_id == -1){
                stdout.printf("No valid active pipeline id\n");
                return false;
             }
             return pipeline_set_property(active_id,args);
-        case "set_id":
-            id = args[2].to_int();
-            return pipeline_set_property(id,args);
+
+        case "get":
+            if (active_id == -1){
+               stdout.printf("No valid active pipeline id\n");
+               return false;
+            }
+            return pipeline_get_property(active_id,args);
+        
         case "help":
             if (args.length > 2) {
                 /* Help about some command */

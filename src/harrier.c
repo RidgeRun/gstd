@@ -67,7 +67,10 @@ gboolean harrier_DestroyPipeline (Harrier* self, gint id);
 gboolean harrier_PipelinePlay (Harrier* self, gint id);
 gboolean harrier_PipelinePause (Harrier* self, gint id);
 gboolean harrier_PipelineNull (Harrier* self, gint id);
-gboolean harrier_PipelineSetPropertyBool (Harrier* self, gint id, const char* element, const char* property, gboolean val);
+gboolean harrier_PipelineSetPropertyBoolean (Harrier* self, gint id, const char* element, const char* property, gboolean val);
+gboolean harrier_PipelineSetPropertyInt (Harrier* self, gint id, const char* element, const char* property, gint val);
+gboolean harrier_PipelineSetPropertyLong (Harrier* self, gint id, const char* element, const char* property, glong val);
+gboolean harrier_PipelineSetPropertyString (Harrier* self, gint id, const char* element, const char* property, const char* val);
 void harrier_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 void _harrier_dbus_unregister (DBusConnection* connection, void* _user_data_);
 DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage* message, void* object);
@@ -78,7 +81,10 @@ static DBusHandlerResult _dbus_harrier_DestroyPipeline (Harrier* self, DBusConne
 static DBusHandlerResult _dbus_harrier_PipelinePlay (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_PipelinePause (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_PipelineNull (Harrier* self, DBusConnection* connection, DBusMessage* message);
-static DBusHandlerResult _dbus_harrier_PipelineSetPropertyBool (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyBoolean (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyInt (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyLong (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyString (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static void harrier_finalize (GObject* obj);
 static void _vala_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
@@ -265,35 +271,143 @@ gboolean harrier_PipelineNull (Harrier* self, gint id) {
 }
 
 
-gboolean harrier_PipelineSetPropertyBool (Harrier* self, gint id, const char* element, const char* property, gboolean val) {
+gboolean harrier_PipelineSetPropertyBoolean (Harrier* self, gint id, const char* element, const char* property, gboolean val) {
 	gboolean result;
+	GstElement* e;
 	gpointer _tmp0_;
 	GstPipeline* pipe;
-	GstElement* e;
 	GstElement* _tmp2_;
 	GstObject* _tmp1_;
-	GValue _tmp4_;
-	GValue _tmp3_ = {0};
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
-	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL));
 	e = NULL;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL));
 	if (pipe == NULL) {
-		fprintf (stdout, "Pipe not found by id %d\n", id);
+		fprintf (stderr, "Pipe not found by id %d\n", id);
 		result = FALSE;
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	e = (_tmp2_ = _gst_object_ref0 ((_tmp1_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL)), _gst_object_unref0 (e), _tmp2_);
 	if (e == NULL) {
-		fprintf (stdout, "Element %s not found on pipe id %d", element, id);
+		fprintf (stderr, "Element %s not found on pipe id %d", element, id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
 	}
-	g_object_set_property ((GObject*) e, property, (_tmp4_ = (g_value_init (&_tmp3_, G_TYPE_BOOLEAN), g_value_set_boolean (&_tmp3_, val), _tmp3_), &_tmp4_));
+	g_object_set ((GObject*) e, property, val, NULL, NULL);
 	result = TRUE;
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
+gboolean harrier_PipelineSetPropertyInt (Harrier* self, gint id, const char* element, const char* property, gint val) {
+	gboolean result;
+	GstElement* e;
+	gpointer _tmp0_;
+	GstPipeline* pipe;
+	GstElement* _tmp2_;
+	GstObject* _tmp1_;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (element != NULL, FALSE);
+	g_return_val_if_fail (property != NULL, FALSE);
+	e = NULL;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL));
+	if (pipe == NULL) {
+		fprintf (stderr, "Pipe not found by id %d\n", id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	e = (_tmp2_ = _gst_object_ref0 ((_tmp1_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL)), _gst_object_unref0 (e), _tmp2_);
+	if (e == NULL) {
+		fprintf (stderr, "Element %s not found on pipe id %d\n", element, id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	g_object_set ((GObject*) e, property, val, NULL, NULL);
+	result = TRUE;
+	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
+gboolean harrier_PipelineSetPropertyLong (Harrier* self, gint id, const char* element, const char* property, glong val) {
+	gboolean result;
+	GstElement* e;
+	gpointer _tmp0_;
+	GstPipeline* pipe;
+	GstElement* _tmp2_;
+	GstObject* _tmp1_;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (element != NULL, FALSE);
+	g_return_val_if_fail (property != NULL, FALSE);
+	e = NULL;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL));
+	if (pipe == NULL) {
+		fprintf (stderr, "Pipe not found by id %d\n", id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	e = (_tmp2_ = _gst_object_ref0 ((_tmp1_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL)), _gst_object_unref0 (e), _tmp2_);
+	if (e == NULL) {
+		fprintf (stderr, "Element %s not found on pipe id %d", element, id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	g_object_set ((GObject*) e, property, val, NULL, NULL);
+	result = TRUE;
+	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
+gboolean harrier_PipelineSetPropertyString (Harrier* self, gint id, const char* element, const char* property, const char* val) {
+	gboolean result;
+	GstElement* e;
+	gpointer _tmp0_;
+	GstPipeline* pipe;
+	GstElement* _tmp2_;
+	GstObject* _tmp1_;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (element != NULL, FALSE);
+	g_return_val_if_fail (property != NULL, FALSE);
+	g_return_val_if_fail (val != NULL, FALSE);
+	e = NULL;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL));
+	if (pipe == NULL) {
+		fprintf (stderr, "Pipe not found by id %d\n", id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	e = (_tmp2_ = _gst_object_ref0 ((_tmp1_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL)), _gst_object_unref0 (e), _tmp2_);
+	if (e == NULL) {
+		fprintf (stderr, "Element %s not found on pipe id %d", element, id);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	g_object_set ((GObject*) e, property, val, NULL, NULL);
+	result = TRUE;
+	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -311,7 +425,7 @@ static DBusHandlerResult _dbus_harrier_introspect (Harrier* self, DBusConnection
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"CreatePipeline\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"DestroyPipeline\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineSetPropertyBool\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"CreatePipeline\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"DestroyPipeline\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineSetPropertyBoolean\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineSetPropertyInt\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineSetPropertyLong\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineSetPropertyString\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -518,7 +632,7 @@ static DBusHandlerResult _dbus_harrier_PipelineNull (Harrier* self, DBusConnecti
 }
 
 
-static DBusHandlerResult _dbus_harrier_PipelineSetPropertyBool (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyBoolean (Harrier* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
 	gint id = 0;
@@ -549,13 +663,159 @@ static DBusHandlerResult _dbus_harrier_PipelineSetPropertyBool (Harrier* self, D
 	dbus_message_iter_get_basic (&iter, &_tmp14_);
 	dbus_message_iter_next (&iter);
 	val = _tmp14_;
-	result = harrier_PipelineSetPropertyBool (self, id, element, property, val);
+	result = harrier_PipelineSetPropertyBoolean (self, id, element, property, val);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
 	_tmp15_ = result;
 	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp15_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyInt (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gint id = 0;
+	dbus_int32_t _tmp16_;
+	char* element = NULL;
+	const char* _tmp17_;
+	char* property = NULL;
+	const char* _tmp18_;
+	gint val = 0;
+	dbus_int32_t _tmp19_;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp20_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "issi")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp16_);
+	dbus_message_iter_next (&iter);
+	id = _tmp16_;
+	dbus_message_iter_get_basic (&iter, &_tmp17_);
+	dbus_message_iter_next (&iter);
+	element = g_strdup (_tmp17_);
+	dbus_message_iter_get_basic (&iter, &_tmp18_);
+	dbus_message_iter_next (&iter);
+	property = g_strdup (_tmp18_);
+	dbus_message_iter_get_basic (&iter, &_tmp19_);
+	dbus_message_iter_next (&iter);
+	val = _tmp19_;
+	result = harrier_PipelineSetPropertyInt (self, id, element, property, val);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_g_free0 (element);
+	_g_free0 (property);
+	_tmp20_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp20_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyLong (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gint id = 0;
+	dbus_int32_t _tmp21_;
+	char* element = NULL;
+	const char* _tmp22_;
+	char* property = NULL;
+	const char* _tmp23_;
+	glong val = 0L;
+	glong _tmp24_;
+	DBusMessageIter _tmp25_;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp26_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "iss()")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp21_);
+	dbus_message_iter_next (&iter);
+	id = _tmp21_;
+	dbus_message_iter_get_basic (&iter, &_tmp22_);
+	dbus_message_iter_next (&iter);
+	element = g_strdup (_tmp22_);
+	dbus_message_iter_get_basic (&iter, &_tmp23_);
+	dbus_message_iter_next (&iter);
+	property = g_strdup (_tmp23_);
+	dbus_message_iter_recurse (&iter, &_tmp25_);
+	dbus_message_iter_next (&iter);
+	val = _tmp24_;
+	result = harrier_PipelineSetPropertyLong (self, id, element, property, val);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_g_free0 (element);
+	_g_free0 (property);
+	_tmp26_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp26_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_harrier_PipelineSetPropertyString (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gint id = 0;
+	dbus_int32_t _tmp27_;
+	char* element = NULL;
+	const char* _tmp28_;
+	char* property = NULL;
+	const char* _tmp29_;
+	char* val = NULL;
+	const char* _tmp30_;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp31_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "isss")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp27_);
+	dbus_message_iter_next (&iter);
+	id = _tmp27_;
+	dbus_message_iter_get_basic (&iter, &_tmp28_);
+	dbus_message_iter_next (&iter);
+	element = g_strdup (_tmp28_);
+	dbus_message_iter_get_basic (&iter, &_tmp29_);
+	dbus_message_iter_next (&iter);
+	property = g_strdup (_tmp29_);
+	dbus_message_iter_get_basic (&iter, &_tmp30_);
+	dbus_message_iter_next (&iter);
+	val = g_strdup (_tmp30_);
+	result = harrier_PipelineSetPropertyString (self, id, element, property, val);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_g_free0 (element);
+	_g_free0 (property);
+	_g_free0 (val);
+	_tmp31_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp31_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -583,8 +843,14 @@ DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage*
 		result = _dbus_harrier_PipelinePause (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineNull")) {
 		result = _dbus_harrier_PipelineNull (object, connection, message);
-	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineSetPropertyBool")) {
-		result = _dbus_harrier_PipelineSetPropertyBool (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineSetPropertyBoolean")) {
+		result = _dbus_harrier_PipelineSetPropertyBoolean (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineSetPropertyInt")) {
+		result = _dbus_harrier_PipelineSetPropertyInt (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineSetPropertyLong")) {
+		result = _dbus_harrier_PipelineSetPropertyLong (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineSetPropertyString")) {
+		result = _dbus_harrier_PipelineSetPropertyString (object, connection, message);
 	}
 	if (result == DBUS_HANDLER_RESULT_HANDLED) {
 		return result;

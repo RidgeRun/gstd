@@ -19,10 +19,6 @@
 	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
-    <method name="PipelineSetState">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="i" name ="state" direction = "in" />
-    </method>
     <method name="DestroyPipeline">
 	<arg type="i" name ="id" direction = "in" />
     </method>
@@ -34,6 +30,30 @@
     </method>
     <method name="PipelineNull">
 	<arg type="i" name ="id" direction = "in" />
+    </method>
+    <method name="PipelineSetPropertyBoolean">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="s" name ="element" direction = "in" />
+	<arg type="s" name ="property" direction = "in" />
+	<arg type="b" name ="val" direction = "in" />
+    </method>
+    <method name="PipelineSetPropertyInt">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="s" name ="element" direction = "in" />
+	<arg type="s" name ="property" direction = "in" />
+	<arg type="i" name ="val" direction = "in" />
+    </method>
+    <method name="PipelineSetPropertyLong">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="s" name ="element" direction = "in" />
+	<arg type="s" name ="property" direction = "in" />
+	<arg type="l" name ="val" direction = "in" />
+    </method>
+    <method name="PipelineSetPropertyString">
+	<arg type="i" name ="id" direction = "in" />
+	<arg type="s" name ="element" direction = "in" />
+	<arg type="s" name ="property" direction = "in" />
+	<arg type="s" name ="val" direction = "in" />
     </method>
 
     <!-- Signals definitions -->
