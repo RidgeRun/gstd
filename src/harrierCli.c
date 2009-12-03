@@ -62,13 +62,17 @@ static gboolean _dynamic_PipelineNull2 (DBusGProxy* self, gint param1, GError** 
 static gboolean harrier_cli_pipeline_null (HarrierCli* self, gint id);
 static gboolean _dynamic_DestroyPipeline3 (DBusGProxy* self, gint param1, GError** error);
 static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, gint id);
-static gboolean _dynamic_PipelineSetPropertyBoolean4 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gboolean param4, GError** error);
-static gboolean _dynamic_PipelineSetPropertyInt5 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gint param4, GError** error);
-static gboolean _dynamic_PipelineSetPropertyLong6 (DBusGProxy* self, gint param1, const char* param2, const char* param3, glong param4, GError** error);
-static gboolean _dynamic_PipelineSetPropertyString7 (DBusGProxy* self, gint param1, const char* param2, const char* param3, const char* param4, GError** error);
-static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, char** args, int args_length1);
+static gboolean _dynamic_PipelineGetPropertyBoolean4 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error);
+static gint _dynamic_PipelineGetPropertyInt5 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error);
+static glong _dynamic_PipelineGetPropertyLong6 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error);
+static char* _dynamic_PipelineGetPropertyString7 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error);
 static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, gint id, char** args, int args_length1);
-static gint _dynamic_CreatePipeline8 (DBusGProxy* self, const char* param1, GError** error);
+static gboolean _dynamic_PipelineSetPropertyBoolean8 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gboolean param4, GError** error);
+static gboolean _dynamic_PipelineSetPropertyInt9 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gint param4, GError** error);
+static gboolean _dynamic_PipelineSetPropertyLong10 (DBusGProxy* self, gint param1, const char* param2, const char* param3, glong param4, GError** error);
+static gboolean _dynamic_PipelineSetPropertyString11 (DBusGProxy* self, gint param1, const char* param2, const char* param3, const char* param4, GError** error);
+static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, char** args, int args_length1);
+static gint _dynamic_CreatePipeline12 (DBusGProxy* self, const char* param1, GError** error);
 gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1, GError** error);
 gboolean harrier_cli_cli (HarrierCli* self, char** args, int args_length1, GError** error);
 gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GError** error);
@@ -243,6 +247,157 @@ static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, gint id) {
 }
 
 
+static gboolean _dynamic_PipelineGetPropertyBoolean4 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelineGetPropertyBoolean", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gint _dynamic_PipelineGetPropertyInt5 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineGetPropertyInt", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
+	if (*error) {
+		return 0;
+	}
+	return result;
+}
+
+
+static glong _dynamic_PipelineGetPropertyLong6 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error) {
+	glong result;
+	dbus_g_proxy_call (self, "PipelineGetPropertyLong", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, dbus_g_type_get_struct ("GValueArray", G_TYPE_INVALID), &result, G_TYPE_INVALID);
+	if (*error) {
+		return 0L;
+	}
+	return result;
+}
+
+
+static char* _dynamic_PipelineGetPropertyString7 (DBusGProxy* self, gint param1, const char* param2, const char* param3, GError** error) {
+	char* result;
+	dbus_g_proxy_call (self, "PipelineGetPropertyString", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
+	if (*error) {
+		return NULL;
+	}
+	return result;
+}
+
+
+static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, gint id, char** args, int args_length1) {
+	gboolean result;
+	GError * _inner_error_;
+	gboolean ret;
+	char* element;
+	char* property;
+	GQuark _tmp2_;
+	char* _tmp1_;
+	static GQuark _tmp2__label0 = 0;
+	static GQuark _tmp2__label1 = 0;
+	static GQuark _tmp2__label2 = 0;
+	static GQuark _tmp2__label3 = 0;
+	g_return_val_if_fail (self != NULL, FALSE);
+	_inner_error_ = NULL;
+	ret = TRUE;
+	element = g_strdup (args[2]);
+	property = g_strdup (args[3]);
+	_tmp1_ = g_utf8_strdown (args[4], -1);
+	_tmp2_ = (NULL == _tmp1_) ? 0 : g_quark_from_string (_tmp1_);
+	g_free (_tmp1_);
+	if (_tmp2_ == ((0 != _tmp2__label0) ? _tmp2__label0 : (_tmp2__label0 = g_quark_from_static_string ("boolean"))))
+	do {
+		gboolean boolean_v;
+		const char* _tmp0_;
+		boolean_v = _dynamic_PipelineGetPropertyBoolean4 (self->priv->harrier, id, element, property, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_free0 (element);
+			_g_free0 (property);
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+			g_clear_error (&_inner_error_);
+			return FALSE;
+		}
+		_tmp0_ = NULL;
+		if (boolean_v) {
+			_tmp0_ = "true";
+		} else {
+			_tmp0_ = "false";
+		}
+		fprintf (stdout, ">>The '%s' value on element '%s' is: %s\n", property, element, _tmp0_);
+		break;
+	} while (0); else if (_tmp2_ == ((0 != _tmp2__label1) ? _tmp2__label1 : (_tmp2__label1 = g_quark_from_static_string ("integer"))))
+	do {
+		gint integer_v;
+		integer_v = _dynamic_PipelineGetPropertyInt5 (self->priv->harrier, id, element, property, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_free0 (element);
+			_g_free0 (property);
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+			g_clear_error (&_inner_error_);
+			return FALSE;
+		}
+		fprintf (stdout, ">>The '%s' value on element '%s' is: %d\n", property, element, integer_v);
+		if (integer_v == (-1)) {
+			ret = FALSE;
+		}
+		break;
+	} while (0); else if (_tmp2_ == ((0 != _tmp2__label2) ? _tmp2__label2 : (_tmp2__label2 = g_quark_from_static_string ("long"))))
+	do {
+		glong long_v;
+		long_v = _dynamic_PipelineGetPropertyLong6 (self->priv->harrier, id, element, property, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_free0 (element);
+			_g_free0 (property);
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+			g_clear_error (&_inner_error_);
+			return FALSE;
+		}
+		fprintf (stdout, ">>The '%s' value on element '%s' is: %ld\n", property, element, long_v);
+		if (long_v == (-1)) {
+			ret = FALSE;
+		}
+		break;
+	} while (0); else if (_tmp2_ == ((0 != _tmp2__label3) ? _tmp2__label3 : (_tmp2__label3 = g_quark_from_static_string ("string"))))
+	do {
+		char* string_v;
+		string_v = _dynamic_PipelineGetPropertyString7 (self->priv->harrier, id, element, property, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_free0 (element);
+			_g_free0 (property);
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+			g_clear_error (&_inner_error_);
+			return FALSE;
+		}
+		fprintf (stdout, ">>The '%s' value on element '%s' is: %s\n", property, element, string_v);
+		if (_vala_strcmp0 (string_v, "") == 0) {
+			ret = FALSE;
+		}
+		_g_free0 (string_v);
+		break;
+	} while (0); else
+	do {
+		fprintf (stderr, "Datatype not supported: %s\n", args[4]);
+		result = FALSE;
+		_g_free0 (element);
+		_g_free0 (property);
+		return result;
+	} while (0);
+	if (!ret) {
+		fprintf (stdout, "Failed to get property\n");
+		result = FALSE;
+		_g_free0 (element);
+		_g_free0 (property);
+		return result;
+	}
+	result = ret;
+	_g_free0 (element);
+	_g_free0 (property);
+	return result;
+}
+
+
 static gboolean string_to_bool (const char* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -256,7 +411,7 @@ static gboolean string_to_bool (const char* self) {
 }
 
 
-static gboolean _dynamic_PipelineSetPropertyBoolean4 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gboolean param4, GError** error) {
+static gboolean _dynamic_PipelineSetPropertyBoolean8 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gboolean param4, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSetPropertyBoolean", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_BOOLEAN, param4, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -266,7 +421,7 @@ static gboolean _dynamic_PipelineSetPropertyBoolean4 (DBusGProxy* self, gint par
 }
 
 
-static gboolean _dynamic_PipelineSetPropertyInt5 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gint param4, GError** error) {
+static gboolean _dynamic_PipelineSetPropertyInt9 (DBusGProxy* self, gint param1, const char* param2, const char* param3, gint param4, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSetPropertyInt", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INT, param4, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -276,7 +431,7 @@ static gboolean _dynamic_PipelineSetPropertyInt5 (DBusGProxy* self, gint param1,
 }
 
 
-static gboolean _dynamic_PipelineSetPropertyLong6 (DBusGProxy* self, gint param1, const char* param2, const char* param3, glong param4, GError** error) {
+static gboolean _dynamic_PipelineSetPropertyLong10 (DBusGProxy* self, gint param1, const char* param2, const char* param3, glong param4, GError** error) {
 	GValueArray* dbus_param4;
 	gboolean result;
 	dbus_param4 = g_value_array_new (0);
@@ -288,7 +443,7 @@ static gboolean _dynamic_PipelineSetPropertyLong6 (DBusGProxy* self, gint param1
 }
 
 
-static gboolean _dynamic_PipelineSetPropertyString7 (DBusGProxy* self, gint param1, const char* param2, const char* param3, const char* param4, GError** error) {
+static gboolean _dynamic_PipelineSetPropertyString11 (DBusGProxy* self, gint param1, const char* param2, const char* param3, const char* param4, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSetPropertyString", error, G_TYPE_INT, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_STRING, param4, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -332,7 +487,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 			_tmp2_ = "false";
 		}
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %s\n", property, element, _tmp2_);
-		_tmp3_ = _dynamic_PipelineSetPropertyBoolean4 (self->priv->harrier, id, element, property, boolean_v, &_inner_error_);
+		_tmp3_ = _dynamic_PipelineSetPropertyBoolean8 (self->priv->harrier, id, element, property, boolean_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
 			_g_free0 (property);
@@ -348,7 +503,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 		gboolean _tmp4_;
 		integer_v = atoi (args[5]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %d\n", property, element, integer_v);
-		_tmp4_ = _dynamic_PipelineSetPropertyInt5 (self->priv->harrier, id, element, property, integer_v, &_inner_error_);
+		_tmp4_ = _dynamic_PipelineSetPropertyInt9 (self->priv->harrier, id, element, property, integer_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
 			_g_free0 (property);
@@ -364,7 +519,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 		gboolean _tmp5_;
 		long_v = atol (args[5]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %ld\n", property, element, long_v);
-		_tmp5_ = _dynamic_PipelineSetPropertyLong6 (self->priv->harrier, id, element, property, long_v, &_inner_error_);
+		_tmp5_ = _dynamic_PipelineSetPropertyLong10 (self->priv->harrier, id, element, property, long_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
 			_g_free0 (property);
@@ -380,7 +535,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 		gboolean _tmp6_;
 		string_v = g_strdup (args[5]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %s\n", property, element, string_v);
-		_tmp6_ = _dynamic_PipelineSetPropertyString7 (self->priv->harrier, id, element, property, string_v, &_inner_error_);
+		_tmp6_ = _dynamic_PipelineSetPropertyString11 (self->priv->harrier, id, element, property, string_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (string_v);
 			_g_free0 (element);
@@ -414,15 +569,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 }
 
 
-static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, gint id, char** args, int args_length1) {
-	gboolean result;
-	g_return_val_if_fail (self != NULL, FALSE);
-	result = FALSE;
-	return result;
-}
-
-
-static gint _dynamic_CreatePipeline8 (DBusGProxy* self, const char* param1, GError** error) {
+static gint _dynamic_CreatePipeline12 (DBusGProxy* self, const char* param1, GError** error) {
 	gint result;
 	dbus_g_proxy_call (self, "CreatePipeline", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -467,7 +614,7 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 	do {
 		gint _tmp0_;
 		fprintf (stdout, "Creating pipe: %s\n", args[2]);
-		_tmp0_ = _dynamic_CreatePipeline8 (self->priv->harrier, args[2], &_inner_error_);
+		_tmp0_ = _dynamic_CreatePipeline12 (self->priv->harrier, args[2], &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
 			return FALSE;
@@ -738,8 +885,8 @@ static void harrier_cli_class_init (HarrierCliClass * klass) {
 static void harrier_cli_instance_init (HarrierCli * self) {
 	char** _tmp0_ = NULL;
 	self->priv = HARRIER_CLI_GET_PRIVATE (self);
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (5 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Create a new pipeline and returns the id for it on the servers"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the active pipeline"), _tmp0_[6] = g_strdup ("destroy_id"), _tmp0_[7] = g_strdup ("destroy_id <id>"), _tmp0_[8] = g_strdup ("Destroys the pipeline with the specified id"), _tmp0_[9] = g_strdup ("play  "), _tmp0_[10] = g_strdup ("play"), _tmp0_[11] = g_strdup ("Sets the active pipeline to play state"), _tmp0_[12] = g_strdup ("play_id"), _tmp0_[13] = g_strdup ("play_id <id>"), _tmp0_[14] = g_strdup ("Sets the pipeline with the specified id to play state"), _tmp0_);
-	self->priv->cmds_length1 = 5;
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (7 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Create a new pipeline and returns the id for it on the servers"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the active pipeline"), _tmp0_[6] = g_strdup ("destroy_id"), _tmp0_[7] = g_strdup ("destroy_id <id>"), _tmp0_[8] = g_strdup ("Destroys the pipeline with the specified id"), _tmp0_[9] = g_strdup ("play  "), _tmp0_[10] = g_strdup ("play"), _tmp0_[11] = g_strdup ("Sets the active pipeline to play state"), _tmp0_[12] = g_strdup ("play_id"), _tmp0_[13] = g_strdup ("play_id <id>"), _tmp0_[14] = g_strdup ("Sets the pipeline with the specified id to play state"), _tmp0_[15] = g_strdup ("set "), _tmp0_[16] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the active pipeline"), _tmp0_[18] = g_strdup ("get "), _tmp0_[19] = g_strdup ("get <element_name> <property_name> <data-type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the active pipeline"), _tmp0_);
+	self->priv->cmds_length1 = 7;
 	self->priv->cmds_length2 = 3;
 }
 

@@ -15,7 +15,9 @@ public class HarrierCli : GLib.Object {
          "Destroys the pipeline with the specified id"},
         {"play  ","play","Sets the active pipeline to play state"},
         {"play_id","play_id <id>",
-         "Sets the pipeline with the specified id to play state"}
+         "Sets the pipeline with the specified id to play state"},
+        {"set ","set <element_name> <property_name> <data-type> <value>","Sets an element's property value of the active pipeline"},
+        {"get ","get <element_name> <property_name> <data-type>","Gets an element's property value of the active pipeline"}
     };
 
     public HarrierCli() throws DBus.Error, GLib.Error {
@@ -70,10 +72,51 @@ public class HarrierCli : GLib.Object {
         return ret;
     }
     
-    private bool pipeline_set_property(int id,string[] args){
+    private bool pipeline_get_property(int id,string[] args){
+
+	bool ret=true;
+	string element = args[2];
+    	string property = args[3];
 	
+	switch (args[4].down()){
+        case "boolean":
+    		bool boolean_v = harrier.PipelineGetPropertyBoolean(id,element,property);
+    		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
+    		    property,element,boolean_v?"true":"false");
+           	break;
+        case "integer":
+    		int integer_v = harrier.PipelineGetPropertyInt(id,element,property);
+		stdout.printf(">>The '%s' value on element '%s' is: %d\n",
+    		    property,element,integer_v);
+    		if (integer_v == -1) ret=false;
+           	break;
+        case "long":
+    		long long_v = harrier.PipelineGetPropertyLong(id,element,property);
+    		stdout.printf(">>The '%s' value on element '%s' is: %ld\n",
+    		    property,element,long_v);
+		if (long_v == -1) ret=false;
+           	break;
+        case "string":
+    		string string_v = harrier.PipelineGetPropertyString(id,element,property);
+    		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
+    		    property,element,string_v);
+    		if (string_v == "") ret=false;
+           	break;
+        default:
+    		stderr.printf("Datatype not supported: %s\n",args[4]);
+        	return false;
+        }
+
+        if (!ret){
+            stdout.printf("Failed to get property\n");
+            return false;
+        }
+        return ret;
+    }
+    
+private bool pipeline_set_property(int id,string[] args){
+
 	bool ret;
-	
 	string element = args[2];
     	string property = args[3];
 	
@@ -112,16 +155,6 @@ public class HarrierCli : GLib.Object {
             return false;
         }
         return ret;
-    }
-    
-private bool pipeline_get_property(int id,string[] args){
-	/*bool ret = harrier.PipelineGetProperty(id);
-        if (!ret){
-            stdout.printf("Failed to destroy the pipeline\n");
-            return false;
-        }
-        return ret;*/
-        return false;
     }
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
         int id;

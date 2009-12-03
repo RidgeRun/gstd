@@ -259,4 +259,114 @@ public class Harrier : GLib.Object {
 
         return true;
     }
+    
+    /**
+     Gets an element's bool property value of a specific pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property value wants to be known
+     @param property,property name
+     @see CreatePipeline
+     */
+    public bool PipelineGetPropertyBoolean(int id, string element,
+        string property){
+        Element e;
+        bool bool_v = false;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+        }
+
+        e.get(property,&bool_v,null);
+
+        return bool_v;
+    }
+
+    /**
+     Gets an element's int property value of a specific pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property value wants to be known
+     @param property,property name
+     @see CreatePipeline
+     */
+    public int PipelineGetPropertyInt(int id, string element,
+        string property){
+        Element e;
+        int integer_v = -1;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+        }
+
+        e.get(property,&integer_v,null);
+
+        return integer_v;
+    }
+    
+    /**
+     Gets an element's long property value of a specific pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property value wants to be known
+     @param property,property name
+     @see CreatePipeline
+     */
+    public long PipelineGetPropertyLong(int id, string element,
+        string property){
+        Element e;
+        long long_v = -1;
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+        }
+
+        e.get(property,&long_v,null);
+
+        return long_v;
+    }
+
+    /**
+     Gets an element's string property value of a specific pipeline
+     @param id, the integer that identifies the pipe
+     @param element, whose property value wants to be known
+     @param property,property name
+     @see CreatePipeline
+     */
+    public string PipelineGetPropertyString(int id, string element,
+        string property){
+        Element e;
+        string string_v = "";
+        Pipeline pipe = pipelines.lookup(&id) as Pipeline;
+
+        if (pipe == null){
+            stderr.printf("Pipe not found by id %d\n",id);
+        }
+
+        e = pipe.get_child_by_name(element) as Element;
+        if (e == null){
+            stderr.printf("Element %s not found on pipe id %d",element,id);
+        }
+
+        e.get(property,&string_v,null);
+
+        return string_v;
+    }
+
+
 }
