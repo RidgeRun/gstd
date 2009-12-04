@@ -14,7 +14,7 @@ gst_client_LDADD = @DBUS_GLIB_LIBS@
 
 
 interface_xml := gstd-1.0.xml
-gstddir = $(includedir)/gstd-1.0
+gstddir = $(includedir)/gstd
 
 EXTRA_DIST= $(interface_xml)
 gstd_DATA = $(interface_xml)

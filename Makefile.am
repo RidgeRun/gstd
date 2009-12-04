@@ -2,6 +2,6 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src 
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = harrier.pc
+pkgconfig_DATA = gstd-1.0.pc
 
-EXTRA_DIST = harrier.pc.in
+EXTRA_DIST = gstd-1.0.pc.in
