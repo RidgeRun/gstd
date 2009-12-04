@@ -6,7 +6,7 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
-AC_CONFIG_FILES(harrier.pc:harrier.pc.in)
+AC_CONFIG_FILES(gstd-1.0.pc:gstd-1.0.pc.in)
 
 AM_PROG_VALAC([0.7.6])
 
