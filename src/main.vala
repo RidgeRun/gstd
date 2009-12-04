@@ -1,5 +1,8 @@
 using Gst;
 
+/*Global Variable*/
+public MainLoop loop;
+
 public void main (string[] args) {
     /* Initializing GStreamer */
     Gst.init (ref args);
@@ -7,7 +10,7 @@ public void main (string[] args) {
     stdout.printf("Harrier Streaming Server Daemon\n");
 
     /* Creating a GLib main loop with a default context */
-    var loop = new MainLoop (null, false);
+    loop = new MainLoop (null, false);
 
     try {
         var conn = DBus.Bus.get (DBus.BusType.SESSION);

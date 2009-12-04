@@ -89,8 +89,14 @@
     </method>
 
     <!-- Signals definitions -->
-    <signal name="Sample">
-      <arg type="s" name="sample" direction="out"/>
+    <signal name="Eos">
+      <arg type="i" name="id" direction="out"/>
+    </signal>
+    <signal name="Error">
+      <arg type="i" name="id" direction="out"/>
+    </signal>
+    <signal name="StateChanged">
+      <arg type="i" name="id" direction="out"/>
     </signal>
 
   </interface>

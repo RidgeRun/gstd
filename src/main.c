@@ -12,6 +12,7 @@
 #include <string.h>
 #include <dbus/dbus.h>
 
+#define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
 #define _dbus_g_connection_unref0(var) ((var == NULL) ? NULL : (var = (dbus_g_connection_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 
@@ -25,7 +26,6 @@
 typedef struct _Harrier Harrier;
 typedef struct _HarrierClass HarrierClass;
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
-#define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
 typedef struct _DBusObjectVTable _DBusObjectVTable;
 
 struct _DBusObjectVTable {
@@ -33,6 +33,8 @@ struct _DBusObjectVTable {
 };
 
 
+extern GMainLoop* loop;
+GMainLoop* loop = NULL;
 
 static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
 Harrier* harrier_new (void);
@@ -56,11 +58,11 @@ static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint
 
 void _main (char** args, int args_length1) {
 	GError * _inner_error_;
-	GMainLoop* loop;
+	GMainLoop* _tmp0_;
 	_inner_error_ = NULL;
 	gst_init (&args_length1, &args);
 	fprintf (stdout, "Harrier Streaming Server Daemon\n");
-	loop = g_main_loop_new (NULL, FALSE);
+	loop = (_tmp0_ = g_main_loop_new (NULL, FALSE), _g_main_loop_unref0 (loop), _tmp0_);
 	{
 		DBusGConnection* conn;
 		DBusGProxy* bus;
@@ -105,12 +107,10 @@ void _main (char** args, int args_length1) {
 	}
 	__finally0:
 	if (_inner_error_ != NULL) {
-		_g_main_loop_unref0 (loop);
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
 		return;
 	}
-	_g_main_loop_unref0 (loop);
 }
 
 

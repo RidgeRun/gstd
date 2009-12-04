@@ -36,6 +36,22 @@ public class HarrierCli : GLib.Object {
         }
     }
     
+    public void Error_cb(dynamic DBus.Object harrier){
+	//stdout.printf (/*"Error: %s\n", err.message*/);
+    }
+    
+    public void Eos_cb(dynamic DBus.Object harrier){
+
+	stdout.printf ("end of stream\n");
+
+    }
+    
+    public void StateChanged_cb(dynamic DBus.Object harrier){
+            /*stdout.printf ("state changed to: %s->%s:%s\n",
+             oldstate.to_string (), newstate.to_string (),);*/
+                                                                  
+    }
+    
     private bool pipeline_play(int id){
         bool ret = harrier.PipelinePlay(id);
         if (!ret){

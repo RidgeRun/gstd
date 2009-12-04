@@ -1,6 +1,8 @@
 using Gst;
 
-[DBus (name = "com.ti.sdo.HarrierInterface")]
+[DBus (name = "com.ti.sdo.HarrierInterface", signals = "EOS",
+	signals = "StateChanged" , signals = "Error")]
+
 public class Harrier : GLib.Object {
     /* Private constants */
     //private static const int MAX_AVAIL_IDS = 20;
@@ -10,6 +12,10 @@ public class Harrier : GLib.Object {
     private int next_id;
     private int ids_available;
     private int[] ids;
+    
+    public signal void Eos(/*int id*/);
+    public signal void StateChanged(/*int id*/);
+    public signal void Error(/*int id,*/ string err_message);
 
     /**
      Create a new instance of a harrier server 
@@ -25,6 +31,54 @@ public class Harrier : GLib.Object {
             ids[i] = i;
         }
     }
+
+
+    private bool bus_callback (Gst.Bus bus, Gst.Message message) {
+
+        switch (message.type) {
+        case MessageType.ERROR:
+
+            GLib.Error err;
+            string debug;
+
+            /*Parse error*/
+            message.parse_error (out err, out debug);
+
+            /*Sending Error Signal*/
+            Error(err.message);
+            
+            /*Finish main loop*/
+            loop.quit ();
+            break;
+
+        case MessageType.EOS:
+
+            /*Sending Eos Signal*/
+            Eos();
+            break;
+
+        case MessageType.STATE_CHANGED:
+
+            Gst.State oldstate;
+            Gst.State newstate;
+            Gst.State pending;
+
+            /*Sending StateChanged Signal*/
+            StateChanged();
+            
+            message.parse_state_changed (out oldstate, out newstate,
+                                         out pending);
+            /*stdout.printf ("state changed: %s->%s:%s\n",
+                           oldstate.to_string (), newstate.to_string (),
+                           pending.to_string ());*/
+            break;
+
+        default:
+            break;
+        }
+
+        return true;
+    }
     
     /**
      Creates a pipeline from a gst-launch like descrition
@@ -38,15 +92,20 @@ public class Harrier : GLib.Object {
             stderr.printf("Failed to create pipeline, no more ids available");
             return -1;
         }
-        
+
         try {
             /* Create the pipe */
             Element newpipe = parse_launch(description) as Element;
             assert(newpipe != null);
+
+            /*Get and watch bus*/
+            Bus bus = newpipe.get_bus ();
+            bus.add_watch (bus_callback);
+
             /* Increase the ref count or the object will be destroyed 
                when the function is done. */
             newpipe.ref_count++;
-            
+
             /* Store the pipe */
             while (pipelines.lookup(&next_id) != null){
                 next_id = next_id++ % 20;
@@ -69,7 +128,7 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe.
      @see CreatePipeline
     */
-    public bool DestroyPipeline(int id){
+    public bool PipelineDestroy(int id){
         GLib.Object *o;
         Element pipe = pipelines.lookup(&id) as Element;
 
