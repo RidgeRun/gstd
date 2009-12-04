@@ -2,7 +2,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-xmlapi= @includedir@/gstd-1.0/gstd-1.0.xml
+xmlapi= @includedir@/gstd/gstd-1.0.xml
 
 Name: Gstreamer Daemon
 Description: Streaming Media Server
