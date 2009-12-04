@@ -13,13 +13,13 @@
 
     <!-- Method definitions -->
 
-    <method name="CreatePipeline">
+    <method name="PipelineCreate">
 	<arg type="s" name ="description" direction = "in" />
 	<arg type="i" direction="out" >
 	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
-    <method name="DestroyPipeline">
+    <method name="PipelineDestroy">
 	<arg type="i" name ="id" direction = "in" />
     </method>
     <method name="PipelinePlay">
@@ -31,59 +31,59 @@
     <method name="PipelineNull">
 	<arg type="i" name ="id" direction = "in" />
     </method>
-    <method name="PipelineSetPropertyBoolean">
+    <method name="ElementSetPropertyBoolean">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="b" name ="val" direction = "in" />
     </method>
-    <method name="PipelineSetPropertyInt">
+    <method name="ElementSetPropertyInt">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="i" name ="val" direction = "in" />
     </method>
-    <method name="PipelineSetPropertyLong">
+    <method name="ElementSetPropertyLong">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
-	<arg type="l" name ="val" direction = "in" />
+	<arg type="t" name ="val" direction = "in" />
     </method>
-    <method name="PipelineSetPropertyString">
+    <method name="ElementSetPropertyString">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="s" name ="val" direction = "in" />
     </method>
-    <method name="PipelineGetPropertyBoolean">
+    <method name="ElementGetPropertyBoolean">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
-	<arg type="b" direction = "out" />
+	<arg type="b" direction = "out" >
 		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
-    <method name="PipelineGetPropertyInt">
+    <method name="ElementGetPropertyInt">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
-	<arg type="i" direction = "out" />
+	<arg type="i" direction = "out" >
 		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
-    <method name="PipelineGetPropertyLong">
+    <method name="ElementGetPropertyLong">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
-	<arg type="l" direction = "out" />
+	<arg type="t" direction = "out" >
 		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
-    <method name="PipelineGetPropertyString">
+    <method name="ElementGetPropertyString">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
-	<arg type="s" direction = "out" />
+	<arg type="s" direction = "out" >
 	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>

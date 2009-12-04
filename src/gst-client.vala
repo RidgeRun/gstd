@@ -64,7 +64,7 @@ public class HarrierCli : GLib.Object {
     }
 
     private bool pipeline_destroy(int id){
-        bool ret = harrier.DestroyPipeline(id);
+        bool ret = harrier.PipelineDestroy(id);
         if (!ret){
             stdout.printf("Failed to destroy the pipeline\n");
             return false;
@@ -80,24 +80,24 @@ public class HarrierCli : GLib.Object {
 	
 	switch (args[4].down()){
         case "boolean":
-    		bool boolean_v = harrier.PipelineGetPropertyBoolean(id,element,property);
+    		bool boolean_v = harrier.ElementGetPropertyBoolean(id,element,property);
     		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
     		    property,element,boolean_v?"true":"false");
            	break;
         case "integer":
-    		int integer_v = harrier.PipelineGetPropertyInt(id,element,property);
+    		int integer_v = harrier.ElementGetPropertyInt(id,element,property);
 		stdout.printf(">>The '%s' value on element '%s' is: %d\n",
     		    property,element,integer_v);
     		if (integer_v == -1) ret=false;
            	break;
         case "long":
-    		long long_v = harrier.PipelineGetPropertyLong(id,element,property);
+    		long long_v = harrier.ElementGetPropertyLong(id,element,property);
     		stdout.printf(">>The '%s' value on element '%s' is: %ld\n",
     		    property,element,long_v);
 		if (long_v == -1) ret=false;
            	break;
         case "string":
-    		string string_v = harrier.PipelineGetPropertyString(id,element,property);
+    		string string_v = harrier.ElementGetPropertyString(id,element,property);
     		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
     		    property,element,string_v);
     		if (string_v == "") ret=false;
@@ -125,25 +125,25 @@ private bool pipeline_set_property(int id,string[] args){
     		bool boolean_v = args[5].down().to_bool();
     		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
     		    property,element,boolean_v?"true":"false");
-    		ret = harrier.PipelineSetPropertyBoolean(id,element,property,boolean_v);
+    		ret = harrier.ElementSetPropertyBoolean(id,element,property,boolean_v);
            	break;
         case "integer":
     		int integer_v = args[5].to_int();
     		stdout.printf("Trying to set '%s' on element '%s' to %d\n",
     		    property,element,integer_v);
-    		ret = harrier.PipelineSetPropertyInt(id,element,property,integer_v);
+    		ret = harrier.ElementSetPropertyInt(id,element,property,integer_v);
            	break;
         case "long":
     		long long_v = args[5].to_long();
     		stdout.printf("Trying to set '%s' on element '%s' to %ld\n",
     		    property,element,long_v);
-    		ret = harrier.PipelineSetPropertyLong(id,element,property,long_v);
+    		ret = harrier.ElementSetPropertyLong(id,element,property,long_v);
            	break;
         case "string":
     		string string_v = args[5];
     		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
     		    property,element,string_v);
-    		ret = harrier.PipelineSetPropertyString(id,element,property,string_v);
+    		ret = harrier.ElementSetPropertyString(id,element,property,string_v);
            	break;
         default:
     		stderr.printf("Datatype not supported: %s\n",args[4]);
@@ -162,7 +162,7 @@ private bool pipeline_set_property(int id,string[] args){
         switch (args[1].down()){
         case "create":
             stdout.printf("Creating pipe: %s\n",args[2]);
-    	    id = harrier.CreatePipeline(args[2]);
+    	    id = harrier.PipelineCreate(args[2]);
           	if (id < 0) {
                 stdout.printf("Failed to create pipeline");
                 return false;

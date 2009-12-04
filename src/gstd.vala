@@ -31,7 +31,7 @@ public class Harrier : GLib.Object {
      @param description, gst-launch like description of the pipeline
      @return integer identifier for the pipeline, -1 on failure
      */
-    public int CreatePipeline(string description){
+    public int PipelineCreate(string description){
         int ret = -1;
 
         if (ids_available <= 0){
@@ -116,7 +116,7 @@ public class Harrier : GLib.Object {
      Sets a pipeline to play state. Returns when the pipeline already reached
      that state.
      @param id, the integer that identifies the pipe.
-     @see CreatePipeline
+     @see PipelineCreate
     */
     public bool PipelinePlay(int id){
         return PipelineSetState(id,State.PLAYING);
@@ -126,7 +126,7 @@ public class Harrier : GLib.Object {
      Sets a pipeline to paused state. Returns when the pipeline already reached
      that state.
      @param id, the integer that identifies the pipe.
-     @see CreatePipeline
+     @see PipelineCreate
     */
     public bool PipelinePause(int id){
         return PipelineSetState(id,State.PAUSED);
@@ -138,7 +138,7 @@ public class Harrier : GLib.Object {
      On this state the pipeline releases all allocated resources, but can
      be reused again.
      @param id, the integer that identifies the pipe.
-     @see CreatePipeline
+     @see PipelineCreate
     */
     public bool PipelineNull(int id){
         return PipelineSetState(id,State.NULL);
@@ -150,9 +150,9 @@ public class Harrier : GLib.Object {
      @param element, whose property needs to be set
      @param property,property name
      @param val, bool property value
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public bool PipelineSetPropertyBoolean(int id, string element,
+    public bool ElementSetPropertyBoolean(int id, string element,
         string property, bool val){
         Element e;
         Pipeline pipe = pipelines.lookup(&id) as Pipeline;
@@ -179,9 +179,9 @@ public class Harrier : GLib.Object {
      @param element, whose property needs to be set
      @param property,property name
      @param val, int property value
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public bool PipelineSetPropertyInt(int id, string element,
+    public bool ElementSetPropertyInt(int id, string element,
         string property, int val){
         Element e;
         Pipeline pipe = pipelines.lookup(&id) as Pipeline;
@@ -208,9 +208,9 @@ public class Harrier : GLib.Object {
      @param element, whose property needs to be set
      @param property,property name
      @param val, long property value
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public bool PipelineSetPropertyLong(int id, string element,
+    public bool ElementSetPropertyLong(int id, string element,
         string property, long val){
         Element e;
         Pipeline pipe = pipelines.lookup(&id) as Pipeline;
@@ -237,9 +237,9 @@ public class Harrier : GLib.Object {
      @param element, whose property needs to be set
      @param property,property name
      @param val,string property value
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public bool PipelineSetPropertyString(int id, string element,
+    public bool ElementSetPropertyString(int id, string element,
         string property, string val){
         Element e;
         Pipeline pipe = pipelines.lookup(&id) as Pipeline;
@@ -265,9 +265,9 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe
      @param element, whose property value wants to be known
      @param property,property name
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public bool PipelineGetPropertyBoolean(int id, string element,
+    public bool ElementGetPropertyBoolean(int id, string element,
         string property){
         Element e;
         bool bool_v = false;
@@ -292,9 +292,9 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe
      @param element, whose property value wants to be known
      @param property,property name
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public int PipelineGetPropertyInt(int id, string element,
+    public int ElementGetPropertyInt(int id, string element,
         string property){
         Element e;
         int integer_v = -1;
@@ -319,9 +319,9 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe
      @param element, whose property value wants to be known
      @param property,property name
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public long PipelineGetPropertyLong(int id, string element,
+    public long ElementGetPropertyLong(int id, string element,
         string property){
         Element e;
         long long_v = -1;
@@ -346,9 +346,9 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe
      @param element, whose property value wants to be known
      @param property,property name
-     @see CreatePipeline
+     @see PipelineCreate
      */
-    public string PipelineGetPropertyString(int id, string element,
+    public string ElementGetPropertyString(int id, string element,
         string property){
         Element e;
         string string_v = "";

@@ -1,23 +1,23 @@
 ACLOCAL_AMFLAGS = -I m4
 
-bin_PROGRAMS = harrierd harrier
+bin_PROGRAMS = gstd gst-client
 
-harrierd_SOURCES = main.vala harrier.vala
-harrierd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
-harrierd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
-harrierd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
+gstd_SOURCES = main.vala gstd.vala
+gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
+gstd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
+gstd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
 
-harrier_SOURCES = harrierCli.vala
-harrier_VALAFLAGS = --pkg posix --pkg dbus-glib-1
-harrier_CFLAGS = @DBUS_GLIB_CFLAGS@
-harrier_LDADD = @DBUS_GLIB_LIBS@
+gst_client_SOURCES = gst-client.vala
+gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1
+gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@
+gst_client_LDADD = @DBUS_GLIB_LIBS@
 
 
-interface_xml := harrier-1.0.xml
-harrierdir = $(includedir)/harrier-1.0
+interface_xml := gstd-1.0.xml
+gstddir = $(includedir)/gstd-1.0
 
 EXTRA_DIST= $(interface_xml)
-harrier_DATA = $(interface_xml)
+gstd_DATA = $(interface_xml)
 
 checkxml: $(interface_xml)
 	@xmllint --valid --noout $<

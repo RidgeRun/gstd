@@ -33,10 +33,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = harrierd$(EXEEXT) harrier$(EXEEXT)
+bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in harrier.c \
-	harrierCli.c harrier_vala.stamp harrierd_vala.stamp main.c
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in gst-client.c \
+	gst_client_vala.stamp gstd.c gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -45,19 +45,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(harrierdir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(gstddir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_harrier_OBJECTS = harrier-harrierCli.$(OBJEXT)
-harrier_OBJECTS = $(am_harrier_OBJECTS)
-harrier_DEPENDENCIES =
-harrier_LINK = $(CCLD) $(harrier_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+am_gst_client_OBJECTS = gst_client-gst-client.$(OBJEXT)
+gst_client_OBJECTS = $(am_gst_client_OBJECTS)
+gst_client_DEPENDENCIES =
+gst_client_LINK = $(CCLD) $(gst_client_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_harrierd_OBJECTS = harrierd-main.$(OBJEXT) \
-	harrierd-harrier.$(OBJEXT)
-harrierd_OBJECTS = $(am_harrierd_OBJECTS)
-harrierd_DEPENDENCIES =
-harrierd_LINK = $(CCLD) $(harrierd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd.$(OBJEXT)
+gstd_OBJECTS = $(am_gstd_OBJECTS)
+gstd_DEPENDENCIES =
+gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -85,8 +84,8 @@ am__v_VALAC_0 = @echo "  VALAC " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(harrier_SOURCES) $(harrierd_SOURCES)
-DIST_SOURCES = $(harrier_SOURCES) $(harrierd_SOURCES)
+SOURCES = $(gst_client_SOURCES) $(gstd_SOURCES)
+DIST_SOURCES = $(gst_client_SOURCES) $(gstd_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -108,7 +107,7 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-DATA = $(harrier_DATA)
+DATA = $(gstd_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -152,7 +151,6 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
-PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
@@ -204,18 +202,18 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-harrierd_SOURCES = main.vala harrier.vala
-harrierd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
-harrierd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
-harrierd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
-harrier_SOURCES = harrierCli.vala
-harrier_VALAFLAGS = --pkg posix --pkg dbus-glib-1
-harrier_CFLAGS = @DBUS_GLIB_CFLAGS@
-harrier_LDADD = @DBUS_GLIB_LIBS@
-interface_xml := harrier-1.0.xml
-harrierdir = $(includedir)/harrier-1.0
+gstd_SOURCES = main.vala gstd.vala
+gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
+gstd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
+gstd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
+gst_client_SOURCES = gst-client.vala
+gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1
+gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@
+gst_client_LDADD = @DBUS_GLIB_LIBS@
+interface_xml := gstd-1.0.xml
+gstddir = $(includedir)/gstd-1.0
 EXTRA_DIST = $(interface_xml)
-harrier_DATA = $(interface_xml)
+gstd_DATA = $(interface_xml)
 all: all-am
 
 .SUFFIXES:
@@ -287,12 +285,12 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-harrier$(EXEEXT): $(harrier_OBJECTS) $(harrier_DEPENDENCIES) 
-	@rm -f harrier$(EXEEXT)
-	$(AM_V_CCLD)$(harrier_LINK) $(harrier_OBJECTS) $(harrier_LDADD) $(LIBS)
-harrierd$(EXEEXT): $(harrierd_OBJECTS) $(harrierd_DEPENDENCIES) 
-	@rm -f harrierd$(EXEEXT)
-	$(AM_V_CCLD)$(harrierd_LINK) $(harrierd_OBJECTS) $(harrierd_LDADD) $(LIBS)
+gst-client$(EXEEXT): $(gst_client_OBJECTS) $(gst_client_DEPENDENCIES) 
+	@rm -f gst-client$(EXEEXT)
+	$(AM_V_CCLD)$(gst_client_LINK) $(gst_client_OBJECTS) $(gst_client_LDADD) $(LIBS)
+gstd$(EXEEXT): $(gstd_OBJECTS) $(gstd_DEPENDENCIES) 
+	@rm -f gstd$(EXEEXT)
+	$(AM_V_CCLD)$(gstd_LINK) $(gstd_OBJECTS) $(gstd_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -300,9 +298,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/harrier-harrierCli.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/harrierd-harrier.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/harrierd-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client-gst-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -320,94 +318,94 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-harrier-harrierCli.o: harrierCli.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrier_CFLAGS) $(CFLAGS) -MT harrier-harrierCli.o -MD -MP -MF $(DEPDIR)/harrier-harrierCli.Tpo -c -o harrier-harrierCli.o `test -f 'harrierCli.c' || echo '$(srcdir)/'`harrierCli.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrier-harrierCli.Tpo $(DEPDIR)/harrier-harrierCli.Po
+gst_client-gst-client.o: gst-client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_CFLAGS) $(CFLAGS) -MT gst_client-gst-client.o -MD -MP -MF $(DEPDIR)/gst_client-gst-client.Tpo -c -o gst_client-gst-client.o `test -f 'gst-client.c' || echo '$(srcdir)/'`gst-client.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gst_client-gst-client.Tpo $(DEPDIR)/gst_client-gst-client.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='harrierCli.c' object='harrier-harrierCli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gst-client.c' object='gst_client-gst-client.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrier_CFLAGS) $(CFLAGS) -c -o harrier-harrierCli.o `test -f 'harrierCli.c' || echo '$(srcdir)/'`harrierCli.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_CFLAGS) $(CFLAGS) -c -o gst_client-gst-client.o `test -f 'gst-client.c' || echo '$(srcdir)/'`gst-client.c
 
-harrier-harrierCli.obj: harrierCli.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrier_CFLAGS) $(CFLAGS) -MT harrier-harrierCli.obj -MD -MP -MF $(DEPDIR)/harrier-harrierCli.Tpo -c -o harrier-harrierCli.obj `if test -f 'harrierCli.c'; then $(CYGPATH_W) 'harrierCli.c'; else $(CYGPATH_W) '$(srcdir)/harrierCli.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrier-harrierCli.Tpo $(DEPDIR)/harrier-harrierCli.Po
+gst_client-gst-client.obj: gst-client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_CFLAGS) $(CFLAGS) -MT gst_client-gst-client.obj -MD -MP -MF $(DEPDIR)/gst_client-gst-client.Tpo -c -o gst_client-gst-client.obj `if test -f 'gst-client.c'; then $(CYGPATH_W) 'gst-client.c'; else $(CYGPATH_W) '$(srcdir)/gst-client.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gst_client-gst-client.Tpo $(DEPDIR)/gst_client-gst-client.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='harrierCli.c' object='harrier-harrierCli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gst-client.c' object='gst_client-gst-client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrier_CFLAGS) $(CFLAGS) -c -o harrier-harrierCli.obj `if test -f 'harrierCli.c'; then $(CYGPATH_W) 'harrierCli.c'; else $(CYGPATH_W) '$(srcdir)/harrierCli.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_CFLAGS) $(CFLAGS) -c -o gst_client-gst-client.obj `if test -f 'gst-client.c'; then $(CYGPATH_W) 'gst-client.c'; else $(CYGPATH_W) '$(srcdir)/gst-client.c'; fi`
 
-harrierd-main.o: main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -MT harrierd-main.o -MD -MP -MF $(DEPDIR)/harrierd-main.Tpo -c -o harrierd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrierd-main.Tpo $(DEPDIR)/harrierd-main.Po
+gstd-main.o: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-main.o -MD -MP -MF $(DEPDIR)/gstd-main.Tpo -c -o gstd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-main.Tpo $(DEPDIR)/gstd-main.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='harrierd-main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gstd-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -c -o harrierd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
 
-harrierd-main.obj: main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -MT harrierd-main.obj -MD -MP -MF $(DEPDIR)/harrierd-main.Tpo -c -o harrierd-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrierd-main.Tpo $(DEPDIR)/harrierd-main.Po
+gstd-main.obj: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-main.obj -MD -MP -MF $(DEPDIR)/gstd-main.Tpo -c -o gstd-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-main.Tpo $(DEPDIR)/gstd-main.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='harrierd-main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gstd-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -c -o harrierd-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-harrierd-harrier.o: harrier.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -MT harrierd-harrier.o -MD -MP -MF $(DEPDIR)/harrierd-harrier.Tpo -c -o harrierd-harrier.o `test -f 'harrier.c' || echo '$(srcdir)/'`harrier.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrierd-harrier.Tpo $(DEPDIR)/harrierd-harrier.Po
+gstd-gstd.o: gstd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd.o -MD -MP -MF $(DEPDIR)/gstd-gstd.Tpo -c -o gstd-gstd.o `test -f 'gstd.c' || echo '$(srcdir)/'`gstd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd.Tpo $(DEPDIR)/gstd-gstd.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='harrier.c' object='harrierd-harrier.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd.c' object='gstd-gstd.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -c -o harrierd-harrier.o `test -f 'harrier.c' || echo '$(srcdir)/'`harrier.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd.o `test -f 'gstd.c' || echo '$(srcdir)/'`gstd.c
 
-harrierd-harrier.obj: harrier.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -MT harrierd-harrier.obj -MD -MP -MF $(DEPDIR)/harrierd-harrier.Tpo -c -o harrierd-harrier.obj `if test -f 'harrier.c'; then $(CYGPATH_W) 'harrier.c'; else $(CYGPATH_W) '$(srcdir)/harrier.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/harrierd-harrier.Tpo $(DEPDIR)/harrierd-harrier.Po
+gstd-gstd.obj: gstd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd.obj -MD -MP -MF $(DEPDIR)/gstd-gstd.Tpo -c -o gstd-gstd.obj `if test -f 'gstd.c'; then $(CYGPATH_W) 'gstd.c'; else $(CYGPATH_W) '$(srcdir)/gstd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd.Tpo $(DEPDIR)/gstd-gstd.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='harrier.c' object='harrierd-harrier.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd.c' object='gstd-gstd.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(harrierd_CFLAGS) $(CFLAGS) -c -o harrierd-harrier.obj `if test -f 'harrier.c'; then $(CYGPATH_W) 'harrier.c'; else $(CYGPATH_W) '$(srcdir)/harrier.c'; fi`
-$(srcdir)/main.c: $(srcdir)/harrierd_vala.stamp
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd.obj `if test -f 'gstd.c'; then $(CYGPATH_W) 'gstd.c'; else $(CYGPATH_W) '$(srcdir)/gstd.c'; fi`
+$(srcdir)/main.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
-	  rm -f $(srcdir)/harrierd_vala.stamp; \
-	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) harrierd_vala.stamp; \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
 	fi
-$(srcdir)/harrier.c: $(srcdir)/harrierd_vala.stamp
+$(srcdir)/gstd.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
-	  rm -f $(srcdir)/harrierd_vala.stamp; \
-	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) harrierd_vala.stamp; \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
 	fi
-harrierd_vala.stamp: $(harrierd_SOURCES)
-	$(AM_V_VALAC)$(VALAC) $(harrierd_VALAFLAGS) $(VALAFLAGS) -C $(harrierd_SOURCES)
+gstd_vala.stamp: $(gstd_SOURCES)
+	$(AM_V_VALAC)$(VALAC) $(gstd_VALAFLAGS) $(VALAFLAGS) -C $(gstd_SOURCES)
 	$(AM_V_at)touch $@
-$(srcdir)/harrierCli.c: $(srcdir)/harrier_vala.stamp
+$(srcdir)/gst-client.c: $(srcdir)/gst_client_vala.stamp
 	@if test -f $@; then :; else \
-	  rm -f $(srcdir)/harrier_vala.stamp; \
-	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) harrier_vala.stamp; \
+	  rm -f $(srcdir)/gst_client_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gst_client_vala.stamp; \
 	fi
-harrier_vala.stamp: $(harrier_SOURCES)
-	$(AM_V_VALAC)$(VALAC) $(harrier_VALAFLAGS) $(VALAFLAGS) -C $(harrier_SOURCES)
+gst_client_vala.stamp: $(gst_client_SOURCES)
+	$(AM_V_VALAC)$(VALAC) $(gst_client_VALAFLAGS) $(VALAFLAGS) -C $(gst_client_SOURCES)
 	$(AM_V_at)touch $@
-install-harrierDATA: $(harrier_DATA)
+install-gstdDATA: $(gstd_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(harrierdir)" || $(MKDIR_P) "$(DESTDIR)$(harrierdir)"
-	@list='$(harrier_DATA)'; test -n "$(harrierdir)" || list=; \
+	test -z "$(gstddir)" || $(MKDIR_P) "$(DESTDIR)$(gstddir)"
+	@list='$(gstd_DATA)'; test -n "$(gstddir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(harrierdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(harrierdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(gstddir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(gstddir)" || exit $$?; \
 	done
 
-uninstall-harrierDATA:
+uninstall-gstdDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(harrier_DATA)'; test -n "$(harrierdir)" || list=; \
+	@list='$(gstd_DATA)'; test -n "$(gstddir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(harrierdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(harrierdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(gstddir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(gstddir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -495,7 +493,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(harrierdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(gstddir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -523,10 +521,10 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-rm -f harrier.c
-	-rm -f harrierCli.c
-	-rm -f harrier_vala.stamp
-	-rm -f harrierd_vala.stamp
+	-rm -f gst-client.c
+	-rm -f gst_client_vala.stamp
+	-rm -f gstd.c
+	-rm -f gstd_vala.stamp
 	-rm -f main.c
 clean: clean-am
 
@@ -550,7 +548,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-harrierDATA
+install-data-am: install-gstdDATA
 
 install-dvi: install-dvi-am
 
@@ -595,7 +593,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-harrierDATA
+uninstall-am: uninstall-binPROGRAMS uninstall-gstdDATA
 
 .MAKE: install-am install-strip
 
@@ -604,14 +602,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-harrierDATA
 	distclean-generic distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-harrierDATA install-html \
+	install-exec install-exec-am install-gstdDATA install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-harrierDATA
+	uninstall-gstdDATA
 
 
 checkxml: $(interface_xml)

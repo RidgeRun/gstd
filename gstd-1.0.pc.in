@@ -2,9 +2,9 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-xmlapi= @includedir@/harrier-1.0/harrier-1.0.xml
+xmlapi= @includedir@/gstd-1.0/gstd-1.0.xml
 
-Name: Harrier
-Description: Harrier Streaming Media Server
+Name: Gstreamer Daemon
+Description: Streaming Media Server
 Version: @VERSION@
 Requires: dbus-glib-1
