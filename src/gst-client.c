@@ -8,6 +8,7 @@
 #include <dbus/dbus-glib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glib/gi18n-lib.h>
 #include <stdio.h>
 
 
@@ -24,6 +25,7 @@ typedef struct _HarrierCliPrivate HarrierCliPrivate;
 #define _dbus_g_connection_unref0(var) ((var == NULL) ? NULL : (var = (dbus_g_connection_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
+#define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 
 struct _HarrierCli {
@@ -45,6 +47,12 @@ struct _HarrierCliPrivate {
 };
 
 
+static gint harrier_cli_arg_id;
+static gint harrier_cli_arg_id = 0;
+static gboolean harrier_cli__signals;
+static gboolean harrier_cli__signals = FALSE;
+static char** harrier_cli__remaining_args;
+static char** harrier_cli__remaining_args = NULL;
 static gpointer harrier_cli_parent_class = NULL;
 
 GType harrier_cli_get_type (void);
@@ -52,11 +60,17 @@ GType harrier_cli_get_type (void);
 enum  {
 	HARRIER_CLI_DUMMY_PROPERTY
 };
+void harrier_cli_Error_cb (HarrierCli* self);
+void harrier_cli_Eos_cb (HarrierCli* self);
+static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate);
+static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
+void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
+static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
+void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
+static void _harrier_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, const char* newstate, gpointer self);
+void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
 HarrierCli* harrier_cli_new (GError** error);
 HarrierCli* harrier_cli_construct (GType object_type, GError** error);
-void harrier_cli_Error_cb (HarrierCli* self, DBusGProxy* harrier);
-void harrier_cli_Eos_cb (HarrierCli* self, DBusGProxy* harrier);
-void harrier_cli_StateChanged_cb (HarrierCli* self, DBusGProxy* harrier);
 static gboolean _dynamic_PipelinePlay0 (DBusGProxy* self, gint param1, GError** error);
 static gboolean harrier_cli_pipeline_play (HarrierCli* self, gint id);
 static gboolean _dynamic_PipelinePause1 (DBusGProxy* self, gint param1, GError** error);
@@ -83,8 +97,67 @@ static gint harrier_cli_main (char** args, int args_length1);
 static void harrier_cli_finalize (GObject* obj);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
+static gint _vala_array_length (gpointer array);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
+static const GOptionEntry HARRIER_CLI_options[] = {{"by_id", 'i', 0, G_OPTION_ARG_INT, &harrier_cli_arg_id, "Pipeline ID number, for which command will be apply", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &harrier_cli__signals, "Flag to enable the signals reception", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
+
+
+void harrier_cli_Error_cb (HarrierCli* self) {
+	g_return_if_fail (self != NULL);
+	fprintf (stdout, "I get in ERROR callback function!!\n");
+}
+
+
+void harrier_cli_Eos_cb (HarrierCli* self) {
+	g_return_if_fail (self != NULL);
+	fprintf (stdout, "I get in EOS callback function!!\n");
+	fprintf (stdout, "end of stream\n");
+}
+
+
+static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate) {
+	g_return_if_fail (harrier != NULL);
+	g_return_if_fail (newstate != NULL);
+	fprintf (stdout, "I get in StatedChanged callback function!!\n");
+	fprintf (stdout, "state changed to:%s\n", newstate);
+}
+
+
+static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
+	harrier_cli_Error_cb (self);
+}
+
+
+void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (obj, "Error", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (obj, signal_name, handler, data, NULL);
+}
+
+
+static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self) {
+	harrier_cli_Eos_cb (self);
+}
+
+
+void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (obj, "Eos", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (obj, signal_name, handler, data, NULL);
+}
+
+
+static void _harrier_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, const char* newstate, gpointer self) {
+	harrier_cli_StateChanged_cb (_sender, newstate);
+}
+
+
+void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (obj, "StateChanged", G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (obj, signal_name, handler, data, NULL);
+}
 
 
 HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
@@ -106,11 +179,18 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->harrier = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ti.sdo.HarrierService", "/com/ti/sdo/HarrierObject", "com.ti.sdo.HarrierInterface"), _g_object_unref0 (self->priv->harrier), _tmp2_);
+	fprintf (stdout, "Constructing harrier...\n");
 	self->priv->active_id = -1;
 	env_id = (_tmp3_ = g_strdup (g_getenv ("HARRIER_ACTIVE_ID")), _g_free0 (env_id), _tmp3_);
 	if (env_id != NULL) {
 		self->priv->active_id = atoi (env_id);
 		fprintf (stdout, "NOTICE: Using active id from enviroment variable: %d\n", self->priv->active_id);
+	}
+	if (harrier_cli__signals) {
+		fprintf (stdout, "Signals, activated\n");
+		_dynamic_Error1_connect (self->priv->harrier, "Error", (GCallback) _harrier_cli_Error_cb_dynamic_Error0_, self);
+		_dynamic_Eos3_connect (self->priv->harrier, "Eos", (GCallback) _harrier_cli_Eos_cb_dynamic_Eos2_, self);
+		_dynamic_StateChanged5_connect (self->priv->harrier, "StateChanged", (GCallback) _harrier_cli_StateChanged_cb_dynamic_StateChanged4_, NULL);
 	}
 	_g_free0 (env_id);
 	return self;
@@ -119,25 +199,6 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 
 HarrierCli* harrier_cli_new (GError** error) {
 	return harrier_cli_construct (TYPE_HARRIER_CLI, error);
-}
-
-
-void harrier_cli_Error_cb (HarrierCli* self, DBusGProxy* harrier) {
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (harrier != NULL);
-}
-
-
-void harrier_cli_Eos_cb (HarrierCli* self, DBusGProxy* harrier) {
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (harrier != NULL);
-	fprintf (stdout, "end of stream\n");
-}
-
-
-void harrier_cli_StateChanged_cb (HarrierCli* self, DBusGProxy* harrier) {
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (harrier != NULL);
 }
 
 
@@ -324,9 +385,9 @@ static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, gint id, ch
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	ret = TRUE;
-	element = g_strdup (args[2]);
-	property = g_strdup (args[3]);
-	_tmp1_ = g_utf8_strdown (args[4], -1);
+	element = g_strdup (args[1]);
+	property = g_strdup (args[2]);
+	_tmp1_ = g_utf8_strdown (args[3], -1);
 	_tmp2_ = (NULL == _tmp1_) ? 0 : g_quark_from_string (_tmp1_);
 	g_free (_tmp1_);
 	if (_tmp2_ == ((0 != _tmp2__label0) ? _tmp2__label0 : (_tmp2__label0 = g_quark_from_static_string ("boolean"))))
@@ -489,9 +550,9 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 	static GQuark _tmp8__label3 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
-	element = g_strdup (args[2]);
-	property = g_strdup (args[3]);
-	_tmp7_ = g_utf8_strdown (args[4], -1);
+	element = g_strdup (args[1]);
+	property = g_strdup (args[2]);
+	_tmp7_ = g_utf8_strdown (args[3], -1);
 	_tmp8_ = (NULL == _tmp7_) ? 0 : g_quark_from_string (_tmp7_);
 	g_free (_tmp7_);
 	if (_tmp8_ == ((0 != _tmp8__label0) ? _tmp8__label0 : (_tmp8__label0 = g_quark_from_static_string ("boolean"))))
@@ -501,7 +562,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 		gboolean boolean_v;
 		const char* _tmp2_;
 		gboolean _tmp3_;
-		boolean_v = (_tmp1_ = string_to_bool (_tmp0_ = g_utf8_strdown (args[5], -1)), _g_free0 (_tmp0_), _tmp1_);
+		boolean_v = (_tmp1_ = string_to_bool (_tmp0_ = g_utf8_strdown (args[4], -1)), _g_free0 (_tmp0_), _tmp1_);
 		_tmp2_ = NULL;
 		if (boolean_v) {
 			_tmp2_ = "true";
@@ -523,7 +584,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 	do {
 		gint integer_v;
 		gboolean _tmp4_;
-		integer_v = atoi (args[5]);
+		integer_v = atoi (args[4]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %d\n", property, element, integer_v);
 		_tmp4_ = _dynamic_ElementSetPropertyInt9 (self->priv->harrier, id, element, property, integer_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
@@ -539,7 +600,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 	do {
 		glong long_v;
 		gboolean _tmp5_;
-		long_v = atol (args[5]);
+		long_v = atol (args[4]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %ld\n", property, element, long_v);
 		_tmp5_ = _dynamic_ElementSetPropertyLong10 (self->priv->harrier, id, element, property, long_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
@@ -555,7 +616,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 	do {
 		char* string_v;
 		gboolean _tmp6_;
-		string_v = g_strdup (args[5]);
+		string_v = g_strdup (args[4]);
 		fprintf (stdout, "Trying to set '%s' on element '%s' to %s\n", property, element, string_v);
 		_tmp6_ = _dynamic_ElementSetPropertyString11 (self->priv->harrier, id, element, property, string_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
@@ -612,36 +673,49 @@ static glong string_get_length (const char* self) {
 gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
 	GError * _inner_error_;
-	gint id = 0;
-	GQuark _tmp4_;
-	char* _tmp3_;
-	static GQuark _tmp4__label0 = 0;
-	static GQuark _tmp4__label1 = 0;
-	static GQuark _tmp4__label2 = 0;
-	static GQuark _tmp4__label3 = 0;
-	static GQuark _tmp4__label4 = 0;
-	static GQuark _tmp4__label5 = 0;
-	static GQuark _tmp4__label6 = 0;
-	static GQuark _tmp4__label7 = 0;
-	static GQuark _tmp4__label8 = 0;
-	static GQuark _tmp4__label9 = 0;
-	static GQuark _tmp4__label10 = 0;
-	static GQuark _tmp4__label11 = 0;
+	gint id;
+	GQuark _tmp6_;
+	char* _tmp5_;
+	static GQuark _tmp6__label0 = 0;
+	static GQuark _tmp6__label1 = 0;
+	static GQuark _tmp6__label2 = 0;
+	static GQuark _tmp6__label3 = 0;
+	static GQuark _tmp6__label4 = 0;
+	static GQuark _tmp6__label5 = 0;
+	static GQuark _tmp6__label6 = 0;
+	static GQuark _tmp6__label7 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
-	_tmp3_ = g_utf8_strdown (args[1], -1);
-	_tmp4_ = (NULL == _tmp3_) ? 0 : g_quark_from_string (_tmp3_);
-	g_free (_tmp3_);
-	if (_tmp4_ == ((0 != _tmp4__label0) ? _tmp4__label0 : (_tmp4__label0 = g_quark_from_static_string ("create"))))
+	id = -1;
+	if (harrier_cli_arg_id != (-1)) {
+		id = harrier_cli_arg_id;
+		fprintf (stdout, "pipeline id: %i\n", id);
+	} else {
+		if (self->priv->active_id == (-1)) {
+			char* _tmp0_;
+			gboolean _tmp1_;
+			if ((_tmp1_ = _vala_strcmp0 (_tmp0_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp0_), _tmp1_)) {
+				fprintf (stdout, "No valid active pipeline id\n");
+				result = FALSE;
+				return result;
+			}
+		} else {
+			id = self->priv->active_id;
+		}
+	}
+	_tmp5_ = g_utf8_strdown (args[0], -1);
+	_tmp6_ = (NULL == _tmp5_) ? 0 : g_quark_from_string (_tmp5_);
+	g_free (_tmp5_);
+	if (_tmp6_ == ((0 != _tmp6__label0) ? _tmp6__label0 : (_tmp6__label0 = g_quark_from_static_string ("create"))))
 	do {
-		gint _tmp0_;
-		fprintf (stdout, "Creating pipe: %s\n", args[2]);
-		_tmp0_ = _dynamic_PipelineCreate12 (self->priv->harrier, args[2], &_inner_error_);
+		gint _tmp2_;
+		fprintf (stdout, "Creating pipe: %s\n", args[1]);
+		_tmp2_ = _dynamic_PipelineCreate12 (self->priv->harrier, args[1], &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
 			return FALSE;
 		}
-		id = _tmp0_;
+		id = _tmp2_;
 		if (id < 0) {
 			fprintf (stdout, "Failed to create pipeline");
 			result = FALSE;
@@ -650,92 +724,42 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 		self->priv->active_id = id;
 		fprintf (stdout, "Active id is now %d\n", self->priv->active_id);
 		break;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label1) ? _tmp4__label1 : (_tmp4__label1 = g_quark_from_static_string ("destroy"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label1) ? _tmp6__label1 : (_tmp6__label1 = g_quark_from_static_string ("destroy"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_destroy (self, self->priv->active_id);
-		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label2) ? _tmp4__label2 : (_tmp4__label2 = g_quark_from_static_string ("destroy_id"))))
-	do {
-		id = atoi (args[2]);
 		result = harrier_cli_pipeline_destroy (self, id);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label3) ? _tmp4__label3 : (_tmp4__label3 = g_quark_from_static_string ("play"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label2) ? _tmp6__label2 : (_tmp6__label2 = g_quark_from_static_string ("play"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_play (self, self->priv->active_id);
-		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label4) ? _tmp4__label4 : (_tmp4__label4 = g_quark_from_static_string ("play_id"))))
-	do {
-		id = atoi (args[2]);
 		result = harrier_cli_pipeline_play (self, id);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label5) ? _tmp4__label5 : (_tmp4__label5 = g_quark_from_static_string ("pause"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label3) ? _tmp6__label3 : (_tmp6__label3 = g_quark_from_static_string ("pause"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_pause (self, self->priv->active_id);
-		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label6) ? _tmp4__label6 : (_tmp4__label6 = g_quark_from_static_string ("pause_id"))))
-	do {
-		id = atoi (args[2]);
 		result = harrier_cli_pipeline_pause (self, id);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label7) ? _tmp4__label7 : (_tmp4__label7 = g_quark_from_static_string ("null"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label4) ? _tmp6__label4 : (_tmp6__label4 = g_quark_from_static_string ("null"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_null (self, self->priv->active_id);
-		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label8) ? _tmp4__label8 : (_tmp4__label8 = g_quark_from_static_string ("null_id"))))
-	do {
-		id = atoi (args[2]);
 		result = harrier_cli_pipeline_null (self, id);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label9) ? _tmp4__label9 : (_tmp4__label9 = g_quark_from_static_string ("set"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label5) ? _tmp6__label5 : (_tmp6__label5 = g_quark_from_static_string ("set"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_set_property (self, self->priv->active_id, args, args_length1);
+		result = harrier_cli_pipeline_set_property (self, id, args, args_length1);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label10) ? _tmp4__label10 : (_tmp4__label10 = g_quark_from_static_string ("get"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label6) ? _tmp6__label6 : (_tmp6__label6 = g_quark_from_static_string ("get"))))
 	do {
-		if (self->priv->active_id == (-1)) {
-			fprintf (stdout, "No valid active pipeline id\n");
-			result = FALSE;
-			return result;
-		}
-		result = harrier_cli_pipeline_get_property (self, self->priv->active_id, args, args_length1);
+		result = harrier_cli_pipeline_get_property (self, id, args, args_length1);
 		return result;
-	} while (0); else if (_tmp4_ == ((0 != _tmp4__label11) ? _tmp4__label11 : (_tmp4__label11 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp6_ == ((0 != _tmp6__label7) ? _tmp6__label7 : (_tmp6__label7 = g_quark_from_static_string ("help"))))
 	do {
 		if (args_length1 > 2) {
 			{
-				gboolean _tmp1_;
+				gboolean _tmp3_;
 				id = 0;
-				_tmp1_ = TRUE;
+				_tmp3_ = TRUE;
 				while (TRUE) {
-					if (!_tmp1_) {
+					if (!_tmp3_) {
 						id++;
 					}
-					_tmp1_ = FALSE;
+					_tmp3_ = FALSE;
 					if (!(id < (string_get_length (self->priv->cmds[0]) - 1))) {
 						break;
 					}
@@ -754,14 +778,14 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 		} else {
 			fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 			{
-				gboolean _tmp2_;
+				gboolean _tmp4_;
 				id = 0;
-				_tmp2_ = TRUE;
+				_tmp4_ = TRUE;
 				while (TRUE) {
-					if (!_tmp2_) {
+					if (!_tmp4_) {
 						id++;
 					}
-					_tmp2_ = FALSE;
+					_tmp4_ = FALSE;
 					if (!(id < (string_get_length (self->priv->cmds[0]) - 1))) {
 						break;
 					}
@@ -795,8 +819,9 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 	GError * _inner_error_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
-	if (args_length1 > 1) {
+	if (args_length1 > 0) {
 		gboolean _tmp0_;
+		fprintf (stdout, "Command_parse:%s \n", args[0]);
 		_tmp0_ = harrier_cli_parse_cmd (self, args, args_length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
@@ -806,6 +831,7 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 		return result;
 	} else {
 		gboolean _tmp1_;
+		fprintf (stdout, "Command_cli:%i \n", args_length1);
 		_tmp1_ = harrier_cli_cli (self, args, args_length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
@@ -824,11 +850,27 @@ static gint harrier_cli_main (char** args, int args_length1) {
 	_inner_error_ = NULL;
 	cli = NULL;
 	{
+		GOptionContext* opt;
 		HarrierCli* _tmp0_;
 		HarrierCli* _tmp1_;
 		gboolean _tmp2_;
+		harrier_cli_arg_id = -1;
+		opt = g_option_context_new ("- gst-client");
+		g_option_context_set_help_enabled (opt, TRUE);
+		g_option_context_add_main_entries (opt, HARRIER_CLI_options, NULL);
+		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			_g_option_context_free0 (opt);
+			if (_inner_error_->domain == DBUS_GERROR) {
+				goto __catch0_dbus_gerror;
+			}
+			goto __catch0_g_error;
+			goto __finally0;
+		}
+		fprintf (stdout, "Parse fine!>%s... \n", harrier_cli__remaining_args[0]);
 		_tmp0_ = harrier_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
+			_g_option_context_free0 (opt);
 			if (_inner_error_->domain == DBUS_GERROR) {
 				goto __catch0_dbus_gerror;
 			}
@@ -836,8 +878,9 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			goto __finally0;
 		}
 		cli = (_tmp1_ = _tmp0_, _g_object_unref0 (cli), _tmp1_);
-		_tmp2_ = harrier_cli_parse (cli, args, args_length1, &_inner_error_);
+		_tmp2_ = harrier_cli_parse (cli, harrier_cli__remaining_args, _vala_array_length (harrier_cli__remaining_args), &_inner_error_);
 		if (_inner_error_ != NULL) {
+			_g_option_context_free0 (opt);
 			if (_inner_error_->domain == DBUS_GERROR) {
 				goto __catch0_dbus_gerror;
 			}
@@ -846,9 +889,11 @@ static gint harrier_cli_main (char** args, int args_length1) {
 		}
 		if (!_tmp2_) {
 			result = -1;
+			_g_option_context_free0 (opt);
 			_g_object_unref0 (cli);
 			return result;
 		}
+		_g_option_context_free0 (opt);
 	}
 	goto __finally0;
 	__catch0_dbus_gerror:
@@ -948,6 +993,18 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func) {
 	_vala_array_destroy (array, array_length, destroy_func);
 	g_free (array);
+}
+
+
+static gint _vala_array_length (gpointer array) {
+	int length;
+	length = 0;
+	if (array) {
+		while (((gpointer*) array)[length]) {
+			length++;
+		}
+	}
+	return length;
 }
 
 
