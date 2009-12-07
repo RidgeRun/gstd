@@ -3924,6 +3924,11 @@ DBUS_GLIB_CFLAGS="$DBUS_GLIB_CFLAGS $DBUS_GLIB_ERROR"
 
 
 
+#AC_PROG_INTLTOOL([0.17])
+
+#GETTEXT_PACKAGE= gst-client
+#AC_SUBST(GETTEXT_PACKAGE)
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

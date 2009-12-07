@@ -14,7 +14,7 @@ public class Harrier : GLib.Object {
     private int[] ids;
     
     public signal void Eos(/*int id*/);
-    public signal void StateChanged(/*int id*/);
+    public signal void StateChanged(/*int id,*/string new_state);
     public signal void Error(/*int id,*/ string err_message);
 
     /**
@@ -63,14 +63,13 @@ public class Harrier : GLib.Object {
             Gst.State newstate;
             Gst.State pending;
 
-            /*Sending StateChanged Signal*/
-            StateChanged();
-            
             message.parse_state_changed (out oldstate, out newstate,
                                          out pending);
-            /*stdout.printf ("state changed: %s->%s:%s\n",
-                           oldstate.to_string (), newstate.to_string (),
-                           pending.to_string ());*/
+            
+            /*Sending StateChanged Signal*/
+            stdout.printf("Sending StateChanged signal...\n");
+            StateChanged (newstate.to_string());
+
             break;
 
         default:

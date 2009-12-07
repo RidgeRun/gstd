@@ -1,9 +1,38 @@
 using GLib;
 
 public class HarrierCli : GLib.Object {
+
     private DBus.Connection conn;
     private dynamic DBus.Object harrier;
     private int active_id;
+
+    /**
+    * Used as reference in option parser
+    */
+    static int arg_id;
+    static bool _signals;
+    [CCode (array_length = false, array_null_terminated = true)]
+    [NoArrayLength]
+    static string[] _remaining_args;
+
+    /**
+    * Application command line options
+    */
+    const OptionEntry[] options = {
+
+    { "by_id", 'i', 0, OptionArg.INT, ref arg_id,
+    "Pipeline ID number, for which command will be apply", null },
+
+    { "enable_signals", 's', 0, OptionArg.INT, ref _signals,
+    "Flag to enable the signals reception", null },
+
+    { "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
+     null, N_("[COMMANDS...]") },
+
+    { null }
+    }; 
+
+
     /* Command descriptions for the help
        Each description is: name of the command, syntax, description
      */
@@ -20,12 +49,36 @@ public class HarrierCli : GLib.Object {
         {"get ","get <element_name> <property_name> <data-type>","Gets an element's property value of the active pipeline"}
     };
 
+    /**
+    *Callback Functions for the receiving signals
+    */
+
+    public void Error_cb(/*dynamic DBus.Object harrier*/){
+        stdout.printf("I get in ERROR callback function!!\n");
+        //stdout.printf (/*"Error: %s\n", err.message*/);
+    }
+
+    public void Eos_cb(/*dynamic DBus.Object harrier*/){
+        stdout.printf("I get in EOS callback function!!\n");
+        stdout.printf ("end of stream\n");
+
+    }
+
+    static void StateChanged_cb(dynamic DBus.Object harrier,string newstate){
+        stdout.printf("I get in StatedChanged callback function!!\n");
+        stdout.printf ("state changed to:%s\n", newstate);
+    }
+
+    /*
+    * Constructor
+    */
     public HarrierCli() throws DBus.Error, GLib.Error {
         string env_id;
         conn = DBus.Bus.get (DBus.BusType.SESSION);
         harrier = conn.get_object ("com.ti.sdo.HarrierService",
                                    "/com/ti/sdo/HarrierObject",
                                    "com.ti.sdo.HarrierInterface");
+        stdout.printf("Constructing harrier...\n");
         active_id = -1;
         env_id = Environment.get_variable("HARRIER_ACTIVE_ID");
         if (env_id != null){
@@ -34,24 +87,18 @@ public class HarrierCli : GLib.Object {
               "NOTICE: Using active id from enviroment variable: %d\n",
               active_id);
         }
-    }
-    
-    public void Error_cb(dynamic DBus.Object harrier){
-	//stdout.printf (/*"Error: %s\n", err.message*/);
-    }
-    
-    public void Eos_cb(dynamic DBus.Object harrier){
 
-	stdout.printf ("end of stream\n");
+        /*Activating the reception of signals sent by the daemon*/
+        if(_signals){
+                stdout.printf("Signals, activated\n");
+                harrier.Error += this.Error_cb;
+                harrier.Eos += this.Eos_cb;
+                harrier.StateChanged += StateChanged_cb;
+                //harrier.StateChanged.connect (StateChanged_cb);
+        }
+    }
 
-    }
-    
-    public void StateChanged_cb(dynamic DBus.Object harrier){
-            /*stdout.printf ("state changed to: %s->%s:%s\n",
-             oldstate.to_string (), newstate.to_string (),);*/
-                                                                  
-    }
-    
+
     private bool pipeline_play(int id){
         bool ret = harrier.PipelinePlay(id);
         if (!ret){
@@ -87,40 +134,40 @@ public class HarrierCli : GLib.Object {
         }
         return ret;
     }
-    
+
     private bool pipeline_get_property(int id,string[] args){
 
-	bool ret=true;
-	string element = args[2];
-    	string property = args[3];
-	
-	switch (args[4].down()){
+        bool ret=true;
+        string element = args[1];
+        string property = args[2];
+
+        switch (args[3].down()){
         case "boolean":
-    		bool boolean_v = harrier.ElementGetPropertyBoolean(id,element,property);
-    		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
-    		    property,element,boolean_v?"true":"false");
-           	break;
+                bool boolean_v = harrier.ElementGetPropertyBoolean(id,element,property);
+                stdout.printf(">>The '%s' value on element '%s' is: %s\n",
+                               property,element,boolean_v?"true":"false");
+                break;
         case "integer":
-    		int integer_v = harrier.ElementGetPropertyInt(id,element,property);
-		stdout.printf(">>The '%s' value on element '%s' is: %d\n",
-    		    property,element,integer_v);
-    		if (integer_v == -1) ret=false;
-           	break;
+                int integer_v = harrier.ElementGetPropertyInt(id,element,property);
+                stdout.printf(">>The '%s' value on element '%s' is: %d\n",
+                               property,element,integer_v);
+                if (integer_v == -1) ret=false;
+                break;
         case "long":
-    		long long_v = harrier.ElementGetPropertyLong(id,element,property);
-    		stdout.printf(">>The '%s' value on element '%s' is: %ld\n",
-    		    property,element,long_v);
-		if (long_v == -1) ret=false;
-           	break;
+                long long_v = harrier.ElementGetPropertyLong(id,element,property);
+                stdout.printf(">>The '%s' value on element '%s' is: %ld\n",
+                               property,element,long_v);
+                if (long_v == -1) ret=false;
+                break;
         case "string":
-    		string string_v = harrier.ElementGetPropertyString(id,element,property);
-    		stdout.printf(">>The '%s' value on element '%s' is: %s\n",
-    		    property,element,string_v);
-    		if (string_v == "") ret=false;
-           	break;
+                string string_v = harrier.ElementGetPropertyString(id,element,property);
+                stdout.printf(">>The '%s' value on element '%s' is: %s\n",
+                               property,element,string_v);
+                if (string_v == "") ret=false;
+                break;
         default:
-    		stderr.printf("Datatype not supported: %s\n",args[4]);
-        	return false;
+                stderr.printf("Datatype not supported: %s\n",args[4]);
+                return false;
         }
 
         if (!ret){
@@ -129,41 +176,41 @@ public class HarrierCli : GLib.Object {
         }
         return ret;
     }
-    
-private bool pipeline_set_property(int id,string[] args){
 
-	bool ret;
-	string element = args[2];
-    	string property = args[3];
-	
-	switch (args[4].down()){
+    private bool pipeline_set_property(int id,string[] args){
+
+        bool ret;
+        string element = args[1];
+        string property = args[2];
+
+        switch (args[3].down()){
         case "boolean":
-    		bool boolean_v = args[5].down().to_bool();
-    		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
-    		    property,element,boolean_v?"true":"false");
-    		ret = harrier.ElementSetPropertyBoolean(id,element,property,boolean_v);
-           	break;
+                bool boolean_v = args[4].down().to_bool();
+                stdout.printf("Trying to set '%s' on element '%s' to %s\n",
+                    property,element,boolean_v?"true":"false");
+                ret = harrier.ElementSetPropertyBoolean(id,element,property,boolean_v);
+                break;
         case "integer":
-    		int integer_v = args[5].to_int();
-    		stdout.printf("Trying to set '%s' on element '%s' to %d\n",
-    		    property,element,integer_v);
-    		ret = harrier.ElementSetPropertyInt(id,element,property,integer_v);
-           	break;
+                int integer_v = args[4].to_int();
+                stdout.printf("Trying to set '%s' on element '%s' to %d\n",
+                    property,element,integer_v);
+                ret = harrier.ElementSetPropertyInt(id,element,property,integer_v);
+                break;
         case "long":
-    		long long_v = args[5].to_long();
-    		stdout.printf("Trying to set '%s' on element '%s' to %ld\n",
-    		    property,element,long_v);
-    		ret = harrier.ElementSetPropertyLong(id,element,property,long_v);
-           	break;
+                long long_v = args[4].to_long();
+                stdout.printf("Trying to set '%s' on element '%s' to %ld\n",
+                    property,element,long_v);
+                ret = harrier.ElementSetPropertyLong(id,element,property,long_v);
+                break;
         case "string":
-    		string string_v = args[5];
-    		stdout.printf("Trying to set '%s' on element '%s' to %s\n",
-    		    property,element,string_v);
-    		ret = harrier.ElementSetPropertyString(id,element,property,string_v);
-           	break;
+                string string_v = args[4];
+                stdout.printf("Trying to set '%s' on element '%s' to %s\n",
+                    property,element,string_v);
+                ret = harrier.ElementSetPropertyString(id,element,property,string_v);
+                break;
         default:
-    		stderr.printf("Datatype not supported: %s\n",args[4]);
-        	return false;
+                stderr.printf("Datatype not supported: %s\n",args[4]);
+                return false;
         }
 
         if (!ret){
@@ -173,70 +220,53 @@ private bool pipeline_set_property(int id,string[] args){
         return ret;
     }
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
-        int id;
 
-        switch (args[1].down()){
+        int id = -1;
+
+        if(arg_id != -1){
+            id = arg_id;
+            stdout.printf("pipeline id: %i\n",id);
+        }
+        else if (active_id == -1){
+                if(args[0].down()!="create"){
+                    stdout.printf("No valid active pipeline id\n");
+                    return false;
+                }
+            }
+            else id = active_id;
+
+        switch (args[0].down()){
+
         case "create":
-            stdout.printf("Creating pipe: %s\n",args[2]);
-    	    id = harrier.PipelineCreate(args[2]);
-          	if (id < 0) {
+            stdout.printf("Creating pipe: %s\n",args[1]);
+            id = harrier.PipelineCreate(args[1]);
+                if (id < 0) {
                 stdout.printf("Failed to create pipeline");
                 return false;
-           	}
-           	/* To do, keep a list of ids */
-           	active_id = id;
-           	stdout.printf("Active id is now %d\n",active_id);
-           	break;
+                }
+                /* To do, keep a list of ids */
+                active_id = id;
+                stdout.printf("Active id is now %d\n",active_id);
+                break;
+
         case "destroy":
-            if (active_id == -1){
-                stdout.printf("No valid active pipeline id\n");
-                return false;
-            }
-            return pipeline_destroy(active_id);
-        case "destroy_id":
-            id = args[2].to_int();
             return pipeline_destroy(id);
+
         case "play":
-            if (active_id == -1){
-               stdout.printf("No valid active pipeline id\n");
-               return false;
-            }
-            return pipeline_play(active_id);
-        case "play_id":
-            id = args[2].to_int();
             return pipeline_play(id);
+
         case "pause":
-            if (active_id == -1){
-               stdout.printf("No valid active pipeline id\n");
-               return false;
-            }
-            return pipeline_pause(active_id);
-        case "pause_id":
-            id = args[2].to_int();
             return pipeline_pause(id);
+
         case "null":
-            if (active_id == -1){
-               stdout.printf("No valid active pipeline id\n");
-               return false;
-            }
-            return pipeline_null(active_id);
-        case "null_id":
-            id = args[2].to_int();
             return pipeline_null(id);
+
         case "set":
-            if (active_id == -1){
-               stdout.printf("No valid active pipeline id\n");
-               return false;
-            }
-            return pipeline_set_property(active_id,args);
+            return pipeline_set_property(id,args);
 
         case "get":
-            if (active_id == -1){
-               stdout.printf("No valid active pipeline id\n");
-               return false;
-            }
-            return pipeline_get_property(active_id,args);
-        
+            return pipeline_get_property(id,args);
+
         case "help":
             if (args.length > 2) {
                 /* Help about some command */
@@ -265,7 +295,7 @@ private bool pipeline_set_property(int id,string[] args){
             stderr.printf("Unkown command: %s\n",args[1]);
             return false;
         }
-            
+
         return true;
     }
 
@@ -277,14 +307,16 @@ private bool pipeline_set_property(int id,string[] args){
         line = stdin.read_line();
         scan.input_text(line,(uint)line.length);
         Scanner.get_next_token(
-  */      
+  */
         return false;
     }
-    
+
     public bool parse(string[] args) throws DBus.Error, GLib.Error {
-            if (args.length > 1) {
+            if (args.length > 0) {
+                stdout.printf("Command_parse:%s \n",args[0]);
                 return parse_cmd(args);
             } else {
+                stdout.printf("Command_cli:%i \n",args.length);
                 return cli(args);
             }
 
@@ -292,11 +324,19 @@ private bool pipeline_set_property(int id,string[] args){
 
     static int main (string[] args) {
         HarrierCli cli;
-        
+
         try {
+
+            arg_id = -1;
+            var opt = new OptionContext("- gst-client");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+            stdout.printf("Parse fine!>%s... \n",_remaining_args[0]);
+
             cli = new HarrierCli();
-            
-            if (!cli.parse(args))
+
+            if (!cli.parse(_remaining_args))
                 return -1;
         } catch (DBus.Error e) {
             stderr.printf ("DBus failure: %s\n",e.message);
