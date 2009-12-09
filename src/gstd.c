@@ -78,6 +78,8 @@ gboolean harrier_ElementGetPropertyBoolean (Harrier* self, gint id, const char* 
 gint harrier_ElementGetPropertyInt (Harrier* self, gint id, const char* element, const char* property);
 glong harrier_ElementGetPropertyLong (Harrier* self, gint id, const char* element, const char* property);
 char* harrier_ElementGetPropertyString (Harrier* self, gint id, const char* element, const char* property);
+gint64 harrier_PipelineGetDuration (Harrier* self, gint id);
+gint64 harrier_PipelineGetPosition (Harrier* self, gint id);
 void harrier_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 void _harrier_dbus_unregister (DBusConnection* connection, void* _user_data_);
 DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage* message, void* object);
@@ -96,6 +98,8 @@ static DBusHandlerResult _dbus_harrier_ElementGetPropertyBoolean (Harrier* self,
 static DBusHandlerResult _dbus_harrier_ElementGetPropertyInt (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_ElementGetPropertyLong (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_harrier_ElementGetPropertyString (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineGetDuration (Harrier* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_harrier_PipelineGetPosition (Harrier* self, DBusConnection* connection, DBusMessage* message);
 static void _dbus_harrier_eos (GObject* _sender, DBusConnection* _connection);
 static void _dbus_harrier_state_changed (GObject* _sender, const char* new_state, DBusConnection* _connection);
 static void _dbus_harrier_error (GObject* _sender, const char* err_message, DBusConnection* _connection);
@@ -176,7 +180,6 @@ static gboolean harrier_bus_callback (Harrier* self, GstBus* bus, GstMessage* me
 			GstState newstate = 0;
 			GstState pending = 0;
 			gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
-			fprintf (stdout, "Sending StateChanged signal...\n");
 			g_signal_emit_by_name (self, "state-changed", gst_element_state_get_name (newstate));
 			break;
 		}
@@ -600,6 +603,60 @@ char* harrier_ElementGetPropertyString (Harrier* self, gint id, const char* elem
 }
 
 
+gint64 harrier_PipelineGetDuration (Harrier* self, gint id) {
+	gint64 result;
+	GstFormat format;
+	gint64 duration = 0LL;
+	gpointer _tmp0_;
+	GstElement* pipe;
+	g_return_val_if_fail (self != NULL, 0LL);
+	format = GST_FORMAT_TIME;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
+	if (pipe == NULL) {
+		fprintf (stdout, "Pipe not found by id %d\n", id);
+		result = (gint64) (-1);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	if (!gst_element_query_duration (pipe, &format, &duration)) {
+		fprintf (stdout, "Unable to get duration to pipe: %d\n", id);
+		result = (gint64) (-1);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	result = duration;
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
+gint64 harrier_PipelineGetPosition (Harrier* self, gint id) {
+	gint64 result;
+	GstFormat format;
+	gint64 position = 0LL;
+	gpointer _tmp0_;
+	GstElement* pipe;
+	g_return_val_if_fail (self != NULL, 0LL);
+	format = GST_FORMAT_TIME;
+	pipe = _gst_object_ref0 ((_tmp0_ = g_hash_table_lookup (self->priv->pipelines, &id), GST_IS_ELEMENT (_tmp0_) ? ((GstElement*) _tmp0_) : NULL));
+	if (pipe == NULL) {
+		fprintf (stdout, "Pipe not found by id %d\n", id);
+		result = (gint64) (-1);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	if (!gst_element_query_position (pipe, &format, &position)) {
+		fprintf (stdout, "Unable to get position to pipe: %d\n", id);
+		result = (gint64) (-1);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	result = position;
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
 void _harrier_dbus_unregister (DBusConnection* connection, void* _user_data_) {
 }
 
@@ -613,7 +670,7 @@ static DBusHandlerResult _dbus_harrier_introspect (Harrier* self, DBusConnection
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"PipelineCreate\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineDestroy\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n    <arg name=\"new_state\" type=\"s\"/>\n  </signal>\n  <signal name=\"Error\">\n    <arg name=\"err_message\" type=\"s\"/>\n  </signal>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ti.sdo.HarrierInterface\">\n  <method name=\"PipelineCreate\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineDestroy\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetDuration\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"x\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetPosition\">\n    <arg name=\"id\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"x\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n    <arg name=\"new_state\" type=\"s\"/>\n  </signal>\n  <signal name=\"Error\">\n    <arg name=\"err_message\" type=\"s\"/>\n  </signal>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -1187,6 +1244,68 @@ static DBusHandlerResult _dbus_harrier_ElementGetPropertyString (Harrier* self, 
 }
 
 
+static DBusHandlerResult _dbus_harrier_PipelineGetDuration (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gint id = 0;
+	dbus_int32_t _tmp48_;
+	gint64 result;
+	DBusMessage* reply;
+	dbus_int64_t _tmp49_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "i")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp48_);
+	dbus_message_iter_next (&iter);
+	id = _tmp48_;
+	result = harrier_PipelineGetDuration (self, id);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_tmp49_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT64, &_tmp49_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_harrier_PipelineGetPosition (Harrier* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gint id = 0;
+	dbus_int32_t _tmp50_;
+	gint64 result;
+	DBusMessage* reply;
+	dbus_int64_t _tmp51_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "i")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	dbus_message_iter_get_basic (&iter, &_tmp50_);
+	dbus_message_iter_next (&iter);
+	id = _tmp50_;
+	result = harrier_PipelineGetPosition (self, id);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_tmp51_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT64, &_tmp51_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
 DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage* message, void* object) {
 	DBusHandlerResult result;
 	result = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1220,6 +1339,10 @@ DBusHandlerResult harrier_dbus_message (DBusConnection* connection, DBusMessage*
 		result = _dbus_harrier_ElementGetPropertyLong (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "ElementGetPropertyString")) {
 		result = _dbus_harrier_ElementGetPropertyString (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineGetDuration")) {
+		result = _dbus_harrier_PipelineGetDuration (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ti.sdo.HarrierInterface", "PipelineGetPosition")) {
+		result = _dbus_harrier_PipelineGetPosition (object, connection, message);
 	}
 	if (result == DBUS_HANDLER_RESULT_HANDLED) {
 		return result;
@@ -1245,12 +1368,12 @@ static void _dbus_harrier_state_changed (GObject* _sender, const char* new_state
 	const char * _path;
 	DBusMessage *_message;
 	DBusMessageIter _iter;
-	const char* _tmp48_;
+	const char* _tmp52_;
 	_path = g_object_get_data (_sender, "dbus_object_path");
 	_message = dbus_message_new_signal (_path, "com.ti.sdo.HarrierInterface", "StateChanged");
 	dbus_message_iter_init_append (_message, &_iter);
-	_tmp48_ = new_state;
-	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp48_);
+	_tmp52_ = new_state;
+	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp52_);
 	dbus_connection_send (_connection, _message, NULL);
 	dbus_message_unref (_message);
 }
@@ -1260,12 +1383,12 @@ static void _dbus_harrier_error (GObject* _sender, const char* err_message, DBus
 	const char * _path;
 	DBusMessage *_message;
 	DBusMessageIter _iter;
-	const char* _tmp49_;
+	const char* _tmp53_;
 	_path = g_object_get_data (_sender, "dbus_object_path");
 	_message = dbus_message_new_signal (_path, "com.ti.sdo.HarrierInterface", "Error");
 	dbus_message_iter_init_append (_message, &_iter);
-	_tmp49_ = err_message;
-	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp49_);
+	_tmp53_ = err_message;
+	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp53_);
 	dbus_connection_send (_connection, _message, NULL);
 	dbus_message_unref (_message);
 }

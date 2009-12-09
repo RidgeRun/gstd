@@ -425,5 +425,56 @@ public class Harrier : GLib.Object {
         return string_v;
     }
 
+    /**
+     Query duration to a pipeline on the server
+     @param id, the integer that identifies the pipe.
+     @see CreatePipeline
+    */
+    public int64 PipelineGetDuration(int id){
+
+        Format format = Gst.Format.TIME;
+        int64 duration;
+        
+        Element pipe = pipelines.lookup(&id) as Element;
+
+        if (pipe == null) {
+            stdout.printf("Pipe not found by id %d\n",id);
+            return -1;
+        }
+
+        /* Query duration */
+        if (! pipe.query_duration (ref format, out duration)){
+            stdout.printf("Unable to get duration to pipe: %d\n",id);
+            return -1;
+        }
+
+        return duration;
+    }
+    
+    /**
+     Query position to a pipeline on the server
+     @param id, the integer that identifies the pipe.
+     @see CreatePipeline
+    */
+    public int64 PipelineGetPosition(int id){
+
+        Format format = Gst.Format.TIME;
+        int64 position;
+        
+        Element pipe = pipelines.lookup(&id) as Element;
+
+        if (pipe == null) {
+            stdout.printf("Pipe not found by id %d\n",id);
+            return -1;
+        }
+
+        /* Query position */
+        if (! pipe.query_position (ref format, out position)){
+            stdout.printf("Unable to get position to pipe: %d\n",id);
+            return -1;
+        }
+
+        return position;
+    }
 
 }

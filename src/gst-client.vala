@@ -40,13 +40,16 @@ public class HarrierCli : GLib.Object {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
          "Create a new pipeline and returns the id for it on the servers"},
         {"destroy","destroy","Destroys the active pipeline"},
-        {"destroy_id","destroy_id <id>",
-         "Destroys the pipeline with the specified id"},
         {"play  ","play","Sets the active pipeline to play state"},
-        {"play_id","play_id <id>",
-         "Sets the pipeline with the specified id to play state"},
-        {"set ","set <element_name> <property_name> <data-type> <value>","Sets an element's property value of the active pipeline"},
-        {"get ","get <element_name> <property_name> <data-type>","Gets an element's property value of the active pipeline"}
+        {"pause  ","pause","Sets the active pipeline to pause state"},
+        {"null  ","null","Sets the active pipeline to null state"},
+        {"set ","set <element_name> <property_name> <data-type> <value>",
+        "Sets an element's property value of the active pipeline"},
+        {"get ","get <element_name> <property_name> <data-type>",
+        "Gets an element's property value of the active pipeline"},
+        {"get-duration ","get-duration","Gets the active pipeline duration time"},
+        {"get-position ","get-position","Gets the active pipeline position"},
+        {"--by_id ","-i <pipe_id>","Flag to apply the command to a specific pipeline"}
     };
 
     /**
@@ -219,6 +222,33 @@ public class HarrierCli : GLib.Object {
         }
         return ret;
     }
+
+    private bool pipeline_get_duration(int id){
+        
+        int64 time = harrier.PipelineGetDuration(id);
+        if (time<0){
+            stdout.printf("Failed to get pipeline duration\n");
+            return false;
+        }
+
+        stdout.printf(">>The duration on pipeline '%d' is: %lld\n",
+                               id,(int64)time);
+        return true;
+    }
+
+    private bool pipeline_get_position(int id){
+        
+        int64 pos = harrier.PipelineGetPosition(id);
+        if (pos<0){
+            stdout.printf("Failed to get position the pipeline to null\n");
+            return false;
+        }
+
+        stdout.printf(">>The position on pipeline '%d' is: %lld\n",
+                               id,(int64)pos);
+        return true;
+    }
+
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
 
         int id = -1;
@@ -266,6 +296,12 @@ public class HarrierCli : GLib.Object {
 
         case "get":
             return pipeline_get_property(id,args);
+
+        case "get-duration":
+            return pipeline_get_duration(id);
+        
+        case "get-position":
+            return pipeline_get_position(id);
 
         case "help":
             if (args.length > 2) {
@@ -332,7 +368,6 @@ public class HarrierCli : GLib.Object {
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
-            stdout.printf("Parse fine!>%s... \n",_remaining_args[0]);
 
             cli = new HarrierCli();
 
