@@ -67,7 +67,6 @@ public class Harrier : GLib.Object {
                                          out pending);
             
             /*Sending StateChanged Signal*/
-            stdout.printf("Sending StateChanged signal...\n");
             StateChanged (newstate.to_string());
 
             break;
