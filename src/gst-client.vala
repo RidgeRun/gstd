@@ -198,28 +198,26 @@ public class HarrierCli : GLib.Object {
     }
 
     private bool pipeline_get_duration(int id){
-        
-        int64 time = harrier.PipelineGetDuration(id);
+        int time = harrier.PipelineGetDuration(id);
         if (time<0){
             stdout.printf("Failed to get pipeline duration\n");
             return false;
         }
 
-        stdout.printf(">>The duration on pipeline '%d' is: %lld\n",
-                               id,(int64)time);
+        stdout.printf(">>The duration on pipeline '%d' is: %d\n",
+                               id,time);
         return true;
     }
 
     private bool pipeline_get_position(int id){
-        
-        int64 pos = harrier.PipelineGetPosition(id);
+        int pos = harrier.PipelineGetPosition(id);
         if (pos<0){
             stdout.printf("Failed to get position the pipeline to null\n");
             return false;
         }
 
-        stdout.printf(">>The position on pipeline '%d' is: %lld\n",
-                               id,(int64)pos);
+        stdout.printf(">>The position on pipeline '%d' is: %d\n",
+                               id,pos);
         return true;
     }
 

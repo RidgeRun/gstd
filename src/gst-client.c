@@ -89,9 +89,9 @@ static gboolean _dynamic_ElementSetPropertyInt9 (DBusGProxy* self, gint param1, 
 static gboolean _dynamic_ElementSetPropertyLong10 (DBusGProxy* self, gint param1, const char* param2, const char* param3, glong param4, GError** error);
 static gboolean _dynamic_ElementSetPropertyString11 (DBusGProxy* self, gint param1, const char* param2, const char* param3, const char* param4, GError** error);
 static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, char** args, int args_length1);
-static gint64 _dynamic_PipelineGetDuration12 (DBusGProxy* self, gint param1, GError** error);
+static gint _dynamic_PipelineGetDuration12 (DBusGProxy* self, gint param1, GError** error);
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, gint id);
-static gint64 _dynamic_PipelineGetPosition13 (DBusGProxy* self, gint param1, GError** error);
+static gint _dynamic_PipelineGetPosition13 (DBusGProxy* self, gint param1, GError** error);
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, gint id);
 static gint _dynamic_PipelineCreate14 (DBusGProxy* self, const char* param1, GError** error);
 gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1, GError** error);
@@ -634,11 +634,11 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, gint id, ch
 }
 
 
-static gint64 _dynamic_PipelineGetDuration12 (DBusGProxy* self, gint param1, GError** error) {
-	gint64 result;
-	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
+static gint _dynamic_PipelineGetDuration12 (DBusGProxy* self, gint param1, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return 0LL;
+		return 0;
 	}
 	return result;
 }
@@ -647,7 +647,7 @@ static gint64 _dynamic_PipelineGetDuration12 (DBusGProxy* self, gint param1, GEr
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, gint id) {
 	gboolean result;
 	GError * _inner_error_;
-	gint64 time;
+	gint time;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	time = _dynamic_PipelineGetDuration12 (self->priv->harrier, id, &_inner_error_);
@@ -661,17 +661,17 @@ static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, gint id) {
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, ">>The duration on pipeline '%d' is: %lld\n", id, (gint64) time);
+	fprintf (stdout, ">>The duration on pipeline '%d' is: %d\n", id, time);
 	result = TRUE;
 	return result;
 }
 
 
-static gint64 _dynamic_PipelineGetPosition13 (DBusGProxy* self, gint param1, GError** error) {
-	gint64 result;
-	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
+static gint _dynamic_PipelineGetPosition13 (DBusGProxy* self, gint param1, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return 0LL;
+		return 0;
 	}
 	return result;
 }
@@ -680,7 +680,7 @@ static gint64 _dynamic_PipelineGetPosition13 (DBusGProxy* self, gint param1, GEr
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, gint id) {
 	gboolean result;
 	GError * _inner_error_;
-	gint64 pos;
+	gint pos;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	pos = _dynamic_PipelineGetPosition13 (self->priv->harrier, id, &_inner_error_);
@@ -694,7 +694,7 @@ static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, gint id) {
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, ">>The position on pipeline '%d' is: %lld\n", id, (gint64) pos);
+	fprintf (stdout, ">>The position on pipeline '%d' is: %d\n", id, pos);
 	result = TRUE;
 	return result;
 }

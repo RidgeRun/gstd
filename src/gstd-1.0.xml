@@ -113,13 +113,13 @@
     </method>
     <method name="PipelineGetDuration">
 	<arg type="i" name ="id" direction = "in" />
-	<arg type="x" direction="out" >
+	<arg type="i" direction="out" >
 	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
     <method name="PipelineGetPosition">
 	<arg type="i" name ="id" direction = "in" />
-	<arg type="x" direction="out" >
+	<arg type="i" direction="out" >
 	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
 	 </arg>
     </method>
