@@ -61,12 +61,12 @@ enum  {
 	HARRIER_CLI_DUMMY_PROPERTY
 };
 void harrier_cli_Error_cb (HarrierCli* self);
-void harrier_cli_Eos_cb (HarrierCli* self);
-static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate);
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
+void harrier_cli_Eos_cb (HarrierCli* self);
 static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
+static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate);
 static void _harrier_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, const char* newstate, gpointer self);
 void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
 HarrierCli* harrier_cli_new (GError** error);
@@ -104,26 +104,7 @@ static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify 
 static gint _vala_array_length (gpointer array);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
-static const GOptionEntry HARRIER_CLI_options[] = {{"by_id", 'i', 0, G_OPTION_ARG_INT, &harrier_cli_arg_id, "Pipeline ID number, for which command will be apply", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &harrier_cli__signals, "Flag to enable the signals reception", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
-
-
-void harrier_cli_Error_cb (HarrierCli* self) {
-	g_return_if_fail (self != NULL);
-	fprintf (stdout, "I get in ERROR callback function!!\n");
-}
-
-
-void harrier_cli_Eos_cb (HarrierCli* self) {
-	g_return_if_fail (self != NULL);
-	fprintf (stdout, "end of stream\n");
-}
-
-
-static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate) {
-	g_return_if_fail (harrier != NULL);
-	g_return_if_fail (newstate != NULL);
-	fprintf (stdout, "state changed to:%s\n", newstate);
-}
+static const GOptionEntry HARRIER_CLI_options[] = {{"by_id", 'i', 0, G_OPTION_ARG_INT, &harrier_cli_arg_id, "Pipeline ID number, for which command will be apply", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
 
 
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
@@ -741,18 +722,18 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 	gboolean result;
 	GError * _inner_error_;
 	gint id;
-	GQuark _tmp6_;
-	char* _tmp5_;
-	static GQuark _tmp6__label0 = 0;
-	static GQuark _tmp6__label1 = 0;
-	static GQuark _tmp6__label2 = 0;
-	static GQuark _tmp6__label3 = 0;
-	static GQuark _tmp6__label4 = 0;
-	static GQuark _tmp6__label5 = 0;
-	static GQuark _tmp6__label6 = 0;
-	static GQuark _tmp6__label7 = 0;
-	static GQuark _tmp6__label8 = 0;
-	static GQuark _tmp6__label9 = 0;
+	GQuark _tmp10_;
+	char* _tmp9_;
+	static GQuark _tmp10__label0 = 0;
+	static GQuark _tmp10__label1 = 0;
+	static GQuark _tmp10__label2 = 0;
+	static GQuark _tmp10__label3 = 0;
+	static GQuark _tmp10__label4 = 0;
+	static GQuark _tmp10__label5 = 0;
+	static GQuark _tmp10__label6 = 0;
+	static GQuark _tmp10__label7 = 0;
+	static GQuark _tmp10__label8 = 0;
+	static GQuark _tmp10__label9 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	id = -1;
@@ -760,10 +741,18 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 		id = harrier_cli_arg_id;
 	} else {
 		if (self->priv->active_id == (-1)) {
-			char* _tmp0_;
-			gboolean _tmp1_;
-			if ((_tmp1_ = _vala_strcmp0 (_tmp0_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp0_), _tmp1_)) {
-				fprintf (stdout, "No valid active pipeline id\n");
+			gboolean _tmp0_ = FALSE;
+			char* _tmp1_;
+			gboolean _tmp2_;
+			if ((_tmp2_ = _vala_strcmp0 (_tmp1_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp1_), _tmp2_)) {
+				char* _tmp3_;
+				_tmp0_ = _vala_strcmp0 (_tmp3_ = g_utf8_strdown (args[0], -1), "help") != 0;
+				_g_free0 (_tmp3_);
+			} else {
+				_tmp0_ = FALSE;
+			}
+			if (_tmp0_) {
+				fprintf (stderr, "No valid active pipeline id\n");
 				result = FALSE;
 				return result;
 			}
@@ -771,75 +760,77 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 			id = self->priv->active_id;
 		}
 	}
-	_tmp5_ = g_utf8_strdown (args[0], -1);
-	_tmp6_ = (NULL == _tmp5_) ? 0 : g_quark_from_string (_tmp5_);
-	g_free (_tmp5_);
-	if (_tmp6_ == ((0 != _tmp6__label0) ? _tmp6__label0 : (_tmp6__label0 = g_quark_from_static_string ("create"))))
+	_tmp9_ = g_utf8_strdown (args[0], -1);
+	_tmp10_ = (NULL == _tmp9_) ? 0 : g_quark_from_string (_tmp9_);
+	g_free (_tmp9_);
+	if (_tmp10_ == ((0 != _tmp10__label0) ? _tmp10__label0 : (_tmp10__label0 = g_quark_from_static_string ("create"))))
 	do {
-		gint _tmp2_;
-		_tmp2_ = _dynamic_PipelineCreate14 (self->priv->harrier, args[1], &_inner_error_);
+		gint _tmp4_;
+		_tmp4_ = _dynamic_PipelineCreate14 (self->priv->harrier, args[1], &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
 			return FALSE;
 		}
-		id = _tmp2_;
+		id = _tmp4_;
 		if (id < 0) {
-			fprintf (stdout, "Failed to create pipeline");
+			fprintf (stderr, "Failed to create pipeline");
 			result = FALSE;
 			return result;
 		}
 		self->priv->active_id = id;
 		fprintf (stdout, "Active id is now %d\n", self->priv->active_id);
 		break;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label1) ? _tmp6__label1 : (_tmp6__label1 = g_quark_from_static_string ("destroy"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label1) ? _tmp10__label1 : (_tmp10__label1 = g_quark_from_static_string ("destroy"))))
 	do {
 		result = harrier_cli_pipeline_destroy (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label2) ? _tmp6__label2 : (_tmp6__label2 = g_quark_from_static_string ("play"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label2) ? _tmp10__label2 : (_tmp10__label2 = g_quark_from_static_string ("play"))))
 	do {
 		result = harrier_cli_pipeline_play (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label3) ? _tmp6__label3 : (_tmp6__label3 = g_quark_from_static_string ("pause"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label3) ? _tmp10__label3 : (_tmp10__label3 = g_quark_from_static_string ("pause"))))
 	do {
 		result = harrier_cli_pipeline_pause (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label4) ? _tmp6__label4 : (_tmp6__label4 = g_quark_from_static_string ("null"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label4) ? _tmp10__label4 : (_tmp10__label4 = g_quark_from_static_string ("null"))))
 	do {
 		result = harrier_cli_pipeline_null (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label5) ? _tmp6__label5 : (_tmp6__label5 = g_quark_from_static_string ("set"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label5) ? _tmp10__label5 : (_tmp10__label5 = g_quark_from_static_string ("set"))))
 	do {
 		result = harrier_cli_pipeline_set_property (self, id, args, args_length1);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label6) ? _tmp6__label6 : (_tmp6__label6 = g_quark_from_static_string ("get"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label6) ? _tmp10__label6 : (_tmp10__label6 = g_quark_from_static_string ("get"))))
 	do {
 		result = harrier_cli_pipeline_get_property (self, id, args, args_length1);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label7) ? _tmp6__label7 : (_tmp6__label7 = g_quark_from_static_string ("get-duration"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label7) ? _tmp10__label7 : (_tmp10__label7 = g_quark_from_static_string ("get-duration"))))
 	do {
 		result = harrier_cli_pipeline_get_duration (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label8) ? _tmp6__label8 : (_tmp6__label8 = g_quark_from_static_string ("get-position"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label8) ? _tmp10__label8 : (_tmp10__label8 = g_quark_from_static_string ("get-position"))))
 	do {
 		result = harrier_cli_pipeline_get_position (self, id);
 		return result;
-	} while (0); else if (_tmp6_ == ((0 != _tmp6__label9) ? _tmp6__label9 : (_tmp6__label9 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp10_ == ((0 != _tmp10__label9) ? _tmp10__label9 : (_tmp10__label9 = g_quark_from_static_string ("help"))))
 	do {
-		if (args_length1 > 2) {
+		if (args_length1 > 1) {
 			{
-				gboolean _tmp3_;
+				gboolean _tmp5_;
 				id = 0;
-				_tmp3_ = TRUE;
+				_tmp5_ = TRUE;
 				while (TRUE) {
-					if (!_tmp3_) {
+					char* _tmp6_;
+					gboolean _tmp7_;
+					if (!_tmp5_) {
 						id++;
 					}
-					_tmp3_ = FALSE;
+					_tmp5_ = FALSE;
 					if (!(id < (string_get_length (self->priv->cmds[0]) - 1))) {
 						break;
 					}
-					if (_vala_strcmp0 (self->priv->cmds[(id * self->priv->cmds_length2) + 0], args[2]) == 0) {
-						fprintf (stdout, "Command: %s\n", args[2]);
+					if ((_tmp7_ = _vala_strcmp0 (self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp6_ = g_utf8_strdown (args[1], -1)) == 0, _g_free0 (_tmp6_), _tmp7_)) {
+						fprintf (stdout, "Command: %s\n", args[1]);
 						fprintf (stdout, "Description: %s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
 						fprintf (stdout, "Syntax: %s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 1]);
 						result = TRUE;
@@ -847,20 +838,20 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 					}
 				}
 			}
-			fprintf (stdout, "Unknown command: %s\n", args[2]);
+			fprintf (stdout, "Unknown command: %s\n", args[1]);
 			result = FALSE;
 			return result;
 		} else {
 			fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 			{
-				gboolean _tmp4_;
+				gboolean _tmp8_;
 				id = 0;
-				_tmp4_ = TRUE;
+				_tmp8_ = TRUE;
 				while (TRUE) {
-					if (!_tmp4_) {
+					if (!_tmp8_) {
 						id++;
 					}
-					_tmp4_ = FALSE;
+					_tmp8_ = FALSE;
 					if (!(id < (string_get_length (self->priv->cmds[0]) - 1))) {
 						break;
 					}
@@ -884,6 +875,7 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 gboolean harrier_cli_cli (HarrierCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
+	fprintf (stdout, "CLI mode not implement yet\n");
 	result = FALSE;
 	return result;
 }
@@ -896,7 +888,6 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 	_inner_error_ = NULL;
 	if (args_length1 > 0) {
 		gboolean _tmp0_;
-		fprintf (stdout, "Command_parse:%s \n", args[0]);
 		_tmp0_ = harrier_cli_parse_cmd (self, args, args_length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
@@ -906,7 +897,6 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 		return result;
 	} else {
 		gboolean _tmp1_;
-		fprintf (stdout, "Command_cli:%i \n", args_length1);
 		_tmp1_ = harrier_cli_cli (self, args, args_length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
@@ -915,6 +905,25 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 		result = _tmp1_;
 		return result;
 	}
+}
+
+
+void harrier_cli_Error_cb (HarrierCli* self) {
+	g_return_if_fail (self != NULL);
+	fprintf (stderr, "I get in ERROR callback function!!\n");
+}
+
+
+void harrier_cli_Eos_cb (HarrierCli* self) {
+	g_return_if_fail (self != NULL);
+	fprintf (stdout, "end of stream\n");
+}
+
+
+static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate) {
+	g_return_if_fail (harrier != NULL);
+	g_return_if_fail (newstate != NULL);
+	fprintf (stdout, "state changed to:%s\n", newstate);
 }
 
 
@@ -930,7 +939,7 @@ static gint harrier_cli_main (char** args, int args_length1) {
 		HarrierCli* _tmp1_;
 		gboolean _tmp2_;
 		harrier_cli_arg_id = -1;
-		opt = g_option_context_new ("- gst-client");
+		opt = g_option_context_new ("");
 		g_option_context_set_help_enabled (opt, TRUE);
 		g_option_context_add_main_entries (opt, HARRIER_CLI_options, NULL);
 		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
@@ -1026,8 +1035,8 @@ static void harrier_cli_class_init (HarrierCliClass * klass) {
 static void harrier_cli_instance_init (HarrierCli * self) {
 	char** _tmp0_ = NULL;
 	self->priv = HARRIER_CLI_GET_PRIVATE (self);
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (10 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Create a new pipeline and returns the id for it on the servers"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the active pipeline"), _tmp0_[6] = g_strdup ("play  "), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the active pipeline to play state"), _tmp0_[9] = g_strdup ("pause  "), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the active pipeline to pause state"), _tmp0_[12] = g_strdup ("null  "), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the active pipeline to null state"), _tmp0_[15] = g_strdup ("set "), _tmp0_[16] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the active pipeline"), _tmp0_[18] = g_strdup ("get "), _tmp0_[19] = g_strdup ("get <element_name> <property_name> <data-type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the active pipeline"), _tmp0_[21] = g_strdup ("get-duration "), _tmp0_[22] = g_strdup ("get-duration"), _tmp0_[23] = g_strdup ("Gets the active pipeline duration time"), _tmp0_[24] = g_strdup ("get-position "), _tmp0_[25] = g_strdup ("get-position"), _tmp0_[26] = g_strdup ("Gets the active pipeline position"), _tmp0_[27] = g_strdup ("--by_id "), _tmp0_[28] = g_strdup ("-i <pipe_id>"), _tmp0_[29] = g_strdup ("Flag to apply the command to a specific pipeline"), _tmp0_);
-	self->priv->cmds_length1 = 10;
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (9 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Create a new pipeline and returns the id for it on the servers"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the active pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the active pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the active pipeline to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the active pipeline"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("get <element_name> <property_name> <data-type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the active pipeline"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("get-duration"), _tmp0_[23] = g_strdup ("Gets the active pipeline duration time"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("get-position"), _tmp0_[26] = g_strdup ("Gets the active pipeline position"), _tmp0_);
+	self->priv->cmds_length1 = 9;
 	self->priv->cmds_length2 = 3;
 }
 

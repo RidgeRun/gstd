@@ -45,6 +45,7 @@ struct _HarrierPrivate {
 	gint* ids;
 	gint ids_length1;
 	gint ids_size;
+	gboolean debug;
 };
 
 struct _DBusObjectVTable {
@@ -62,6 +63,8 @@ enum  {
 };
 Harrier* harrier_new (void);
 Harrier* harrier_construct (GType object_type);
+Harrier* harrier_new_withDebug (gboolean debug);
+Harrier* harrier_construct_withDebug (GType object_type, gboolean debug);
 static gboolean harrier_bus_callback (Harrier* self, GstBus* bus, GstMessage* message);
 static gboolean _harrier_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 gint harrier_PipelineCreate (Harrier* self, const char* description);
@@ -136,12 +139,26 @@ Harrier* harrier_construct (GType object_type) {
 			self->priv->ids[i] = i;
 		}
 	}
+	self->priv->debug = FALSE;
 	return self;
 }
 
 
 Harrier* harrier_new (void) {
 	return harrier_construct (TYPE_HARRIER);
+}
+
+
+Harrier* harrier_construct_withDebug (GType object_type, gboolean debug) {
+	Harrier * self;
+	self = (Harrier*) harrier_construct (object_type);
+	self->priv->debug = debug;
+	return self;
+}
+
+
+Harrier* harrier_new_withDebug (gboolean debug) {
+	return harrier_construct_withDebug (TYPE_HARRIER, debug);
 }
 
 
@@ -236,7 +253,9 @@ gint harrier_PipelineCreate (Harrier* self, const char* description) {
 		ret = self->priv->next_id;
 		self->priv->next_id++;
 		self->priv->ids_available--;
-		fprintf (stdout, "Pipeline %d created: %s\n", ret, description);
+		if (self->priv->debug) {
+			fprintf (stdout, "Pipeline %d created: %s\n", ret, description);
+		}
 		_gst_object_unref0 (newpipe);
 		_gst_object_unref0 (bus);
 	}

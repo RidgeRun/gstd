@@ -18,7 +18,3 @@ gstddir = $(includedir)/gstd
 
 EXTRA_DIST= $(interface_xml)
 gstd_DATA = $(interface_xml)
-
-checkxml: $(interface_xml)
-	@xmllint --valid --noout $<
-	@echo $< checks out ok

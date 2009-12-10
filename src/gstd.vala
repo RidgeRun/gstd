@@ -12,7 +12,8 @@ public class Harrier : GLib.Object {
     private int next_id;
     private int ids_available;
     private int[] ids;
-    
+    private bool debug;
+
     public signal void Eos(/*int id*/);
     public signal void StateChanged(/*int id,*/string new_state);
     public signal void Error(/*int id,*/ string err_message);
@@ -30,8 +31,13 @@ public class Harrier : GLib.Object {
         for (i = 0; i < 20; i++){
             ids[i] = i;
         }
+        debug = false;
     }
-
+    
+    public Harrier.withDebug(bool debug){
+	this();
+	this.debug = debug;
+    }
 
     private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 
@@ -112,7 +118,8 @@ public class Harrier : GLib.Object {
             ret = next_id;
             next_id++;
             ids_available--;
-            stdout.printf("Pipeline %d created: %s\n",ret,description);
+            if (debug)
+                stdout.printf("Pipeline %d created: %s\n",ret,description);
         } catch (GLib.Error e) {
             stderr.printf("Failed to create pipeline with description: %s.\n" +
                 "Error: %s\n",description,e.message);

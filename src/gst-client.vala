@@ -12,7 +12,7 @@ public class HarrierCli : GLib.Object {
     static int arg_id;
     static bool _signals;
     [CCode (array_length = false, array_null_terminated = true)]
-    [NoArrayLength]
+//    [NoArrayLength]
     static string[] _remaining_args;
 
     /**
@@ -22,9 +22,6 @@ public class HarrierCli : GLib.Object {
 
     { "by_id", 'i', 0, OptionArg.INT, ref arg_id,
     "Pipeline ID number, for which command will be apply", null },
-
-    { "enable_signals", 's', 0, OptionArg.INT, ref _signals,
-    "Flag to enable the signals reception", null },
 
     { "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
      null, N_("[COMMANDS...]") },
@@ -40,35 +37,16 @@ public class HarrierCli : GLib.Object {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
          "Create a new pipeline and returns the id for it on the servers"},
         {"destroy","destroy","Destroys the active pipeline"},
-        {"play  ","play","Sets the active pipeline to play state"},
-        {"pause  ","pause","Sets the active pipeline to pause state"},
-        {"null  ","null","Sets the active pipeline to null state"},
-        {"set ","set <element_name> <property_name> <data-type> <value>",
+        {"play","play","Sets the active pipeline to play state"},
+        {"pause","pause","Sets the active pipeline to pause state"},
+        {"null","null","Sets the active pipeline to null state"},
+        {"set","set <element_name> <property_name> <data-type> <value>",
         "Sets an element's property value of the active pipeline"},
-        {"get ","get <element_name> <property_name> <data-type>",
+        {"get","get <element_name> <property_name> <data-type>",
         "Gets an element's property value of the active pipeline"},
-        {"get-duration ","get-duration","Gets the active pipeline duration time"},
-        {"get-position ","get-position","Gets the active pipeline position"},
-        {"--by_id ","-i <pipe_id>","Flag to apply the command to a specific pipeline"}
+        {"get-duration","get-duration","Gets the active pipeline duration time"},
+        {"get-position","get-position","Gets the active pipeline position"}
     };
-
-    /**
-    *Callback Functions for the receiving signals
-    */
-
-    public void Error_cb(/*dynamic DBus.Object harrier*/){
-        stdout.printf("I get in ERROR callback function!!\n");
-        //stdout.printf (/*"Error: %s\n", err.message*/);
-    }
-
-    public void Eos_cb(/*dynamic DBus.Object harrier*/){
-        stdout.printf ("end of stream\n");
-
-    }
-
-    static void StateChanged_cb(dynamic DBus.Object harrier,string newstate){
-        stdout.printf ("state changed to:%s\n", newstate);
-    }
 
     /*
     * Constructor
@@ -246,27 +224,25 @@ public class HarrierCli : GLib.Object {
     }
 
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
-
         int id = -1;
 
         if(arg_id != -1){
             id = arg_id;
-        }
-        else if (active_id == -1){
-                if(args[0].down()!="create"){
-                    stdout.printf("No valid active pipeline id\n");
-                    return false;
-                }
+        } else if (active_id == -1){
+            if(args[0].down() != "create" &&
+               args[0].down() != "help"){
+                stderr.printf("No valid active pipeline id\n");
+                return false;
             }
-            else id = active_id;
+        } else
+            id = active_id;
 
         switch (args[0].down()){
-
         case "create":
             id = harrier.PipelineCreate(args[1]);
                 if (id < 0) {
-                stdout.printf("Failed to create pipeline");
-                return false;
+                    stderr.printf("Failed to create pipeline");
+                    return false;
                 }
                 /* To do, keep a list of ids */
                 active_id = id;
@@ -298,17 +274,17 @@ public class HarrierCli : GLib.Object {
             return pipeline_get_position(id);
 
         case "help":
-            if (args.length > 2) {
+            if (args.length > 1) {
                 /* Help about some command */
                 for (id = 0; id < cmds[0].length -1; id++) {
-                    if (cmds[id,0] == args[2]){
-                        stdout.printf("Command: %s\n",args[2]);
+                    if (cmds[id,0] == args[1].down()){
+                        stdout.printf("Command: %s\n",args[1]);
                         stdout.printf("Description: %s\n",cmds[id,2]);
                         stdout.printf("Syntax: %s\n",cmds[id,1]);
                         return true;
                     }
                 }
-                stdout.printf("Unknown command: %s\n",args[2]);
+                stdout.printf("Unknown command: %s\n",args[1]);
                 return false;
             } else {
                 /* List of commands */
@@ -338,27 +314,44 @@ public class HarrierCli : GLib.Object {
         scan.input_text(line,(uint)line.length);
         Scanner.get_next_token(
   */
+        stdout.printf("CLI mode not implement yet\n");
         return false;
     }
 
     public bool parse(string[] args) throws DBus.Error, GLib.Error {
             if (args.length > 0) {
-                stdout.printf("Command_parse:%s \n",args[0]);
                 return parse_cmd(args);
             } else {
-                stdout.printf("Command_cli:%i \n",args.length);
                 return cli(args);
             }
 
     }
 
+    /**
+    *Callback Functions for the receiving signals
+    */
+
+    public void Error_cb(/*dynamic DBus.Object harrier*/){
+        stderr.printf("I get in ERROR callback function!!\n");
+        //stdout.printf (/*"Error: %s\n", err.message*/);
+    }
+
+    public void Eos_cb(/*dynamic DBus.Object harrier*/){
+        stdout.printf ("end of stream\n");
+
+    }
+
+    static void StateChanged_cb(dynamic DBus.Object harrier,string newstate){
+        stdout.printf ("state changed to:%s\n", newstate);
+    }
+
+
     static int main (string[] args) {
         HarrierCli cli;
 
         try {
-
             arg_id = -1;
-            var opt = new OptionContext("- gst-client");
+            var opt = new OptionContext("");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
