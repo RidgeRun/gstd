@@ -437,7 +437,7 @@ public class Harrier : GLib.Object {
      @param id, the integer that identifies the pipe.
      @see CreatePipeline
     */
-    public int64 PipelineGetDuration(int id){
+    public int PipelineGetDuration(int id){
 
         Format format = Gst.Format.TIME;
         int64 duration = 0;
@@ -460,6 +460,7 @@ public class Harrier : GLib.Object {
             return -1;
 
         idur = (int)(duration / 1000000);
+        stdout.printf("Duration at server is %d\n",idur);
 
         return idur;
     }
