@@ -619,7 +619,6 @@ gint64 harrier_PipelineGetDuration (Harrier* self, gint id) {
 		return result;
 	}
 	if (!gst_element_query_duration (pipe, &format, &duration)) {
-		fprintf (stdout, "Unable to get duration to pipe: %d\n", id);
 		result = (gint64) (-1);
 		_gst_object_unref0 (pipe);
 		return result;
@@ -646,7 +645,6 @@ gint64 harrier_PipelineGetPosition (Harrier* self, gint id) {
 		return result;
 	}
 	if (!gst_element_query_position (pipe, &format, &position)) {
-		fprintf (stdout, "Unable to get position to pipe: %d\n", id);
 		result = (gint64) (-1);
 		_gst_object_unref0 (pipe);
 		return result;

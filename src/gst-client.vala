@@ -62,13 +62,11 @@ public class HarrierCli : GLib.Object {
     }
 
     public void Eos_cb(/*dynamic DBus.Object harrier*/){
-        stdout.printf("I get in EOS callback function!!\n");
         stdout.printf ("end of stream\n");
 
     }
 
     static void StateChanged_cb(dynamic DBus.Object harrier,string newstate){
-        stdout.printf("I get in StatedChanged callback function!!\n");
         stdout.printf ("state changed to:%s\n", newstate);
     }
 
@@ -81,7 +79,6 @@ public class HarrierCli : GLib.Object {
         harrier = conn.get_object ("com.ti.sdo.HarrierService",
                                    "/com/ti/sdo/HarrierObject",
                                    "com.ti.sdo.HarrierInterface");
-        stdout.printf("Constructing harrier...\n");
         active_id = -1;
         env_id = Environment.get_variable("HARRIER_ACTIVE_ID");
         if (env_id != null){
@@ -97,7 +94,6 @@ public class HarrierCli : GLib.Object {
                 harrier.Error += this.Error_cb;
                 harrier.Eos += this.Eos_cb;
                 harrier.StateChanged += StateChanged_cb;
-                //harrier.StateChanged.connect (StateChanged_cb);
         }
     }
 
@@ -255,7 +251,6 @@ public class HarrierCli : GLib.Object {
 
         if(arg_id != -1){
             id = arg_id;
-            stdout.printf("pipeline id: %i\n",id);
         }
         else if (active_id == -1){
                 if(args[0].down()!="create"){
@@ -268,7 +263,6 @@ public class HarrierCli : GLib.Object {
         switch (args[0].down()){
 
         case "create":
-            stdout.printf("Creating pipe: %s\n",args[1]);
             id = harrier.PipelineCreate(args[1]);
                 if (id < 0) {
                 stdout.printf("Failed to create pipeline");

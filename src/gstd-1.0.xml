@@ -21,39 +21,63 @@
     </method>
     <method name="PipelineDestroy">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="PipelinePlay">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="PipelinePause">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="PipelineNull">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="ElementSetPropertyBoolean">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="b" name ="val" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="ElementSetPropertyInt">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="i" name ="val" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="ElementSetPropertyLong">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="t" name ="val" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="ElementSetPropertyString">
 	<arg type="i" name ="id" direction = "in" />
 	<arg type="s" name ="element" direction = "in" />
 	<arg type="s" name ="property" direction = "in" />
 	<arg type="s" name ="val" direction = "in" />
+	<arg type="b" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="ElementGetPropertyBoolean">
 	<arg type="i" name ="id" direction = "in" />
@@ -89,9 +113,15 @@
     </method>
     <method name="PipelineGetDuration">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="x" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
     <method name="PipelineGetPosition">
 	<arg type="i" name ="id" direction = "in" />
+	<arg type="x" direction="out" >
+	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+	 </arg>
     </method>
 
     <!-- Signals definitions -->

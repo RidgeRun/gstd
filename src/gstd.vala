@@ -444,7 +444,6 @@ public class Harrier : GLib.Object {
 
         /* Query duration */
         if (! pipe.query_duration (ref format, out duration)){
-            stdout.printf("Unable to get duration to pipe: %d\n",id);
             return -1;
         }
 
@@ -470,7 +469,6 @@ public class Harrier : GLib.Object {
 
         /* Query position */
         if (! pipe.query_position (ref format, out position)){
-            stdout.printf("Unable to get position to pipe: %d\n",id);
             return -1;
         }
 

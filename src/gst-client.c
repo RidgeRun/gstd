@@ -115,7 +115,6 @@ void harrier_cli_Error_cb (HarrierCli* self) {
 
 void harrier_cli_Eos_cb (HarrierCli* self) {
 	g_return_if_fail (self != NULL);
-	fprintf (stdout, "I get in EOS callback function!!\n");
 	fprintf (stdout, "end of stream\n");
 }
 
@@ -123,7 +122,6 @@ void harrier_cli_Eos_cb (HarrierCli* self) {
 static void harrier_cli_StateChanged_cb (DBusGProxy* harrier, const char* newstate) {
 	g_return_if_fail (harrier != NULL);
 	g_return_if_fail (newstate != NULL);
-	fprintf (stdout, "I get in StatedChanged callback function!!\n");
 	fprintf (stdout, "state changed to:%s\n", newstate);
 }
 
@@ -183,7 +181,6 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->harrier = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ti.sdo.HarrierService", "/com/ti/sdo/HarrierObject", "com.ti.sdo.HarrierInterface"), _g_object_unref0 (self->priv->harrier), _tmp2_);
-	fprintf (stdout, "Constructing harrier...\n");
 	self->priv->active_id = -1;
 	env_id = (_tmp3_ = g_strdup (g_getenv ("HARRIER_ACTIVE_ID")), _g_free0 (env_id), _tmp3_);
 	if (env_id != NULL) {
@@ -761,7 +758,6 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 	id = -1;
 	if (harrier_cli_arg_id != (-1)) {
 		id = harrier_cli_arg_id;
-		fprintf (stdout, "pipeline id: %i\n", id);
 	} else {
 		if (self->priv->active_id == (-1)) {
 			char* _tmp0_;
@@ -781,7 +777,6 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 	if (_tmp6_ == ((0 != _tmp6__label0) ? _tmp6__label0 : (_tmp6__label0 = g_quark_from_static_string ("create"))))
 	do {
 		gint _tmp2_;
-		fprintf (stdout, "Creating pipe: %s\n", args[1]);
 		_tmp2_ = _dynamic_PipelineCreate14 (self->priv->harrier, args[1], &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
