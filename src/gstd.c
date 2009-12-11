@@ -653,7 +653,6 @@ gint harrier_PipelineGetDuration (Harrier* self, gint id) {
 		return result;
 	}
 	idur = (gint) (duration / 1000000);
-	fprintf (stdout, "Duration at server is %d\n", idur);
 	result = idur;
 	_gst_object_unref0 (pipe);
 	return result;
@@ -691,7 +690,6 @@ gint harrier_PipelineGetPosition (Harrier* self, gint id) {
 		return result;
 	}
 	ipos = (gint) (position / 1000000);
-	fprintf (stdout, "Position at server is %d\n", ipos);
 	result = ipos;
 	_gst_object_unref0 (pipe);
 	return result;

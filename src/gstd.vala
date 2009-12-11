@@ -460,7 +460,6 @@ public class Harrier : GLib.Object {
             return -1;
 
         idur = (int)(duration / 1000000);
-        stdout.printf("Duration at server is %d\n",idur);
 
         return idur;
     }
@@ -493,7 +492,6 @@ public class Harrier : GLib.Object {
             return -1;
 
         ipos = (int)(position / 1000000);
-        stdout.printf("Position at server is %d\n",ipos);
 
         return ipos;
     }
