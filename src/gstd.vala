@@ -14,7 +14,7 @@ public class Harrier : GLib.Object {
     private int[] ids;
     private bool debug;
 
-    public signal void Eos(/*int id*/);
+    public signal void Eos(int id);
     public signal void StateChanged(/*int id,*/string new_state);
     public signal void Error(/*int id,*/ string err_message);
 
@@ -38,7 +38,7 @@ public class Harrier : GLib.Object {
 	this();
 	this.debug = debug;
     }
-
+    
     private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 
         switch (message.type) {
@@ -58,9 +58,11 @@ public class Harrier : GLib.Object {
             break;
 
         case MessageType.EOS:
+//            stdout.printf("EOS from %s\n",((Element)message.src).get_name());
+            int id = ((Element)message.src).get_name().to_int();
 
             /*Sending Eos Signal*/
-            Eos();
+            Eos(id);
             break;
 
         case MessageType.STATE_CHANGED:
@@ -115,6 +117,7 @@ public class Harrier : GLib.Object {
                 next_id = next_id++ % 20;
             }
             pipelines.insert(&(ids[next_id]),newpipe);
+            newpipe.set_name(next_id.to_string());
             ret = next_id;
             next_id++;
             ids_available--;
@@ -315,7 +318,7 @@ public class Harrier : GLib.Object {
 
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipe id %d",element,id);
+            stderr.printf("Element %s not found on pipe id %d\n",element,id);
             return false;
         }
 
