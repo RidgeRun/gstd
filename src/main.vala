@@ -2,8 +2,10 @@ using Gst;
 
 /*Global Variable*/
 public MainLoop loop;
+public DBus.Connection conn;
 
 public void main (string[] args) {
+
     /* Initializing GStreamer */
     Gst.init (ref args);
 
@@ -13,7 +15,7 @@ public void main (string[] args) {
     loop = new MainLoop (null, false);
 
     try {
-        var conn = DBus.Bus.get (DBus.BusType.SESSION);
+        conn = DBus.Bus.get (DBus.BusType.SESSION);
 
         dynamic DBus.Object bus = conn.get_object ("org.freedesktop.DBus",
                                                    "/org/freedesktop/DBus",
@@ -21,13 +23,14 @@ public void main (string[] args) {
 
         /* Try to register service in session bus */
         uint request_name_result = bus.request_name (
-            "com.ti.sdo.HarrierService", (uint) 0);
+            "com.ridgerun.gstreamer.gstd", (uint) 0);
 
         if (request_name_result == DBus.RequestNameReply.PRIMARY_OWNER) {
-            /* Create our bird*/
-            var hawk = new Harrier();
 
-            conn.register_object ("/com/ti/sdo/HarrierObject", hawk);
+            /* Create our factory*/
+            var factory = new Factory();
+
+            conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
             stdout.printf("Listening for connections...\n");
             loop.run ();

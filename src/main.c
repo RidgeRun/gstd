@@ -4,10 +4,10 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <gst/gst.h>
-#include <stdio.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
+#include <gst/gst.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dbus/dbus.h>
@@ -16,15 +16,15 @@
 #define _dbus_g_connection_unref0(var) ((var == NULL) ? NULL : (var = (dbus_g_connection_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 
-#define TYPE_HARRIER (harrier_get_type ())
-#define HARRIER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_HARRIER, Harrier))
-#define HARRIER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_HARRIER, HarrierClass))
-#define IS_HARRIER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_HARRIER))
-#define IS_HARRIER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_HARRIER))
-#define HARRIER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_HARRIER, HarrierClass))
+#define TYPE_FACTORY (factory_get_type ())
+#define FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FACTORY, Factory))
+#define FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FACTORY, FactoryClass))
+#define IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FACTORY))
+#define IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FACTORY))
+#define FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_FACTORY, FactoryClass))
 
-typedef struct _Harrier Harrier;
-typedef struct _HarrierClass HarrierClass;
+typedef struct _Factory Factory;
+typedef struct _FactoryClass FactoryClass;
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 typedef struct _DBusObjectVTable _DBusObjectVTable;
 
@@ -35,11 +35,13 @@ struct _DBusObjectVTable {
 
 extern GMainLoop* loop;
 GMainLoop* loop = NULL;
+extern DBusGConnection* conn;
+DBusGConnection* conn = NULL;
 
 static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
-Harrier* harrier_new (void);
-Harrier* harrier_construct (GType object_type);
-GType harrier_get_type (void);
+Factory* factory_new (void);
+Factory* factory_construct (GType object_type);
+GType factory_get_type (void);
 void _main (char** args, int args_length1);
 static void _vala_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
@@ -64,34 +66,34 @@ void _main (char** args, int args_length1) {
 	fprintf (stdout, "Harrier Streaming Server Daemon\n");
 	loop = (_tmp0_ = g_main_loop_new (NULL, FALSE), _g_main_loop_unref0 (loop), _tmp0_);
 	{
-		DBusGConnection* conn;
+		DBusGConnection* _tmp1_;
+		DBusGConnection* _tmp2_;
 		DBusGProxy* bus;
 		guint request_name_result;
-		conn = dbus_g_bus_get (DBUS_BUS_SESSION, &_inner_error_);
+		_tmp1_ = dbus_g_bus_get (DBUS_BUS_SESSION, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			goto __catch0_g_error;
 			goto __finally0;
 		}
+		conn = (_tmp2_ = _tmp1_, _dbus_g_connection_unref0 (conn), _tmp2_);
 		bus = dbus_g_proxy_new_for_name (conn, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-		request_name_result = _dynamic_request_name0 (bus, "com.ti.sdo.HarrierService", (guint) 0, &_inner_error_);
+		request_name_result = _dynamic_request_name0 (bus, "com.ridgerun.gstreamer.gstd", (guint) 0, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			_dbus_g_connection_unref0 (conn);
 			_g_object_unref0 (bus);
 			goto __catch0_g_error;
 			goto __finally0;
 		}
 		if (request_name_result == DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-			Harrier* hawk;
-			hawk = harrier_new ();
-			_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ti/sdo/HarrierObject", (GObject*) hawk);
+			Factory* factory;
+			factory = factory_new ();
+			_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ridgerun/gstreamer/gstd/factory", (GObject*) factory);
 			fprintf (stdout, "Listening for connections...\n");
 			g_main_loop_run (loop);
-			_g_object_unref0 (hawk);
+			_g_object_unref0 (factory);
 		} else {
 			fprintf (stderr, "Failed to obtain primary ownership of the service\n");
 			fprintf (stderr, "%s", "This usually means there is another instance of " "harrier already running\n");
 		}
-		_dbus_g_connection_unref0 (conn);
 		_g_object_unref0 (bus);
 	}
 	goto __finally0;

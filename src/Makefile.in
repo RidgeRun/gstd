@@ -36,7 +36,8 @@ POST_UNINSTALL = :
 bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in gst-client.c \
-	gst_client_vala.stamp gstd.c gstd_vala.stamp main.c
+	gst_client_vala.stamp gstd-factory.c gstd-pipeline.c \
+	gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -52,7 +53,8 @@ gst_client_OBJECTS = $(am_gst_client_OBJECTS)
 gst_client_DEPENDENCIES =
 gst_client_LINK = $(CCLD) $(gst_client_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd.$(OBJEXT)
+am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
+	gstd-gstd-pipeline.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
 gstd_DEPENDENCIES =
 gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -202,7 +204,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-gstd_SOURCES = main.vala gstd.vala
+gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala
 gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
 gstd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
@@ -299,7 +301,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client-gst-client.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-factory.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-pipeline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
 
 .c.o:
@@ -350,27 +353,48 @@ gstd-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-gstd-gstd.o: gstd.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd.o -MD -MP -MF $(DEPDIR)/gstd-gstd.Tpo -c -o gstd-gstd.o `test -f 'gstd.c' || echo '$(srcdir)/'`gstd.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd.Tpo $(DEPDIR)/gstd-gstd.Po
+gstd-gstd-factory.o: gstd-factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-factory.o -MD -MP -MF $(DEPDIR)/gstd-gstd-factory.Tpo -c -o gstd-gstd-factory.o `test -f 'gstd-factory.c' || echo '$(srcdir)/'`gstd-factory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-factory.Tpo $(DEPDIR)/gstd-gstd-factory.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd.c' object='gstd-gstd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-factory.c' object='gstd-gstd-factory.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd.o `test -f 'gstd.c' || echo '$(srcdir)/'`gstd.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-factory.o `test -f 'gstd-factory.c' || echo '$(srcdir)/'`gstd-factory.c
 
-gstd-gstd.obj: gstd.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd.obj -MD -MP -MF $(DEPDIR)/gstd-gstd.Tpo -c -o gstd-gstd.obj `if test -f 'gstd.c'; then $(CYGPATH_W) 'gstd.c'; else $(CYGPATH_W) '$(srcdir)/gstd.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd.Tpo $(DEPDIR)/gstd-gstd.Po
+gstd-gstd-factory.obj: gstd-factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-factory.obj -MD -MP -MF $(DEPDIR)/gstd-gstd-factory.Tpo -c -o gstd-gstd-factory.obj `if test -f 'gstd-factory.c'; then $(CYGPATH_W) 'gstd-factory.c'; else $(CYGPATH_W) '$(srcdir)/gstd-factory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-factory.Tpo $(DEPDIR)/gstd-gstd-factory.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd.c' object='gstd-gstd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-factory.c' object='gstd-gstd-factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd.obj `if test -f 'gstd.c'; then $(CYGPATH_W) 'gstd.c'; else $(CYGPATH_W) '$(srcdir)/gstd.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-factory.obj `if test -f 'gstd-factory.c'; then $(CYGPATH_W) 'gstd-factory.c'; else $(CYGPATH_W) '$(srcdir)/gstd-factory.c'; fi`
+
+gstd-gstd-pipeline.o: gstd-pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-pipeline.o -MD -MP -MF $(DEPDIR)/gstd-gstd-pipeline.Tpo -c -o gstd-gstd-pipeline.o `test -f 'gstd-pipeline.c' || echo '$(srcdir)/'`gstd-pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-pipeline.Tpo $(DEPDIR)/gstd-gstd-pipeline.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-pipeline.c' object='gstd-gstd-pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-pipeline.o `test -f 'gstd-pipeline.c' || echo '$(srcdir)/'`gstd-pipeline.c
+
+gstd-gstd-pipeline.obj: gstd-pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-pipeline.obj -MD -MP -MF $(DEPDIR)/gstd-gstd-pipeline.Tpo -c -o gstd-gstd-pipeline.obj `if test -f 'gstd-pipeline.c'; then $(CYGPATH_W) 'gstd-pipeline.c'; else $(CYGPATH_W) '$(srcdir)/gstd-pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-pipeline.Tpo $(DEPDIR)/gstd-gstd-pipeline.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-pipeline.c' object='gstd-gstd-pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-pipeline.obj `if test -f 'gstd-pipeline.c'; then $(CYGPATH_W) 'gstd-pipeline.c'; else $(CYGPATH_W) '$(srcdir)/gstd-pipeline.c'; fi`
 $(srcdir)/main.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
 	fi
-$(srcdir)/gstd.c: $(srcdir)/gstd_vala.stamp
+$(srcdir)/gstd-factory.c: $(srcdir)/gstd_vala.stamp
+	@if test -f $@; then :; else \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
+	fi
+$(srcdir)/gstd-pipeline.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
@@ -523,7 +547,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-rm -f gst-client.c
 	-rm -f gst_client_vala.stamp
-	-rm -f gstd.c
+	-rm -f gstd-factory.c
+	-rm -f gstd-pipeline.c
 	-rm -f gstd_vala.stamp
 	-rm -f main.c
 clean: clean-am

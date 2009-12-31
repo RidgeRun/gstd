@@ -3,16 +3,15 @@ using GLib;
 public class HarrierCli : GLib.Object {
 
     private DBus.Connection conn;
-    private dynamic DBus.Object harrier;
-    private int active_id;
+    private dynamic DBus.Object factory;
 
     /**
     * Used as reference in option parser
     */
-    static int arg_id;
+    static string obj_path;
     static bool _signals;
     [CCode (array_length = false, array_null_terminated = true)]
-//    [NoArrayLength]
+    [NoArrayLength]
     static string[] _remaining_args;
 
     /**
@@ -20,8 +19,11 @@ public class HarrierCli : GLib.Object {
     */
     const OptionEntry[] options = {
 
-    { "by_id", 'i', 0, OptionArg.INT, ref arg_id,
-    "Pipeline ID number, for which command will be apply", null },
+    { "by_path", 'p', 0, OptionArg.STRING, ref obj_path,
+    "Pipeline path, for which command will be apply.Usage:-p <path>", null },
+
+    { "enable_signals", 's', 0, OptionArg.INT, ref _signals,
+    "Flag to enable the signals reception.Usage:-s <1>", null },
 
     { "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
      null, N_("[COMMANDS...]") },
@@ -35,49 +37,73 @@ public class HarrierCli : GLib.Object {
      */
     private string[,] cmds = {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
-         "Create a new pipeline and returns the id for it on the servers"},
-        {"destroy","destroy","Destroys the active pipeline"},
-        {"play","play","Sets the active pipeline to play state"},
-        {"pause","pause","Sets the active pipeline to pause state"},
-        {"null","null","Sets the active pipeline to null state"},
-        {"set","set <element_name> <property_name> <data-type> <value>",
-        "Sets an element's property value of the active pipeline"},
-        {"get","get <element_name> <property_name> <data-type>",
-        "Gets an element's property value of the active pipeline"},
-        {"get-duration","get-duration","Gets the active pipeline duration time"},
-        {"get-position","get-position","Gets the active pipeline position"}
+         "Create a new pipeline and returns the dbus-path to access it"},
+        {"destroy","-p <path> destroy","Destroys the pipeline specified by_path(-p)"},
+        {"play","-p <path> play","Sets the pipeline specified by_path(-p) to play state"},
+        {"pause","-p <path> pause","Sets the pipeline specified by_path(-p) to pause state"},
+        {"null","-p <path> null","Sets the pipeline specified by_path(-p) to null state"},
+        {"set","-p <path> set <element_name> <property_name> <data-type> <value>",
+         "Sets an element's property value of the pipeline(option -p needed)"},
+        {"get","-p <path> get <element_name> <property_name> <data_type>",
+         "Gets an element's property value of the pipeline(option -p needed)"},
+        {"get-duration","-p <path> get-duration","Gets the pipeline duration time(option -p needed)"},
+        {"get-position","-p <path> get-position","Gets the pipeline position(option -p needed)"}
     };
 
     /*
     * Constructor
     */
     public HarrierCli() throws DBus.Error, GLib.Error {
-        string env_id;
-        conn = DBus.Bus.get (DBus.BusType.SESSION);
-        harrier = conn.get_object ("com.ti.sdo.HarrierService",
-                                   "/com/ti/sdo/HarrierObject",
-                                   "com.ti.sdo.HarrierInterface");
-        active_id = -1;
-        env_id = Environment.get_variable("HARRIER_ACTIVE_ID");
-        if (env_id != null){
-            active_id = env_id.to_int();
-            stdout.printf(
-              "NOTICE: Using active id from enviroment variable: %d\n",
-              active_id);
-        }
 
-        /*Activating the reception of signals sent by the daemon*/
-        if(_signals){
-                stdout.printf("Signals, activated\n");
-                harrier.Error += this.Error_cb;
-                harrier.Eos += this.Eos_cb;
-                harrier.StateChanged += StateChanged_cb;
-        }
+        /*Getting a Gstd Factory proxy object*/
+        conn = DBus.Bus.get (DBus.BusType.SESSION);
+        factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                   "/com/ridgerun/gstreamer/gstd/factory",
+                                   "com.ridgerun.gstreamer.gstd.FactoryInterface");
+
+        stdout.printf("Constructing the Factory client...\n");
+
+    }
+
+    /**
+    *Callback Functions for the receiving signals
+    */
+
+    public void Error_cb(){
+        stdout.printf ("Error signal received\n");
+    }
+
+    public void Eos_cb(){
+        stdout.printf ("End of Stream signal received\n");
+
+    }
+
+    public void StateChanged_cb(){
+        stdout.printf ("StateChanged signal received\n");
     }
 
 
-    private bool pipeline_play(int id){
-        bool ret = harrier.PipelinePlay(id);
+    /**
+    * Console Commands Functions
+    */
+
+    private bool pipeline_create(string description){
+
+        string new_objpath = factory.Create(description);
+
+        if (new_objpath == "") {
+            stdout.printf("Failed to create pipeline");
+            return false;
+            }
+
+        stdout.printf("Pipeline path created: %s\n", new_objpath);
+
+        return true;
+    }
+
+    private bool pipeline_play(dynamic DBus.Object pipeline){
+
+        bool ret = pipeline.PipelinePlay();
         if (!ret){
             stdout.printf("Failed to put the pipeline to play\n");
             return false;
@@ -85,62 +111,67 @@ public class HarrierCli : GLib.Object {
         return ret;
     }
 
-    private bool pipeline_pause(int id){
-        bool ret = harrier.PipelinePause(id);
+    private bool pipeline_pause(dynamic DBus.Object pipeline){
+
+        bool ret = pipeline.PipelinePause();
         if (!ret){
             stdout.printf("Failed to put the pipeline to pause\n");
             return false;
         }
+
         return ret;
     }
 
-    private bool pipeline_null(int id){
-        bool ret = harrier.PipelineNull(id);
+    private bool pipeline_null(dynamic DBus.Object pipeline){
+
+        bool ret = pipeline.PipelineNull();
         if (!ret){
-            stdout.printf("Failed to put the pipeline to null\n");
+            stderr.printf("Failed to put the pipeline to null\n");
             return false;
         }
         return ret;
     }
 
-    private bool pipeline_destroy(int id){
-        bool ret = harrier.PipelineDestroy(id);
+    private bool pipeline_destroy(string obj_path){
+
+        bool ret = factory.Destroy(obj_path);
         if (!ret){
-            stdout.printf("Failed to destroy the pipeline\n");
+            stderr.printf("Failed to put the pipeline to null\n");
             return false;
         }
-        return ret;
+        stdout.printf("Pipeline with path:%s, destroyed\n", obj_path);
+        return true;
     }
 
-    private bool pipeline_get_property(int id,string[] args){
+    private bool pipeline_get_property(dynamic DBus.Object pipeline, string[] args){
 
-        bool ret=true;
+        bool ret = true;
         string element = args[1];
         string property = args[2];
 
         switch (args[3].down()){
         case "boolean":
-                bool boolean_v = harrier.ElementGetPropertyBoolean(id,element,property);
+                bool boolean_v = pipeline.ElementGetPropertyBoolean(element,property);
                 stdout.printf(">>The '%s' value on element '%s' is: %s\n",
                                property,element,boolean_v?"true":"false");
                 break;
         case "integer":
-                int integer_v = harrier.ElementGetPropertyInt(id,element,property);
+                int integer_v = pipeline.ElementGetPropertyInt(element,property);
                 stdout.printf(">>The '%s' value on element '%s' is: %d\n",
                                property,element,integer_v);
-                if (integer_v == -1) ret=false;
+                if (integer_v == -1) ret = false;
                 break;
         case "long":
-                long long_v = harrier.ElementGetPropertyLong(id,element,property);
+                long long_v = pipeline.ElementGetPropertyLong(element,property);
                 stdout.printf(">>The '%s' value on element '%s' is: %ld\n",
                                property,element,long_v);
-                if (long_v == -1) ret=false;
+                if (long_v == -1) ret = false;
                 break;
         case "string":
-                string string_v = harrier.ElementGetPropertyString(id,element,property);
+                string string_v = pipeline.ElementGetPropertyString(element,property);
                 stdout.printf(">>The '%s' value on element '%s' is: %s\n",
                                property,element,string_v);
-                if (string_v == "") ret=false;
+                if (string_v == "") ret = false;
                 break;
         default:
                 stderr.printf("Datatype not supported: %s\n",args[4]);
@@ -154,7 +185,7 @@ public class HarrierCli : GLib.Object {
         return ret;
     }
 
-    private bool pipeline_set_property(int id,string[] args){
+    private bool pipeline_set_property(dynamic DBus.Object pipeline, string[] args){
 
         bool ret;
         string element = args[1];
@@ -165,25 +196,25 @@ public class HarrierCli : GLib.Object {
                 bool boolean_v = args[4].down().to_bool();
                 stdout.printf("Trying to set '%s' on element '%s' to %s\n",
                     property,element,boolean_v?"true":"false");
-                ret = harrier.ElementSetPropertyBoolean(id,element,property,boolean_v);
+                ret = pipeline.ElementSetPropertyBoolean(element,property,boolean_v);
                 break;
         case "integer":
                 int integer_v = args[4].to_int();
                 stdout.printf("Trying to set '%s' on element '%s' to %d\n",
                     property,element,integer_v);
-                ret = harrier.ElementSetPropertyInt(id,element,property,integer_v);
+                ret = pipeline.ElementSetPropertyInt(element,property,integer_v);
                 break;
         case "long":
                 long long_v = args[4].to_long();
                 stdout.printf("Trying to set '%s' on element '%s' to %ld\n",
                     property,element,long_v);
-                ret = harrier.ElementSetPropertyLong(id,element,property,long_v);
+                ret = pipeline.ElementSetPropertyLong(element,property,long_v);
                 break;
         case "string":
                 string string_v = args[4];
                 stdout.printf("Trying to set '%s' on element '%s' to %s\n",
                     property,element,string_v);
-                ret = harrier.ElementSetPropertyString(id,element,property,string_v);
+                ret = pipeline.ElementSetPropertyString(element,property,string_v);
                 break;
         default:
                 stderr.printf("Datatype not supported: %s\n",args[4]);
@@ -191,96 +222,110 @@ public class HarrierCli : GLib.Object {
         }
 
         if (!ret){
-            stdout.printf("Failed to set property\n");
+            stderr.printf("Failed to set property\n");
             return false;
         }
         return ret;
     }
 
-    private bool pipeline_get_duration(int id){
-        int time = harrier.PipelineGetDuration(id);
+    private bool pipeline_get_duration(dynamic DBus.Object pipeline){
+
+        int64 time = pipeline.PipelineGetDuration();
         if (time<0){
-            stdout.printf("Failed to get pipeline duration\n");
+            stderr.printf("Failed to get pipeline duration\n");
             return false;
         }
 
-        stdout.printf(">>The duration on pipeline '%d' is: %d\n",
-                               id,time);
+        stdout.printf(">>The duration on pipeline is %lld, FORMAT need to be fix \n",time);
         return true;
     }
 
-    private bool pipeline_get_position(int id){
-        int pos = harrier.PipelineGetPosition(id);
+    private bool pipeline_get_position(dynamic DBus.Object pipeline){
+
+        int64 pos = pipeline.PipelineGetPosition();
         if (pos<0){
-            stdout.printf("Failed to get position the pipeline to null\n");
+            stderr.printf("Failed to get position the pipeline to null\n");
             return false;
         }
 
-        stdout.printf(">>The position on pipeline '%d' is: %d\n",
-                               id,pos);
+        stdout.printf(">>The position on pipeline is: %lld, FORMAT need to be fix\n",pos);
         return true;
     }
 
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
-        int id = -1;
 
-        if(arg_id != -1){
-            id = arg_id;
-        } else if (active_id == -1){
-            if(args[0].down() != "create" &&
-               args[0].down() != "help"){
-                stderr.printf("No valid active pipeline id\n");
+        dynamic DBus.Object pipeline = null;
+
+        if(obj_path != null){
+
+            try{
+                pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                             obj_path,
+                                            "com.ridgerun.gstreamer.gstd.PipelineInterface");
+
+            }catch(GLib.Error e){
+                /*Need to be reviewed, it never gets here*/
+                stderr.printf("Object with  path %s was not found\n", obj_path);
                 return false;
             }
-        } else
-            id = active_id;
+
+        }else if (args[0].down() != "create" && args[0].down() != "help"){
+            stderr.printf("Pipeline path was not specified\n");
+            return false;
+        }
+
+        /*Activating the reception of signals sent by the daemon*/
+        /*Need to be FIXED*/
+        if(_signals){
+            if(args[0].down() != "create" && args[0].down() != "help"){
+                stdout.printf("Signals, activated\n");
+                pipeline.Error += this.Error_cb;
+                pipeline.Eos += this.Eos_cb;
+                pipeline.StateChanged += this.StateChanged_cb;
+            }
+        }
 
         switch (args[0].down()){
+
         case "create":
-            id = harrier.PipelineCreate(args[1]);
-                if (id < 0) {
-                    stderr.printf("Failed to create pipeline");
-                    return false;
-                }
-                /* To do, keep a list of ids */
-                active_id = id;
-                stdout.printf("Active id is now %d\n",active_id);
-                break;
+            return pipeline_create(args[1]);
 
         case "destroy":
-            return pipeline_destroy(id);
+            return pipeline_destroy(obj_path);
 
         case "play":
-            return pipeline_play(id);
+            return pipeline_play(pipeline);
 
         case "pause":
-            return pipeline_pause(id);
+            return pipeline_pause(pipeline);
 
         case "null":
-            return pipeline_null(id);
+            return pipeline_null(pipeline);
 
         case "set":
-            return pipeline_set_property(id,args);
+            return pipeline_set_property(pipeline,args);
 
         case "get":
-            return pipeline_get_property(id,args);
+            return pipeline_get_property(pipeline,args);
 
         case "get-duration":
-            return pipeline_get_duration(id);
-        
+            return pipeline_get_duration(pipeline);
+
         case "get-position":
-            return pipeline_get_position(id);
+            return pipeline_get_position(pipeline);
 
         case "help":
+            int id=0;
             if (args.length > 1) {
                 /* Help about some command */
-                for (id = 0; id < cmds[0].length -1; id++) {
-                    if (cmds[id,0] == args[1].down()){
+                while(cmds[id,0]!=null) {
+                    if (cmds[id,0] == args[1]){
                         stdout.printf("Command: %s\n",args[1]);
                         stdout.printf("Description: %s\n",cmds[id,2]);
                         stdout.printf("Syntax: %s\n",cmds[id,1]);
                         return true;
                     }
+                    id++;
                 }
                 stdout.printf("Unknown command: %s\n",args[1]);
                 return false;
@@ -289,8 +334,9 @@ public class HarrierCli : GLib.Object {
                 stdout.printf("Request the syntax of an specific command with "+
                  "\"help <command>\".\n" +
                  "This is the list of supported commands:\n");
-                for (id = 0; id < cmds[0].length - 1; id++) {
+                while(cmds[id,0]!=null){
                     stdout.printf(" %s:\t%s\n",cmds[id,0],cmds[id,2]);
+                    id++;
                 }
                 stdout.printf("\n");
             }
@@ -312,7 +358,6 @@ public class HarrierCli : GLib.Object {
         scan.input_text(line,(uint)line.length);
         Scanner.get_next_token(
   */
-        stdout.printf("CLI mode not implement yet\n");
         return false;
     }
 
@@ -325,31 +370,13 @@ public class HarrierCli : GLib.Object {
 
     }
 
-    /**
-    *Callback Functions for the receiving signals
-    */
-
-    public void Error_cb(/*dynamic DBus.Object harrier*/){
-        stderr.printf("I get in ERROR callback function!!\n");
-        //stdout.printf (/*"Error: %s\n", err.message*/);
-    }
-
-    public void Eos_cb(/*dynamic DBus.Object harrier*/){
-        stdout.printf ("end of stream\n");
-
-    }
-
-    static void StateChanged_cb(dynamic DBus.Object harrier,string newstate){
-        stdout.printf ("state changed to:%s\n", newstate);
-    }
-
-
     static int main (string[] args) {
         HarrierCli cli;
 
         try {
-            arg_id = -1;
-            var opt = new OptionContext("");
+
+            obj_path = null;
+            var opt = new OptionContext("(For Commands HELP: 'gst-client help')");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
