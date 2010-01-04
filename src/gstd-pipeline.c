@@ -39,6 +39,7 @@ struct _PipelineClass {
 
 struct _PipelinePrivate {
 	GstElement* pipeline;
+	gboolean debug;
 };
 
 struct _DBusObjectVTable {
@@ -58,6 +59,8 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 Pipeline* pipeline_new (const char* description);
 Pipeline* pipeline_construct (GType object_type, const char* description);
+Pipeline* pipeline_new_withDebug (const char* description, gboolean debug);
+Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean debug);
 static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state);
 gboolean pipeline_PipelinePlay (Pipeline* self);
 gboolean pipeline_PipelinePause (Pipeline* self);
@@ -70,8 +73,8 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const char* element
 gint pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const char* property);
 glong pipeline_ElementGetPropertyLong (Pipeline* self, const char* element, const char* property);
 char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, const char* property);
-gint64 pipeline_PipelineGetDuration (Pipeline* self);
-gint64 pipeline_PipelineGetPosition (Pipeline* self);
+gint pipeline_PipelineGetDuration (Pipeline* self);
+gint pipeline_PipelineGetPosition (Pipeline* self);
 void pipeline_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 void _pipeline_dbus_unregister (DBusConnection* connection, void* _user_data_);
 DBusHandlerResult pipeline_dbus_message (DBusConnection* connection, DBusMessage* message, void* object);
@@ -119,19 +122,21 @@ Pipeline* pipeline_construct (GType object_type, const char* description) {
 		GstBus* bus;
 		_tmp0_ = gst_parse_launch (description, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch3_g_error;
-			goto __finally3;
+			goto __catch1_g_error;
+			goto __finally1;
 		}
 		self->priv->pipeline = (_tmp2_ = (_tmp1_ = _tmp0_, GST_IS_ELEMENT (_tmp1_) ? ((GstElement*) _tmp1_) : NULL), _gst_object_unref0 (self->priv->pipeline), _tmp2_);
 		g_assert (self->priv->pipeline != NULL);
 		bus = gst_element_get_bus (self->priv->pipeline);
 		gst_bus_add_watch (bus, _pipeline_bus_callback_gst_bus_func, self);
 		((GObject*) self->priv->pipeline)->ref_count++;
-		fprintf (stdout, "Pipeline created: %s\n", description);
+		if (self->priv->debug) {
+			fprintf (stdout, "Pipeline created: %s\n", description);
+		}
 		_gst_object_unref0 (bus);
 	}
-	goto __finally3;
-	__catch3_g_error:
+	goto __finally1;
+	__catch1_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -141,7 +146,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description) {
 			_g_error_free0 (e);
 		}
 	}
-	__finally3:
+	__finally1:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
@@ -156,6 +161,20 @@ Pipeline* pipeline_new (const char* description) {
 }
 
 
+Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean debug) {
+	Pipeline * self;
+	g_return_val_if_fail (description != NULL, NULL);
+	self->priv->debug = debug;
+	self = (Pipeline*) pipeline_construct (object_type, description);
+	return self;
+}
+
+
+Pipeline* pipeline_new_withDebug (const char* description, gboolean debug) {
+	return pipeline_construct_withDebug (TYPE_PIPELINE, description, debug);
+}
+
+
 static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* message) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -165,19 +184,19 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 		case GST_MESSAGE_ERROR:
 		{
 			GError* err;
-			char* debug;
+			char* dbg;
 			char* _tmp3_;
 			char* _tmp2_ = NULL;
 			GError* _tmp1_;
 			GError* _tmp0_ = NULL;
 			err = NULL;
-			debug = NULL;
+			dbg = NULL;
 			(gst_message_parse_error (message, &_tmp0_, &_tmp2_), err = (_tmp1_ = _tmp0_, _g_error_free0 (err), _tmp1_));
-			debug = (_tmp3_ = _tmp2_, _g_free0 (debug), _tmp3_);
+			dbg = (_tmp3_ = _tmp2_, _g_free0 (dbg), _tmp3_);
 			g_signal_emit_by_name (self, "error");
 			g_main_loop_quit (loop);
 			_g_error_free0 (err);
-			_g_free0 (debug);
+			_g_free0 (dbg);
 			break;
 		}
 		case GST_MESSAGE_EOS:
@@ -483,34 +502,54 @@ char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, co
 }
 
 
-gint64 pipeline_PipelineGetDuration (Pipeline* self) {
-	gint64 result;
+gint pipeline_PipelineGetDuration (Pipeline* self) {
+	gint result;
 	GstFormat format;
-	gint64 duration = 0LL;
-	g_return_val_if_fail (self != NULL, 0LL);
+	gint64 duration;
+	gint idur;
+	g_return_val_if_fail (self != NULL, 0);
 	format = GST_FORMAT_TIME;
+	duration = (gint64) 0;
+	idur = 0;
 	if (!gst_element_query_duration (self->priv->pipeline, &format, &duration)) {
-		fprintf (stdout, "Unable to get duration to pipe\n");
-		result = (gint64) (-1);
+		result = -1;
 		return result;
 	}
-	result = duration;
+	if (duration == GST_CLOCK_TIME_NONE) {
+		result = -1;
+		return result;
+	}
+	idur = (gint) (duration / 1000000);
+	if (self->priv->debug) {
+		fprintf (stdout, "Duration at server is %d\n", idur);
+	}
+	result = idur;
 	return result;
 }
 
 
-gint64 pipeline_PipelineGetPosition (Pipeline* self) {
-	gint64 result;
+gint pipeline_PipelineGetPosition (Pipeline* self) {
+	gint result;
 	GstFormat format;
-	gint64 position = 0LL;
-	g_return_val_if_fail (self != NULL, 0LL);
+	gint64 position;
+	gint ipos;
+	g_return_val_if_fail (self != NULL, 0);
 	format = GST_FORMAT_TIME;
+	position = (gint64) 0;
+	ipos = 0;
 	if (!gst_element_query_position (self->priv->pipeline, &format, &position)) {
-		fprintf (stdout, "Unable to get position to pipe\n");
-		result = (gint64) (-1);
+		result = -1;
 		return result;
 	}
-	result = position;
+	if (position == GST_CLOCK_TIME_NONE) {
+		result = -1;
+		return result;
+	}
+	ipos = (gint) (position / 1000000);
+	if (self->priv->debug) {
+		fprintf (stdout, "Position at server is %d\n", ipos);
+	}
+	result = ipos;
 	return result;
 }
 
@@ -528,7 +567,7 @@ static DBusHandlerResult _dbus_pipeline_introspect (Pipeline* self, DBusConnecti
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.PipelineInterface\">\n  <method name=\"PipelinePlay\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetDuration\">\n    <arg name=\"result\" type=\"x\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetPosition\">\n    <arg name=\"result\" type=\"x\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n  </signal>\n  <signal name=\"Error\">\n  </signal>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.PipelineInterface\">\n  <method name=\"PipelinePlay\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetDuration\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetPosition\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n  </signal>\n  <signal name=\"Error\">\n  </signal>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -987,9 +1026,9 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyString (Pipeline* self
 static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	gint64 result;
+	gint result;
 	DBusMessage* reply;
-	dbus_int64_t _tmp33_;
+	dbus_int32_t _tmp33_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -999,7 +1038,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_tmp33_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT64, &_tmp33_);
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp33_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1013,9 +1052,9 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	gint64 result;
+	gint result;
 	DBusMessage* reply;
-	dbus_int64_t _tmp34_;
+	dbus_int32_t _tmp34_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1025,7 +1064,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBu
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_tmp34_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT64, &_tmp34_);
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp34_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1139,6 +1178,7 @@ static void pipeline_class_init (PipelineClass * klass) {
 
 static void pipeline_instance_init (Pipeline * self) {
 	self->priv = PIPELINE_GET_PRIVATE (self);
+	self->priv->debug = FALSE;
 }
 
 

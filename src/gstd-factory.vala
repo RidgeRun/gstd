@@ -25,26 +25,22 @@ public class Factory : GLib.Object {
     public string Create(string description){
 
 
-        try {
-            /* Create our pipeline*/
-            while (pipes[next_id] != null){
-                next_id = next_id++ % 20;
-            }
-            pipes[next_id] = new Pipeline(description);
+        /* Create our pipeline*/
+        while (pipes[next_id] != null){
+            next_id = next_id++ % 20;
+        }
+        pipes[next_id] = new Pipeline(description);
 
-            if (pipes[next_id] is Pipeline){
-                string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
-                conn.register_object (objectpath, pipes[next_id]);
-                next_id++;
-                return objectpath;
-            }
-        } catch (Error e) {
-            stderr.printf ("Factory: Could not create pipeline: %s\n", e.message);
+        if (pipes[next_id] is Pipeline){
+            string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
+            conn.register_object (objectpath, pipes[next_id]);
+            next_id++;
+            return objectpath;
         }
 
         return "";
     }
-    
+
     /**
      Destroy a pipeline from a gst-launch like descrition
      @param objectpath, the dbus-objectpathe of the pipeline
@@ -56,22 +52,16 @@ public class Factory : GLib.Object {
         GLib.Object pipeline;
         int id = 0;
 
-        try {
+        pipeline = conn.lookup_object(objectpath);
 
-            pipeline = conn.lookup_object(objectpath);
-
-            /* Searching our pipeline*/
-            while (pipes[id] != pipeline){
-                id = id++ % 20;
-                stdout.printf("Searching pipe %d\n",id);
-            }
-            pipes[id] = null;
-            return true;
-
-        } catch (Error e) {
-            stderr.printf ("Factory: Could not destroy pipeline: %s\n", e.message);
-            return false;
+        /* Searching our pipeline*/
+        while (pipes[id] != pipeline){
+            id = id++ % 20;
+            stdout.printf("Searching pipe %d\n",id);
         }
+
+        pipes[id] = null;
+        return true;
 
     }
 }

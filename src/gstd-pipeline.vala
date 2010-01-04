@@ -7,6 +7,7 @@ public class Pipeline : GLib.Object {
 
     /* Private data */
     private Gst.Element pipeline;
+    private bool debug = false;
 
 
     public signal void Eos();
@@ -31,7 +32,8 @@ public class Pipeline : GLib.Object {
                when the function is done. */
             pipeline.ref_count++;
 
-            stdout.printf("Pipeline created: %s\n",description);
+            if (debug)
+                stdout.printf("Pipeline created: %s\n",description);
 
         } catch (GLib.Error e) {
             stderr.printf("Failed to create pipeline with description: %s.\n" +
@@ -39,6 +41,10 @@ public class Pipeline : GLib.Object {
         }
     }
 
+    public Pipeline.withDebug(string description,bool debug){
+        this.debug = debug;
+        this(description);
+    }
 
     /**
      Destroy a instance of a Pipeline 
@@ -57,10 +63,10 @@ public class Pipeline : GLib.Object {
         case MessageType.ERROR:
 
             GLib.Error err;
-            string debug;
+            string dbg;
 
             /*Parse error*/
-            message.parse_error (out err, out debug);
+            message.parse_error (out err, out dbg);
 
             /*Sending Error Signal*/
             /*Need TODO: Review if err.message can be sent*/
@@ -320,36 +326,48 @@ public class Pipeline : GLib.Object {
     /**
      Query duration to a pipeline on the server
     */
-    public int64 PipelineGetDuration(){
+    public int PipelineGetDuration(){
 
         Format format = Gst.Format.TIME;
-        int64 duration;
-
+        int64 duration = 0;
+        int idur = 0;
 
         /* Query duration */
         if (! pipeline.query_duration (ref format, out duration)){
-            stdout.printf("Unable to get duration to pipe\n");
             return -1;
         }
 
-        return duration;
+        if (duration == Gst.CLOCK_TIME_NONE)
+            return -1;
+
+        idur = (int)(duration / 1000000);
+        if(debug)
+            stdout.printf("Duration at server is %d\n",idur);
+
+        return idur;
     }
-    
+
     /**
      Query position to a pipeline on the server
     */
-    public int64 PipelineGetPosition(){
+    public int PipelineGetPosition(){
 
         Format format = Gst.Format.TIME;
-        int64 position;
+        int64 position = 0;
+        int ipos = 0;
 
-        /* Query position */
         if (! pipeline.query_position (ref format, out position)){
-            stdout.printf("Unable to get position to pipe\n");
             return -1;
         }
 
-        return position;
+        if (position == Gst.CLOCK_TIME_NONE)
+            return -1;
+
+        ipos = (int)(position / 1000000);
+        if(debug)
+            stdout.printf("Position at server is %d\n",ipos);
+
+        return ipos;
     }
 
 }

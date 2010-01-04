@@ -9,130 +9,121 @@
 
 <node name="/com/freondemo/interface/v1_0">
 
-  <interface name="com.ti.sdo.HarrierInterface">
+  <interface name="com.ridgerun.gstreamer.gstd.FactoryInterface">
 
     <!-- Method definitions -->
 
-    <method name="PipelineCreate">
-	<arg type="s" name ="description" direction = "in" />
-	<arg type="i" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+    <method name="Create">
+        <arg type="s" name ="description" direction = "in" />
+        <arg type="s" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
     </method>
-    <method name="PipelineDestroy">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+    <method name="Destroy">
+        <arg type="s" name ="description" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
+  </interface>
+
+  <interface name="com.ridgerun.gstreamer.gstd.PipelineInterface">
+
+    <!-- Method definitions -->
+
     <method name="PipelinePlay">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="PipelinePause">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="PipelineNull">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="ElementSetPropertyBoolean">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="b" name ="val" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="b" name ="val" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="ElementSetPropertyInt">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="i" name ="val" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
     </method>
     <method name="ElementSetPropertyLong">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="t" name ="val" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="t" name ="val" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
     </method>
     <method name="ElementSetPropertyString">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="s" name ="val" direction = "in" />
-	<arg type="b" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="val" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
     </method>
     <method name="ElementGetPropertyBoolean">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="b" direction = "out" >
-		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="b" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="ElementGetPropertyInt">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="i" direction = "out" >
-		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="ElementGetPropertyLong">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="t" direction = "out" >
-		<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="t" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="ElementGetPropertyString">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="s" name ="element" direction = "in" />
-	<arg type="s" name ="property" direction = "in" />
-	<arg type="s" direction = "out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="i" name ="id" direction = "in" />
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="PipelineGetDuration">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="i" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="i" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
     <method name="PipelineGetPosition">
-	<arg type="i" name ="id" direction = "in" />
-	<arg type="i" direction="out" >
-	    <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-	 </arg>
+        <arg type="i" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
     </method>
 
     <!-- Signals definitions -->
     <signal name="Eos">
-      <arg type="i" name="id" direction="out"/>
     </signal>
     <signal name="Error">
-      <arg type="i" name="id" direction="out"/>
     </signal>
     <signal name="StateChanged">
-      <arg type="i" name="id" direction="out"/>
     </signal>
 
   </interface>

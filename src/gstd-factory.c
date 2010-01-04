@@ -34,7 +34,6 @@ typedef struct _Pipeline Pipeline;
 typedef struct _PipelineClass PipelineClass;
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
-#define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 typedef struct _DBusObjectVTable _DBusObjectVTable;
 
 struct _Factory {
@@ -126,46 +125,25 @@ Factory* factory_new (void) {
 
 char* factory_Create (Factory* self, const char* description) {
 	char* result;
-	GError * _inner_error_;
+	Pipeline* _tmp0_;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (description != NULL, NULL);
-	_inner_error_ = NULL;
-	{
-		Pipeline* _tmp0_;
-		while (TRUE) {
-			if (!(self->priv->pipes[self->priv->next_id] != NULL)) {
-				break;
-			}
-			self->priv->next_id = (self->priv->next_id++) % 20;
+	while (TRUE) {
+		if (!(self->priv->pipes[self->priv->next_id] != NULL)) {
+			break;
 		}
-		self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
-		if (IS_PIPELINE (self->priv->pipes[self->priv->next_id])) {
-			char* _tmp1_;
-			char* _tmp2_;
-			char* objectpath;
-			objectpath = (_tmp2_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp1_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp1_), _tmp2_);
-			_vala_dbus_register_object (dbus_g_connection_get_connection (conn), objectpath, (GObject*) self->priv->pipes[self->priv->next_id]);
-			self->priv->next_id++;
-			result = objectpath;
-			return result;
-		}
+		self->priv->next_id = (self->priv->next_id++) % 20;
 	}
-	goto __finally1;
-	__catch1_g_error:
-	{
-		GError * e;
-		e = _inner_error_;
-		_inner_error_ = NULL;
-		{
-			fprintf (stderr, "Factory: Could not create pipeline: %s\n", e->message);
-			_g_error_free0 (e);
-		}
-	}
-	__finally1:
-	if (_inner_error_ != NULL) {
-		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
-		g_clear_error (&_inner_error_);
-		return NULL;
+	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
+	if (IS_PIPELINE (self->priv->pipes[self->priv->next_id])) {
+		char* _tmp1_;
+		char* _tmp2_;
+		char* objectpath;
+		objectpath = (_tmp2_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp1_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp1_), _tmp2_);
+		_vala_dbus_register_object (dbus_g_connection_get_connection (conn), objectpath, (GObject*) self->priv->pipes[self->priv->next_id]);
+		self->priv->next_id++;
+		result = objectpath;
+		return result;
 	}
 	result = g_strdup ("");
 	return result;
@@ -179,52 +157,26 @@ static gpointer _g_object_ref0 (gpointer self) {
 
 gboolean factory_Destroy (Factory* self, const char* objectpath) {
 	gboolean result;
-	GError * _inner_error_;
 	GObject* pipeline;
 	gint id;
+	GObject* _tmp0_;
+	Pipeline* _tmp1_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (objectpath != NULL, FALSE);
-	_inner_error_ = NULL;
 	pipeline = NULL;
 	id = 0;
-	{
-		GObject* _tmp0_;
-		Pipeline* _tmp1_;
-		pipeline = (_tmp0_ = _g_object_ref0 (dbus_g_connection_lookup_g_object (conn, objectpath)), _g_object_unref0 (pipeline), _tmp0_);
-		while (TRUE) {
-			if (!(G_OBJECT (self->priv->pipes[id]) != pipeline)) {
-				break;
-			}
-			id = (id++) % 20;
-			fprintf (stdout, "Searching pipe %d\n", id);
+	pipeline = (_tmp0_ = _g_object_ref0 (dbus_g_connection_lookup_g_object (conn, objectpath)), _g_object_unref0 (pipeline), _tmp0_);
+	while (TRUE) {
+		if (!(G_OBJECT (self->priv->pipes[id]) != pipeline)) {
+			break;
 		}
-		self->priv->pipes[id] = (_tmp1_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp1_);
-		result = TRUE;
-		_g_object_unref0 (pipeline);
-		return result;
+		id = (id++) % 20;
+		fprintf (stdout, "Searching pipe %d\n", id);
 	}
-	goto __finally2;
-	__catch2_g_error:
-	{
-		GError * e;
-		e = _inner_error_;
-		_inner_error_ = NULL;
-		{
-			fprintf (stderr, "Factory: Could not destroy pipeline: %s\n", e->message);
-			result = FALSE;
-			_g_error_free0 (e);
-			_g_object_unref0 (pipeline);
-			return result;
-		}
-	}
-	__finally2:
-	if (_inner_error_ != NULL) {
-		_g_object_unref0 (pipeline);
-		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
-		g_clear_error (&_inner_error_);
-		return FALSE;
-	}
+	self->priv->pipes[id] = (_tmp1_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp1_);
+	result = TRUE;
 	_g_object_unref0 (pipeline);
+	return result;
 }
 
 

@@ -11,7 +11,6 @@ public class HarrierCli : GLib.Object {
     static string obj_path;
     static bool _signals;
     [CCode (array_length = false, array_null_terminated = true)]
-    [NoArrayLength]
     static string[] _remaining_args;
 
     /**
@@ -60,9 +59,6 @@ public class HarrierCli : GLib.Object {
         factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
                                    "/com/ridgerun/gstreamer/gstd/factory",
                                    "com.ridgerun.gstreamer.gstd.FactoryInterface");
-
-        stdout.printf("Constructing the Factory client...\n");
-
     }
 
     /**
@@ -92,9 +88,9 @@ public class HarrierCli : GLib.Object {
         string new_objpath = factory.Create(description);
 
         if (new_objpath == "") {
-            stdout.printf("Failed to create pipeline");
+            stderr.printf("Failed to create pipeline");
             return false;
-            }
+        }
 
         stdout.printf("Pipeline path created: %s\n", new_objpath);
 
@@ -230,25 +226,25 @@ public class HarrierCli : GLib.Object {
 
     private bool pipeline_get_duration(dynamic DBus.Object pipeline){
 
-        int64 time = pipeline.PipelineGetDuration();
+        int time = pipeline.PipelineGetDuration();
         if (time<0){
             stderr.printf("Failed to get pipeline duration\n");
             return false;
         }
 
-        stdout.printf(">>The duration on pipeline is %lld, FORMAT need to be fix \n",time);
+        stdout.printf(">>The duration on pipeline is %d, FORMAT need to be fix \n",time);
         return true;
     }
 
     private bool pipeline_get_position(dynamic DBus.Object pipeline){
 
-        int64 pos = pipeline.PipelineGetPosition();
+        int pos = pipeline.PipelineGetPosition();
         if (pos<0){
             stderr.printf("Failed to get position the pipeline to null\n");
             return false;
         }
 
-        stdout.printf(">>The position on pipeline is: %lld, FORMAT need to be fix\n",pos);
+        stdout.printf(">>The position on pipeline is: %d, FORMAT need to be fix\n",pos);
         return true;
     }
 
@@ -358,6 +354,7 @@ public class HarrierCli : GLib.Object {
         scan.input_text(line,(uint)line.length);
         Scanner.get_next_token(
   */
+        stdout.printf("CLI mode not implement yet\n");
         return false;
     }
 

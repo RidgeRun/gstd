@@ -84,9 +84,9 @@ static gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* 
 static gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error);
 static gboolean _dynamic_ElementSetPropertyString12 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error);
 static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1);
-static gint64 _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error);
+static gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline);
-static gint64 _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error);
+static gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline);
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
@@ -122,7 +122,6 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->factory = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", "/com/ridgerun/gstreamer/gstd/factory", "com.ridgerun.gstreamer.gstd.FactoryInterface"), _g_object_unref0 (self->priv->factory), _tmp2_);
-	fprintf (stdout, "Constructing the Factory client...\n");
 	return self;
 }
 
@@ -174,7 +173,7 @@ static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* descr
 		return FALSE;
 	}
 	if (_vala_strcmp0 (new_objpath, "") == 0) {
-		fprintf (stdout, "Failed to create pipeline");
+		fprintf (stderr, "Failed to create pipeline");
 		result = FALSE;
 		_g_free0 (new_objpath);
 		return result;
@@ -643,11 +642,11 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy*
 }
 
 
-static gint64 _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error) {
-	gint64 result;
-	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
+static gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return 0LL;
+		return 0;
 	}
 	return result;
 }
@@ -656,7 +655,7 @@ static gint64 _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error) 
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
-	gint64 time;
+	gint time;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
@@ -671,17 +670,17 @@ static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy*
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, ">>The duration on pipeline is %lld, FORMAT need to be fix \n", time);
+	fprintf (stdout, ">>The duration on pipeline is %d, FORMAT need to be fix \n", time);
 	result = TRUE;
 	return result;
 }
 
 
-static gint64 _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error) {
-	gint64 result;
-	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
+static gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return 0LL;
+		return 0;
 	}
 	return result;
 }
@@ -690,7 +689,7 @@ static gint64 _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error) 
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
-	gint64 pos;
+	gint pos;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
@@ -705,7 +704,7 @@ static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy*
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, ">>The position on pipeline is: %lld, FORMAT need to be fix\n", pos);
+	fprintf (stdout, ">>The position on pipeline is: %d, FORMAT need to be fix\n", pos);
 	result = TRUE;
 	return result;
 }
@@ -926,6 +925,7 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 gboolean harrier_cli_cli (HarrierCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
+	fprintf (stdout, "CLI mode not implement yet\n");
 	result = FALSE;
 	return result;
 }
