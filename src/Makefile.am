@@ -13,7 +13,7 @@ gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_LDADD = @DBUS_GLIB_LIBS@
 
 
-interface_xml := gstd-1.0.xml
+interface_xml := factory-iface.xml pipeline-iface.xml
 gstddir = $(includedir)/gstd
 
 EXTRA_DIST= $(interface_xml)

@@ -47,7 +47,6 @@ struct _DBusObjectVTable {
 };
 
 
-extern GMainLoop* loop;
 static gpointer pipeline_parent_class = NULL;
 
 GType pipeline_get_type (void);
@@ -129,7 +128,6 @@ Pipeline* pipeline_construct (GType object_type, const char* description) {
 		g_assert (self->priv->pipeline != NULL);
 		bus = gst_element_get_bus (self->priv->pipeline);
 		gst_bus_add_watch (bus, _pipeline_bus_callback_gst_bus_func, self);
-		((GObject*) self->priv->pipeline)->ref_count++;
 		if (self->priv->debug) {
 			fprintf (stdout, "Pipeline created: %s\n", description);
 		}
@@ -164,8 +162,8 @@ Pipeline* pipeline_new (const char* description) {
 Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean debug) {
 	Pipeline * self;
 	g_return_val_if_fail (description != NULL, NULL);
-	self->priv->debug = debug;
 	self = (Pipeline*) pipeline_construct (object_type, description);
+	self->priv->debug = debug;
 	return self;
 }
 
@@ -194,7 +192,9 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			(gst_message_parse_error (message, &_tmp0_, &_tmp2_), err = (_tmp1_ = _tmp0_, _g_error_free0 (err), _tmp1_));
 			dbg = (_tmp3_ = _tmp2_, _g_free0 (dbg), _tmp3_);
 			g_signal_emit_by_name (self, "error");
-			g_main_loop_quit (loop);
+			if (self->priv->debug) {
+				fprintf (stderr, "Error on pipeline: %s\n", err->message);
+			}
 			_g_error_free0 (err);
 			_g_free0 (dbg);
 			break;
@@ -229,7 +229,8 @@ static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state) {
 	GstState pending = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, state);
-	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 2000000000);
+	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 4000000000u);
+	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 4000000000u);
 	if (current != state) {
 		fprintf (stderr, "Element, failed to change state %s\n", gst_element_state_get_name (state));
 		result = FALSE;
@@ -1186,7 +1187,6 @@ static void pipeline_finalize (GObject* obj) {
 	Pipeline * self;
 	self = PIPELINE (obj);
 	{
-		GObject* o = NULL;
 		if (!pipeline_PipelineSetState (self, GST_STATE_NULL)) {
 			fprintf (stderr, "Failed to destroy pipeline\n");
 		}

@@ -1,0 +1,30 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+	"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<!-- This file defines the D-Bus interface for a simple object.
+     The interface name is "com.ridgerun.gstreamer.gstd.FactoryInterface".
+     One known reference implementation is provided for it by the
+     "/com/ridgerun/gstreamer/gstd/factory" object found via a well-known name of
+     "com.ridgerun.gstreamer.gstd". -->
+
+<node name="/com/freondemo/interface/v1_0">
+
+  <interface name="com.ridgerun.gstreamer.gstd.FactoryInterface">
+
+    <!-- Method definitions -->
+
+    <method name="Create">
+        <arg type="s" name ="description" direction = "in" />
+        <arg type="s" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="Destroy">
+        <arg type="s" name ="description" direction = "in" />
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+  </interface>
+</node>
+

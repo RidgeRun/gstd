@@ -28,10 +28,6 @@ public class Pipeline : GLib.Object {
             Bus bus = pipeline.get_bus ();
             bus.add_watch (bus_callback);
 
-            /* Increase the ref count or the object will be destroyed 
-               when the function is done. */
-            pipeline.ref_count++;
-
             if (debug)
                 stdout.printf("Pipeline created: %s\n",description);
 
@@ -42,23 +38,20 @@ public class Pipeline : GLib.Object {
     }
 
     public Pipeline.withDebug(string description,bool debug){
-        this.debug = debug;
         this(description);
+        this.debug = debug;
     }
 
     /**
      Destroy a instance of a Pipeline 
      */
     ~Pipeline(){
-        GLib.Object *o;
-
         /* Destroy the pipeline */
         if (!PipelineSetState(State.NULL))
             stderr.printf("Failed to destroy pipeline\n");
     }
 
     private bool bus_callback (Gst.Bus bus, Gst.Message message) {
-
         switch (message.type) {
         case MessageType.ERROR:
 
@@ -72,8 +65,8 @@ public class Pipeline : GLib.Object {
             /*Need TODO: Review if err.message can be sent*/
             Error(/*err.message*/);
 
-            /*Finish main loop*/
-            loop.quit ();
+            if (debug)
+                stderr.printf("Error on pipeline: %s\n",err.message);
             break;
 
         case MessageType.EOS:
@@ -108,8 +101,9 @@ public class Pipeline : GLib.Object {
         State current, pending;
 
         pipeline.set_state(state);
-        /* Wait for the transition at most 2 secs */
-        pipeline.get_state(out current,out pending, 2000000000);
+        /* Wait for the transition at most 8 secs */
+        pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
+        pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
         if (current != state) {
             stderr.printf("Element, failed to change state %s\n",
                 state.to_string());
