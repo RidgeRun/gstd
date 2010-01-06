@@ -7,7 +7,7 @@
      "/com/ridgerun/gstreamer/gstd/factory" object found via a well-known name of
      "com.ridgerun.gstreamer.gstd". -->
 
-<node name="/com/freondemo/interface/v1_0">
+<node name="/com/ridgerun/gstreamer/gstd/FactoryInterface/v1_0">
 
   <interface name="com.ridgerun.gstreamer.gstd.FactoryInterface">
 

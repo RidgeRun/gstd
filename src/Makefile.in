@@ -46,7 +46,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(gstddir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(interfacedir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_gst_client_OBJECTS = gst_client-gst-client.$(OBJEXT)
 gst_client_OBJECTS = $(am_gst_client_OBJECTS)
@@ -109,7 +109,7 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-DATA = $(gstd_DATA)
+DATA = $(interface_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -212,10 +212,12 @@ gst_client_SOURCES = gst-client.vala
 gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1
 gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_LDADD = @DBUS_GLIB_LIBS@
-interface_xml := factory-iface.xml pipeline-iface.xml
-gstddir = $(includedir)/gstd
-EXTRA_DIST = $(interface_xml)
-gstd_DATA = $(interface_xml)
+interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
+ com.ridgerun.gstreamer.gstd.PipelineInterface.xml
+
+EXTRA_DIST = $(interfaces_xml)
+interfacedir = $(datadir)/dbus-1/interfaces/
+interface_DATA = $(interfaces_xml)
 all: all-am
 
 .SUFFIXES:
@@ -410,26 +412,26 @@ $(srcdir)/gst-client.c: $(srcdir)/gst_client_vala.stamp
 gst_client_vala.stamp: $(gst_client_SOURCES)
 	$(AM_V_VALAC)$(VALAC) $(gst_client_VALAFLAGS) $(VALAFLAGS) -C $(gst_client_SOURCES)
 	$(AM_V_at)touch $@
-install-gstdDATA: $(gstd_DATA)
+install-interfaceDATA: $(interface_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(gstddir)" || $(MKDIR_P) "$(DESTDIR)$(gstddir)"
-	@list='$(gstd_DATA)'; test -n "$(gstddir)" || list=; \
+	test -z "$(interfacedir)" || $(MKDIR_P) "$(DESTDIR)$(interfacedir)"
+	@list='$(interface_DATA)'; test -n "$(interfacedir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(gstddir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(gstddir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(interfacedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(interfacedir)" || exit $$?; \
 	done
 
-uninstall-gstdDATA:
+uninstall-interfaceDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(gstd_DATA)'; test -n "$(gstddir)" || list=; \
+	@list='$(interface_DATA)'; test -n "$(interfacedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(gstddir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(gstddir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(interfacedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(interfacedir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -517,7 +519,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(gstddir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(interfacedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -573,7 +575,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gstdDATA
+install-data-am: install-interfaceDATA
 
 install-dvi: install-dvi-am
 
@@ -618,7 +620,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-gstdDATA
+uninstall-am: uninstall-binPROGRAMS uninstall-interfaceDATA
 
 .MAKE: install-am install-strip
 
@@ -627,14 +629,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-gstdDATA
 	distclean-generic distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-gstdDATA install-html \
-	install-html-am install-info install-info-am install-man \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-interfaceDATA install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-gstdDATA
+	uninstall-interfaceDATA
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

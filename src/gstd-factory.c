@@ -247,7 +247,7 @@ static DBusHandlerResult _dbus_factory_property_get_all (Factory* self, DBusConn
 static DBusHandlerResult _dbus_factory_Create (Factory* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* description = NULL;
+	char* description;
 	const char* _tmp1_;
 	char* result;
 	DBusMessage* reply;
@@ -257,6 +257,7 @@ static DBusHandlerResult _dbus_factory_Create (Factory* self, DBusConnection* co
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	description = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp1_);
 	dbus_message_iter_next (&iter);
 	description = g_strdup (_tmp1_);
@@ -280,7 +281,7 @@ static DBusHandlerResult _dbus_factory_Create (Factory* self, DBusConnection* co
 static DBusHandlerResult _dbus_factory_Destroy (Factory* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* objectpath = NULL;
+	char* objectpath;
 	const char* _tmp3_;
 	gboolean result;
 	DBusMessage* reply;
@@ -290,6 +291,7 @@ static DBusHandlerResult _dbus_factory_Destroy (Factory* self, DBusConnection* c
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	objectpath = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp3_);
 	dbus_message_iter_next (&iter);
 	objectpath = g_strdup (_tmp3_);

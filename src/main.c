@@ -7,9 +7,9 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
 #include <gst/gst.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <dbus/dbus.h>
 
 #define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
@@ -38,7 +38,7 @@ GMainLoop* loop = NULL;
 extern DBusGConnection* conn;
 DBusGConnection* conn = NULL;
 
-static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
+guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
 GType factory_get_type (void);
@@ -48,7 +48,7 @@ static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
 
 
 
-static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
+guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
 	guint result;
 	dbus_g_proxy_call (self, "RequestName", error, G_TYPE_STRING, param1, G_TYPE_UINT, param2, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -63,14 +63,13 @@ void _main (char** args, int args_length1) {
 	GMainLoop* _tmp0_;
 	_inner_error_ = NULL;
 	gst_init (&args_length1, &args);
-	fprintf (stdout, "Harrier Streaming Server Daemon\n");
 	loop = (_tmp0_ = g_main_loop_new (NULL, FALSE), _g_main_loop_unref0 (loop), _tmp0_);
 	{
 		DBusGConnection* _tmp1_;
 		DBusGConnection* _tmp2_;
 		DBusGProxy* bus;
 		guint request_name_result;
-		_tmp1_ = dbus_g_bus_get (DBUS_BUS_SESSION, &_inner_error_);
+		_tmp1_ = dbus_g_bus_get (DBUS_BUS_SYSTEM, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			goto __catch0_g_error;
 			goto __finally0;
@@ -87,12 +86,11 @@ void _main (char** args, int args_length1) {
 			Factory* factory;
 			factory = factory_new ();
 			_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ridgerun/gstreamer/gstd/factory", (GObject*) factory);
-			fprintf (stdout, "Listening for connections...\n");
 			g_main_loop_run (loop);
 			_g_object_unref0 (factory);
 		} else {
 			fprintf (stderr, "Failed to obtain primary ownership of the service\n");
-			fprintf (stderr, "%s", "This usually means there is another instance of " "harrier already running\n");
+			fprintf (stderr, "This usually means there is another instance of " "harrier already running\n");
 		}
 		_g_object_unref0 (bus);
 	}

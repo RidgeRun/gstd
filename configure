@@ -3528,6 +3528,8 @@ ac_config_files="$ac_config_files Makefile src/Makefile"
 
 ac_config_files="$ac_config_files gstd-1.0.pc:gstd-1.0.pc.in"
 
+ac_config_files="$ac_config_files com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in"
+
 
 # Extract the first word of "valac", so it can be a program name with args.
 set dummy valac; ac_word=$2
@@ -4561,6 +4563,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "gstd-1.0.pc") CONFIG_FILES="$CONFIG_FILES gstd-1.0.pc:gstd-1.0.pc.in" ;;
+    "com.ridgerun.gstreamer.gstd.service") CONFIG_FILES="$CONFIG_FILES com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

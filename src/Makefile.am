@@ -13,8 +13,10 @@ gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_LDADD = @DBUS_GLIB_LIBS@
 
 
-interface_xml := factory-iface.xml pipeline-iface.xml
-gstddir = $(includedir)/gstd
+interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
+ com.ridgerun.gstreamer.gstd.PipelineInterface.xml
 
-EXTRA_DIST= $(interface_xml)
-gstd_DATA = $(interface_xml)
+EXTRA_DIST= $(interfaces_xml)
+
+interfacedir=$(datadir)/dbus-1/interfaces/
+interface_DATA= $(interfaces_xml)

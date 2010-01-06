@@ -9,13 +9,11 @@ public void main (string[] args) {
     /* Initializing GStreamer */
     Gst.init (ref args);
 
-    stdout.printf("Harrier Streaming Server Daemon\n");
-
     /* Creating a GLib main loop with a default context */
     loop = new MainLoop (null, false);
 
     try {
-        conn = DBus.Bus.get (DBus.BusType.SESSION);
+        conn = DBus.Bus.get (DBus.BusType.SYSTEM);
 
         dynamic DBus.Object bus = conn.get_object ("org.freedesktop.DBus",
                                                    "/org/freedesktop/DBus",
@@ -32,7 +30,6 @@ public void main (string[] args) {
 
             conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
-            stdout.printf("Listening for connections...\n");
             loop.run ();
         } else {
             stderr.printf("Failed to obtain primary ownership of the service\n");

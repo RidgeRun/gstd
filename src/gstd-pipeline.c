@@ -700,11 +700,11 @@ static DBusHandlerResult _dbus_pipeline_PipelineNull (Pipeline* self, DBusConnec
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp4_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp5_;
-	gboolean val = FALSE;
+	gboolean val;
 	dbus_bool_t _tmp6_;
 	gboolean result;
 	DBusMessage* reply;
@@ -714,12 +714,15 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* sel
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp4_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp4_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp5_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp5_);
+	val = FALSE;
 	dbus_message_iter_get_basic (&iter, &_tmp6_);
 	dbus_message_iter_next (&iter);
 	val = _tmp6_;
@@ -743,11 +746,11 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* sel
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp8_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp9_;
-	gint val = 0;
+	gint val;
 	dbus_int32_t _tmp10_;
 	gboolean result;
 	DBusMessage* reply;
@@ -757,12 +760,15 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, D
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp8_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp8_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp9_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp9_);
+	val = 0;
 	dbus_message_iter_get_basic (&iter, &_tmp10_);
 	dbus_message_iter_next (&iter);
 	val = _tmp10_;
@@ -786,11 +792,11 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, D
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyLong (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp12_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp13_;
-	glong val = 0L;
+	glong val;
 	glong _tmp14_;
 	DBusMessageIter _tmp15_;
 	gboolean result;
@@ -801,12 +807,15 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyLong (Pipeline* self, 
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp12_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp12_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp13_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp13_);
+	val = 0L;
 	dbus_message_iter_recurse (&iter, &_tmp15_);
 	dbus_message_iter_next (&iter);
 	val = _tmp14_;
@@ -830,11 +839,11 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyLong (Pipeline* self, 
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyString (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp17_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp18_;
-	char* val = NULL;
+	char* val;
 	const char* _tmp19_;
 	gboolean result;
 	DBusMessage* reply;
@@ -844,12 +853,15 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyString (Pipeline* self
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp17_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp17_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp18_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp18_);
+	val = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp19_);
 	dbus_message_iter_next (&iter);
 	val = g_strdup (_tmp19_);
@@ -874,9 +886,9 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyString (Pipeline* self
 static DBusHandlerResult _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp21_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp22_;
 	gboolean result;
 	DBusMessage* reply;
@@ -886,9 +898,11 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* sel
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp21_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp21_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp22_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp22_);
@@ -912,9 +926,9 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* sel
 static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp24_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp25_;
 	gint result;
 	DBusMessage* reply;
@@ -924,9 +938,11 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, D
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp24_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp24_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp25_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp25_);
@@ -950,9 +966,9 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, D
 static DBusHandlerResult _dbus_pipeline_ElementGetPropertyLong (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp27_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp28_;
 	glong result;
 	DBusMessage* reply;
@@ -962,9 +978,11 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyLong (Pipeline* self, 
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp27_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp27_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp28_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp28_);
@@ -988,9 +1006,9 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyLong (Pipeline* self, 
 static DBusHandlerResult _dbus_pipeline_ElementGetPropertyString (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	char* element = NULL;
+	char* element;
 	const char* _tmp30_;
-	char* property = NULL;
+	char* property;
 	const char* _tmp31_;
 	char* result;
 	DBusMessage* reply;
@@ -1000,9 +1018,11 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyString (Pipeline* self
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
+	element = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp30_);
 	dbus_message_iter_next (&iter);
 	element = g_strdup (_tmp30_);
+	property = NULL;
 	dbus_message_iter_get_basic (&iter, &_tmp31_);
 	dbus_message_iter_next (&iter);
 	property = g_strdup (_tmp31_);

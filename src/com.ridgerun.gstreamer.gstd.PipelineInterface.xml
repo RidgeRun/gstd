@@ -7,7 +7,7 @@
      "/com/ridgerun/gstreamer/gstd/pipe#" object found via a well-known name of
      "com.ridgerun.gstreamer.gstd". -->
 
-<node name="/com/freondemo/interface/v1_1">
+<node name="/com/ridgerun/gstreamer/gstd/PipelineInterface/v1_0">
 
   <interface name="com.ridgerun.gstreamer.gstd.PipelineInterface">
 
