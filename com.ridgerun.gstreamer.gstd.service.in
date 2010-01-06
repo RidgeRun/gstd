@@ -1,3 +1,4 @@
 [D-BUS Service]
 Name=com.ridgerun.gstreamer.gstd
 Exec=@prefix@/bin/gstd
+User=root

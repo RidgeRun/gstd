@@ -55,7 +55,7 @@ public class HarrierCli : GLib.Object {
     public HarrierCli() throws DBus.Error, GLib.Error {
 
         /*Getting a Gstd Factory proxy object*/
-        conn = DBus.Bus.get (DBus.BusType.SESSION);
+        conn = DBus.Bus.get (DBus.BusType.SYSTEM);
         factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
                                    "/com/ridgerun/gstreamer/gstd/factory",
                                    "com.ridgerun.gstreamer.gstd.FactoryInterface");
