@@ -38,7 +38,7 @@ GMainLoop* loop = NULL;
 extern DBusGConnection* conn;
 DBusGConnection* conn = NULL;
 
-guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
+static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error);
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
 GType factory_get_type (void);
@@ -48,7 +48,7 @@ static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
 
 
 
-guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
+static guint _dynamic_request_name0 (DBusGProxy* self, const char* param1, guint param2, GError** error) {
 	guint result;
 	dbus_g_proxy_call (self, "RequestName", error, G_TYPE_STRING, param1, G_TYPE_UINT, param2, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -90,7 +90,7 @@ void _main (char** args, int args_length1) {
 			_g_object_unref0 (factory);
 		} else {
 			fprintf (stderr, "Failed to obtain primary ownership of the service\n");
-			fprintf (stderr, "This usually means there is another instance of " "harrier already running\n");
+			fprintf (stderr, "%s", "This usually means there is another instance of " "harrier already running\n");
 		}
 		_g_object_unref0 (bus);
 	}

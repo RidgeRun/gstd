@@ -64,29 +64,29 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error);
 void harrier_cli_Error_cb (HarrierCli* self);
 void harrier_cli_Eos_cb (HarrierCli* self);
 void harrier_cli_StateChanged_cb (HarrierCli* self);
-char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error);
+static char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error);
 static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* description);
-gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_play (HarrierCli* self, DBusGProxy* pipeline);
-gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_pause (HarrierCli* self, DBusGProxy* pipeline);
-gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipeline);
-gboolean _dynamic_Destroy4 (DBusGProxy* self, const char* param1, GError** error);
+static gboolean _dynamic_Destroy4 (DBusGProxy* self, const char* param1, GError** error);
 static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, const char* obj_path);
-gboolean _dynamic_ElementGetPropertyBoolean5 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
-gint _dynamic_ElementGetPropertyInt6 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
-glong _dynamic_ElementGetPropertyLong7 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
-char* _dynamic_ElementGetPropertyString8 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
+static gboolean _dynamic_ElementGetPropertyBoolean5 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
+static gint _dynamic_ElementGetPropertyInt6 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
+static glong _dynamic_ElementGetPropertyLong7 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
+static char* _dynamic_ElementGetPropertyString8 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
 static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1);
-gboolean _dynamic_ElementSetPropertyBoolean9 (DBusGProxy* self, const char* param1, const char* param2, gboolean param3, GError** error);
-gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* param1, const char* param2, gint param3, GError** error);
-gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error);
-gboolean _dynamic_ElementSetPropertyString12 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyBoolean9 (DBusGProxy* self, const char* param1, const char* param2, gboolean param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* param1, const char* param2, gint param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyString12 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error);
 static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1);
-gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error);
+static gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline);
-gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error);
+static gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline);
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
@@ -118,7 +118,7 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 	_tmp0_ = dbus_g_bus_get (DBUS_BUS_SYSTEM, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_propagate_error (error, _inner_error_);
-		return;
+		return NULL;
 	}
 	self->priv->conn = (_tmp1_ = _tmp0_, _dbus_g_connection_unref0 (self->priv->conn), _tmp1_);
 	self->priv->factory = (_tmp2_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", "/com/ridgerun/gstreamer/gstd/factory", "com.ridgerun.gstreamer.gstd.FactoryInterface"), _g_object_unref0 (self->priv->factory), _tmp2_);
@@ -149,7 +149,7 @@ void harrier_cli_StateChanged_cb (HarrierCli* self) {
 }
 
 
-char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error) {
+static char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error) {
 	char* result;
 	dbus_g_proxy_call (self, "Create", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -185,7 +185,7 @@ static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* descr
 }
 
 
-gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelinePlay", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -218,7 +218,7 @@ static gboolean harrier_cli_pipeline_play (HarrierCli* self, DBusGProxy* pipelin
 }
 
 
-gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelinePause", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -251,7 +251,7 @@ static gboolean harrier_cli_pipeline_pause (HarrierCli* self, DBusGProxy* pipeli
 }
 
 
-gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineNull", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -284,7 +284,7 @@ static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipelin
 }
 
 
-gboolean _dynamic_Destroy4 (DBusGProxy* self, const char* param1, GError** error) {
+static gboolean _dynamic_Destroy4 (DBusGProxy* self, const char* param1, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "Destroy", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -318,7 +318,7 @@ static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, const char* obj_
 }
 
 
-gboolean _dynamic_ElementGetPropertyBoolean5 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
+static gboolean _dynamic_ElementGetPropertyBoolean5 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementGetPropertyBoolean", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -328,7 +328,7 @@ gboolean _dynamic_ElementGetPropertyBoolean5 (DBusGProxy* self, const char* para
 }
 
 
-gint _dynamic_ElementGetPropertyInt6 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
+static gint _dynamic_ElementGetPropertyInt6 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
 	gint result;
 	dbus_g_proxy_call (self, "ElementGetPropertyInt", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -338,7 +338,7 @@ gint _dynamic_ElementGetPropertyInt6 (DBusGProxy* self, const char* param1, cons
 }
 
 
-glong _dynamic_ElementGetPropertyLong7 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
+static glong _dynamic_ElementGetPropertyLong7 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
 	glong result;
 	dbus_g_proxy_call (self, "ElementGetPropertyLong", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, dbus_g_type_get_struct ("GValueArray", G_TYPE_INVALID), &result, G_TYPE_INVALID);
 	if (*error) {
@@ -348,7 +348,7 @@ glong _dynamic_ElementGetPropertyLong7 (DBusGProxy* self, const char* param1, co
 }
 
 
-char* _dynamic_ElementGetPropertyString8 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
+static char* _dynamic_ElementGetPropertyString8 (DBusGProxy* self, const char* param1, const char* param2, GError** error) {
 	char* result;
 	dbus_g_proxy_call (self, "ElementGetPropertyString", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -483,7 +483,7 @@ static gboolean string_to_bool (const char* self) {
 }
 
 
-gboolean _dynamic_ElementSetPropertyBoolean9 (DBusGProxy* self, const char* param1, const char* param2, gboolean param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyBoolean9 (DBusGProxy* self, const char* param1, const char* param2, gboolean param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyBoolean", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_BOOLEAN, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -493,7 +493,7 @@ gboolean _dynamic_ElementSetPropertyBoolean9 (DBusGProxy* self, const char* para
 }
 
 
-gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* param1, const char* param2, gint param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* param1, const char* param2, gint param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyInt", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INT, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -503,7 +503,7 @@ gboolean _dynamic_ElementSetPropertyInt10 (DBusGProxy* self, const char* param1,
 }
 
 
-gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error) {
 	GValueArray* dbus_param3;
 	gboolean result;
 	dbus_param3 = g_value_array_new (0);
@@ -515,7 +515,7 @@ gboolean _dynamic_ElementSetPropertyLong11 (DBusGProxy* self, const char* param1
 }
 
 
-gboolean _dynamic_ElementSetPropertyString12 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyString12 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyString", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -642,7 +642,7 @@ static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy*
 }
 
 
-gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error) {
+static gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error) {
 	gint result;
 	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -676,7 +676,7 @@ static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy*
 }
 
 
-gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error) {
+static gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error) {
 	gint result;
 	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -898,7 +898,7 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 			_g_object_unref0 (pipeline);
 			return result;
 		} else {
-			fprintf (stdout, "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
+			fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 			while (TRUE) {
 				if (!(self->priv->cmds[(id * self->priv->cmds_length2) + 0] != NULL)) {
 					break;

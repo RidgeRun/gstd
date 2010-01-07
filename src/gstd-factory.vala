@@ -55,9 +55,12 @@ public class Factory : GLib.Object {
         pipeline = conn.lookup_object(objectpath);
 
         /* Searching our pipeline*/
-        while (pipes[id] != pipeline){
-            id = id++ % 20;
-            stdout.printf("Searching pipe %d\n",id);
+        while(pipes[id] != pipeline){
+            id++;
+            if (id == 20){
+                stderr.printf("Fail to destroy pipeline:%s\n", objectpath);
+                return false;
+            }
         }
 
         pipes[id] = null;
