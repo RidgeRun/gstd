@@ -50,6 +50,8 @@ static char* harrier_cli_obj_path;
 static char* harrier_cli_obj_path = NULL;
 static gboolean harrier_cli__signals;
 static gboolean harrier_cli__signals = FALSE;
+static gboolean harrier_cli__debug;
+static gboolean harrier_cli__debug = FALSE;
 static char** harrier_cli__remaining_args;
 static char** harrier_cli__remaining_args = NULL;
 static gpointer harrier_cli_parent_class = NULL;
@@ -64,7 +66,7 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error);
 void harrier_cli_Error_cb (HarrierCli* self);
 void harrier_cli_Eos_cb (HarrierCli* self);
 void harrier_cli_StateChanged_cb (HarrierCli* self);
-static char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error);
+static char* _dynamic_CreateWithDebug0 (DBusGProxy* self, const char* param1, gboolean param2, GError** error);
 static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* description);
 static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_play (HarrierCli* self, DBusGProxy* pipeline);
@@ -104,7 +106,7 @@ static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify 
 static gint _vala_array_length (gpointer array);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
-static const GOptionEntry HARRIER_CLI_options[] = {{"by_path", 'p', 0, G_OPTION_ARG_STRING, &harrier_cli_obj_path, "Pipeline path, for which command will be apply.Usage:-p <path>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &harrier_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
+static const GOptionEntry HARRIER_CLI_options[] = {{"by_path", 'p', 0, G_OPTION_ARG_STRING, &harrier_cli_obj_path, "Pipeline path, for which command will be apply.Usage:-p <path>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &harrier_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &harrier_cli__debug, "Flag to enable debug information on a pipeline,useful just for 'create' command.Usage:-d <1>", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
 
 
 HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
@@ -149,9 +151,9 @@ void harrier_cli_StateChanged_cb (HarrierCli* self) {
 }
 
 
-static char* _dynamic_Create0 (DBusGProxy* self, const char* param1, GError** error) {
+static char* _dynamic_CreateWithDebug0 (DBusGProxy* self, const char* param1, gboolean param2, GError** error) {
 	char* result;
-	dbus_g_proxy_call (self, "Create", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
+	dbus_g_proxy_call (self, "CreateWithDebug", error, G_TYPE_STRING, param1, G_TYPE_BOOLEAN, param2, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
 	if (*error) {
 		return NULL;
 	}
@@ -166,7 +168,7 @@ static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* descr
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (description != NULL, FALSE);
 	_inner_error_ = NULL;
-	new_objpath = _dynamic_Create0 (self->priv->factory, description, &_inner_error_);
+	new_objpath = _dynamic_CreateWithDebug0 (self->priv->factory, description, harrier_cli__debug, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
@@ -983,6 +985,7 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			goto __catch1_g_error;
 			goto __finally1;
 		}
+		fprintf (stdout, "gst-client-main:_debug= %i, JUST TO TEST\n", (gint) harrier_cli__debug);
 		_tmp1_ = harrier_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_option_context_free0 (opt);

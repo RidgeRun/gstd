@@ -9,7 +9,8 @@ public class HarrierCli : GLib.Object {
     * Used as reference in option parser
     */
     static string obj_path;
-    static bool _signals;
+    static bool _signals = false;
+    static bool _debug = false;
     [CCode (array_length = false, array_null_terminated = true)]
     static string[] _remaining_args;
 
@@ -23,6 +24,10 @@ public class HarrierCli : GLib.Object {
 
     { "enable_signals", 's', 0, OptionArg.INT, ref _signals,
     "Flag to enable the signals reception.Usage:-s <1>", null },
+    
+    { "debug", 'd', 0, OptionArg.INT, ref _debug,
+    "Flag to enable debug information on a pipeline,useful just for 'create' command.Usage:-d <1>",
+    null },
 
     { "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
      null, N_("[COMMANDS...]") },
@@ -85,7 +90,7 @@ public class HarrierCli : GLib.Object {
 
     private bool pipeline_create(string description){
 
-        string new_objpath = factory.Create(description);
+        string new_objpath = factory.CreateWithDebug(description,_debug);
 
         if (new_objpath == "") {
             stderr.printf("Failed to create pipeline");
@@ -253,7 +258,6 @@ public class HarrierCli : GLib.Object {
         dynamic DBus.Object pipeline = null;
 
         if(obj_path != null){
-
             try{
                 pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
                                              obj_path,
@@ -371,7 +375,6 @@ public class HarrierCli : GLib.Object {
         HarrierCli cli;
 
         try {
-
             obj_path = null;
             var opt = new OptionContext("(For Commands HELP: 'gst-client help')");
             opt.set_help_enabled(true);

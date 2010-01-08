@@ -58,8 +58,8 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 Pipeline* pipeline_new (const char* description);
 Pipeline* pipeline_construct (GType object_type, const char* description);
-Pipeline* pipeline_new_withDebug (const char* description, gboolean debug);
-Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean debug);
+Pipeline* pipeline_new_withDebug (const char* description, gboolean _debug);
+Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean _debug);
 static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state);
 gboolean pipeline_PipelinePlay (Pipeline* self);
 gboolean pipeline_PipelinePause (Pipeline* self);
@@ -128,9 +128,6 @@ Pipeline* pipeline_construct (GType object_type, const char* description) {
 		g_assert (self->priv->pipeline != NULL);
 		bus = gst_element_get_bus (self->priv->pipeline);
 		gst_bus_add_watch (bus, _pipeline_bus_callback_gst_bus_func, self);
-		if (self->priv->debug) {
-			fprintf (stdout, "Pipeline created: %s\n", description);
-		}
 		_gst_object_unref0 (bus);
 	}
 	goto __finally1;
@@ -159,17 +156,20 @@ Pipeline* pipeline_new (const char* description) {
 }
 
 
-Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean debug) {
+Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean _debug) {
 	Pipeline * self;
 	g_return_val_if_fail (description != NULL, NULL);
 	self = (Pipeline*) pipeline_construct (object_type, description);
-	self->priv->debug = debug;
+	self->priv->debug = _debug;
+	if (_debug) {
+		fprintf (stdout, "Pipeline created: %s\n", description);
+	}
 	return self;
 }
 
 
-Pipeline* pipeline_new_withDebug (const char* description, gboolean debug) {
-	return pipeline_construct_withDebug (TYPE_PIPELINE, description, debug);
+Pipeline* pipeline_new_withDebug (const char* description, gboolean _debug) {
+	return pipeline_construct_withDebug (TYPE_PIPELINE, description, _debug);
 }
 
 
@@ -232,7 +232,9 @@ static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state) {
 	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 4000000000u);
 	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 4000000000u);
 	if (current != state) {
-		fprintf (stderr, "Element, failed to change state %s\n", gst_element_state_get_name (state));
+		if (self->priv->debug) {
+			fprintf (stderr, "Element, failed to change state %s\n", gst_element_state_get_name (state));
+		}
 		result = FALSE;
 		return result;
 	}
@@ -286,7 +288,9 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const char* element
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -316,7 +320,9 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const char* element, co
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline\n", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline\n", element);
+		}
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -346,7 +352,9 @@ gboolean pipeline_ElementSetPropertyLong (Pipeline* self, const char* element, c
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -377,7 +385,9 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const char* element,
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -409,7 +419,9 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const char* element
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 	}
 	g_object_get ((GObject*) e, property, &bool_v, NULL, NULL);
 	result = bool_v;
@@ -437,7 +449,9 @@ gint pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const 
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 	}
 	g_object_get ((GObject*) e, property, &integer_v, NULL, NULL);
 	result = integer_v;
@@ -465,7 +479,9 @@ glong pipeline_ElementGetPropertyLong (Pipeline* self, const char* element, cons
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 	}
 	g_object_get ((GObject*) e, property, &long_v, NULL, NULL);
 	result = long_v;
@@ -493,7 +509,9 @@ char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, co
 	pipe = (_tmp1_ = _gst_object_ref0 ((_tmp0_ = self->priv->pipeline, GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL)), _gst_object_unref0 (pipe), _tmp1_);
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
-		fprintf (stderr, "Element %s not found on pipeline", element);
+		if (self->priv->debug) {
+			fprintf (stderr, "Element %s not found on pipeline", element);
+		}
 	}
 	g_object_get ((GObject*) e, property, &string_v, NULL, NULL);
 	result = string_v;

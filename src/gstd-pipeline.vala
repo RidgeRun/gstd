@@ -28,18 +28,19 @@ public class Pipeline : GLib.Object {
             Bus bus = pipeline.get_bus ();
             bus.add_watch (bus_callback);
 
-            if (debug)
-                stdout.printf("Pipeline created: %s\n",description);
-
         } catch (GLib.Error e) {
             stderr.printf("Failed to create pipeline with description: %s.\n" +
                 "Error: %s\n",description,e.message);
         }
     }
 
-    public Pipeline.withDebug(string description,bool debug){
+    public Pipeline.withDebug(string description,bool _debug){
+
         this(description);
-        this.debug = debug;
+        this.debug = _debug;
+
+        if (_debug)
+            stdout.printf("Pipeline created: %s\n",description);
     }
 
     /**
@@ -105,7 +106,8 @@ public class Pipeline : GLib.Object {
         pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
         pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
         if (current != state) {
-            stderr.printf("Element, failed to change state %s\n",
+            if (debug)
+                stderr.printf("Element, failed to change state %s\n",
                 state.to_string());
             return false;
         }
@@ -152,7 +154,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
             return false;
         }
 
@@ -175,7 +178,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline\n",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline\n",element);
             return false;
         }
 
@@ -197,7 +201,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
             return false;
         }
 
@@ -220,7 +225,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
             return false;
         }
 
@@ -243,7 +249,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
         }
 
         e.get(property,&bool_v,null);
@@ -265,7 +272,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
         }
 
         e.get(property,&integer_v,null);
@@ -287,7 +295,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
         }
 
         e.get(property,&long_v,null);
@@ -309,7 +318,8 @@ public class Pipeline : GLib.Object {
         pipe = pipeline as Gst.Pipeline;
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
-            stderr.printf("Element %s not found on pipeline",element);
+            if(debug)
+                stderr.printf("Element %s not found on pipeline",element);
         }
 
         e.get(property,&string_v,null);

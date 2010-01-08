@@ -41,6 +41,31 @@ public class Factory : GLib.Object {
         return "";
     }
 
+    public string CreateWithDebug(string description,bool debug){
+
+        if(debug){
+
+            /* Create our pipeline*/
+            while (pipes[next_id] != null){
+                next_id = next_id++ % 20;
+            }
+            pipes[next_id] = new Pipeline.withDebug(description,debug);
+
+            if (pipes[next_id] is Pipeline){
+                string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
+                conn.register_object (objectpath, pipes[next_id]);
+                next_id++;
+                return objectpath;
+            }
+
+            return "";
+
+        }else { 
+            string ret = Create(description);
+            return ret;
+        }
+    }
+
     /**
      Destroy a pipeline from a gst-launch like descrition
      @param objectpath, the dbus-objectpathe of the pipeline
