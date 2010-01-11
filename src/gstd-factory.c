@@ -70,6 +70,7 @@ Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
 Pipeline* pipeline_new (const char* description);
 Pipeline* pipeline_construct (GType object_type, const char* description);
+gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 char* factory_Create (Factory* self, const char* description);
 Pipeline* pipeline_new_withDebug (const char* description, gboolean _debug);
 Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean _debug);
@@ -139,7 +140,7 @@ char* factory_Create (Factory* self, const char* description) {
 		self->priv->next_id = (self->priv->next_id++) % 20;
 	}
 	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
-	if (IS_PIPELINE (self->priv->pipes[self->priv->next_id])) {
+	if (pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
 		char* _tmp1_;
 		char* _tmp2_;
 		char* objectpath;
@@ -167,7 +168,7 @@ char* factory_CreateWithDebug (Factory* self, const char* description, gboolean 
 			self->priv->next_id = (self->priv->next_id++) % 20;
 		}
 		self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new_withDebug (description, debug), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
-		if (IS_PIPELINE (self->priv->pipes[self->priv->next_id])) {
+		if (pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
 			char* _tmp1_;
 			char* _tmp2_;
 			char* objectpath;

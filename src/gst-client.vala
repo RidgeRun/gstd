@@ -41,7 +41,7 @@ public class HarrierCli : GLib.Object {
      */
     private string[,] cmds = {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
-         "Create a new pipeline and returns the dbus-path to access it"},
+         "Creates a new pipeline and returns the dbus-path to access it"},
         {"destroy","-p <path> destroy","Destroys the pipeline specified by_path(-p)"},
         {"play","-p <path> play","Sets the pipeline specified by_path(-p) to play state"},
         {"pause","-p <path> pause","Sets the pipeline specified by_path(-p) to pause state"},
@@ -93,7 +93,7 @@ public class HarrierCli : GLib.Object {
         string new_objpath = factory.CreateWithDebug(description,_debug);
 
         if (new_objpath == "") {
-            stderr.printf("Failed to create pipeline");
+            stderr.printf("Failed to create pipeline\n");
             return false;
         }
 
@@ -258,14 +258,18 @@ public class HarrierCli : GLib.Object {
         dynamic DBus.Object pipeline = null;
 
         if(obj_path != null){
-            try{
-                pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-                                             obj_path,
-                                            "com.ridgerun.gstreamer.gstd.PipelineInterface");
+            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                         obj_path,
+                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
 
-            }catch(GLib.Error e){
-                /*Need to be reviewed, it never gets here*/
-                stderr.printf("Object with  path %s was not found\n", obj_path);
+            try{
+                bool ret=pipeline.PipelineIsInitialized();
+                if(!ret){
+                    stderr.printf("Pipeline with path:%s, was not initialiazed\n",obj_path);
+                    return false;
+                }
+            } catch (Error e) {
+                stderr.printf ("Pipeline with path:%s, has not been created\n",obj_path);
                 return false;
             }
 

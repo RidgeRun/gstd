@@ -90,6 +90,7 @@ static gint _dynamic_PipelineGetDuration13 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline);
 static gint _dynamic_PipelineGetPosition14 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean _dynamic_PipelineIsInitialized15 (DBusGProxy* self, GError** error);
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
 static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
@@ -175,7 +176,7 @@ static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* descr
 		return FALSE;
 	}
 	if (_vala_strcmp0 (new_objpath, "") == 0) {
-		fprintf (stderr, "Failed to create pipeline");
+		fprintf (stderr, "Failed to create pipeline\n");
 		result = FALSE;
 		_g_free0 (new_objpath);
 		return result;
@@ -712,6 +713,16 @@ static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy*
 }
 
 
+static gboolean _dynamic_PipelineIsInitialized15 (DBusGProxy* self, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
 static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
 	harrier_cli_Error_cb (self);
 }
@@ -768,9 +779,21 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 	_inner_error_ = NULL;
 	pipeline = NULL;
 	if (harrier_cli_obj_path != NULL) {
+		DBusGProxy* _tmp0_;
+		pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", harrier_cli_obj_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (pipeline), _tmp0_);
 		{
-			DBusGProxy* _tmp0_;
-			pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", harrier_cli_obj_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (pipeline), _tmp0_);
+			gboolean ret;
+			ret = _dynamic_PipelineIsInitialized15 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch0_g_error;
+				goto __finally0;
+			}
+			if (!ret) {
+				fprintf (stderr, "Pipeline with path:%s, was not initialiazed\n", harrier_cli_obj_path);
+				result = FALSE;
+				_g_object_unref0 (pipeline);
+				return result;
+			}
 		}
 		goto __finally0;
 		__catch0_g_error:
@@ -779,7 +802,7 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			{
-				fprintf (stderr, "Object with  path %s was not found\n", harrier_cli_obj_path);
+				fprintf (stderr, "Pipeline with path:%s, has not been created\n", harrier_cli_obj_path);
 				result = FALSE;
 				_g_error_free0 (e);
 				_g_object_unref0 (pipeline);
@@ -985,7 +1008,6 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			goto __catch1_g_error;
 			goto __finally1;
 		}
-		fprintf (stdout, "gst-client-main:_debug= %i, JUST TO TEST\n", (gint) harrier_cli__debug);
 		_tmp1_ = harrier_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_option_context_free0 (opt);
@@ -1070,7 +1092,7 @@ static void harrier_cli_class_init (HarrierCliClass * klass) {
 static void harrier_cli_instance_init (HarrierCli * self) {
 	char** _tmp0_ = NULL;
 	self->priv = HARRIER_CLI_GET_PRIVATE (self);
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (9 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Create a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("-p <path> destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p)"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("-p <path> play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("-p <path> pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("-p <path> null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("-p <path> set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the pipeline(option -p needed)"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("-p <path> get <element_name> <property_name> <data_type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the pipeline(option -p needed)"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("-p <path> get-duration"), _tmp0_[23] = g_strdup ("Gets the pipeline duration time(option -p needed)"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("-p <path> get-position"), _tmp0_[26] = g_strdup ("Gets the pipeline position(option -p needed)"), _tmp0_);
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (9 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("-p <path> destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p)"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("-p <path> play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("-p <path> pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("-p <path> null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("-p <path> set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the pipeline(option -p needed)"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("-p <path> get <element_name> <property_name> <data_type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the pipeline(option -p needed)"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("-p <path> get-duration"), _tmp0_[23] = g_strdup ("Gets the pipeline duration time(option -p needed)"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("-p <path> get-position"), _tmp0_[26] = g_strdup ("Gets the pipeline position(option -p needed)"), _tmp0_);
 	self->priv->cmds_length1 = 9;
 	self->priv->cmds_length2 = 3;
 }

@@ -8,7 +8,7 @@ public class Pipeline : GLib.Object {
     /* Private data */
     private Gst.Element pipeline;
     private bool debug = false;
-
+    private bool initialized = false;
 
     public signal void Eos();
     public signal void StateChanged();
@@ -24,13 +24,19 @@ public class Pipeline : GLib.Object {
             pipeline = parse_launch(description) as Element;
             assert(pipeline != null);
 
+            /* Set pipeline state to initialized */
+            initialized = true;
+
+            if (!this.PipelineSetState(State.PAUSED))
+                initialized = false;
+
             /*Get and watch bus*/
             Bus bus = pipeline.get_bus ();
             bus.add_watch (bus_callback);
 
         } catch (GLib.Error e) {
-            stderr.printf("Failed to create pipeline with description: %s.\n" +
-                "Error: %s\n",description,e.message);
+            stderr.printf("Gstd>Failed to create pipeline with description: %s.\n" +
+                "Gstd>Error: %s\n",description,e.message);
         }
     }
 
@@ -39,8 +45,12 @@ public class Pipeline : GLib.Object {
         this(description);
         this.debug = _debug;
 
-        if (_debug)
-            stdout.printf("Pipeline created: %s\n",description);
+        if (_debug){
+            if(this.PipelineIsInitialized())
+                stdout.printf("Gstd>Pipeline created: %s\n",description);
+            else
+                stderr.printf("Pipeline could not be initialized\n");
+        }
     }
 
     /**
@@ -49,7 +59,7 @@ public class Pipeline : GLib.Object {
     ~Pipeline(){
         /* Destroy the pipeline */
         if (!PipelineSetState(State.NULL))
-            stderr.printf("Failed to destroy pipeline\n");
+            stderr.printf("Gstd>Failed to destroy pipeline\n");
     }
 
     private bool bus_callback (Gst.Bus bus, Gst.Message message) {
@@ -84,7 +94,7 @@ public class Pipeline : GLib.Object {
 
             message.parse_state_changed (out oldstate, out newstate,
                                          out pending);
-            
+
             /*Sending StateChanged Signal*/
             StateChanged (/*newstate.to_string()*/);
 
@@ -107,11 +117,18 @@ public class Pipeline : GLib.Object {
         pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
         if (current != state) {
             if (debug)
-                stderr.printf("Element, failed to change state %s\n",
+                stderr.printf("Gstd>Element, failed to change state %s\n",
                 state.to_string());
             return false;
         }
         return true;
+    }
+
+    /**
+     Returns initialized flag value.
+    */
+    public bool PipelineIsInitialized(){
+        return this.initialized;
     }
 
     /**
@@ -155,7 +172,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
             return false;
         }
 
@@ -179,7 +196,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline\n",element);
+                stderr.printf("Gstd>Element %s not found on pipeline\n",element);
             return false;
         }
 
@@ -202,7 +219,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
             return false;
         }
 
@@ -226,7 +243,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
             return false;
         }
 
@@ -250,7 +267,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
         }
 
         e.get(property,&bool_v,null);
@@ -273,7 +290,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
         }
 
         e.get(property,&integer_v,null);
@@ -296,7 +313,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
         }
 
         e.get(property,&long_v,null);
@@ -319,7 +336,7 @@ public class Pipeline : GLib.Object {
         e = pipe.get_child_by_name(element) as Element;
         if (e == null){
             if(debug)
-                stderr.printf("Element %s not found on pipeline",element);
+                stderr.printf("Gstd>Element %s not found on pipeline",element);
         }
 
         e.get(property,&string_v,null);
@@ -346,7 +363,7 @@ public class Pipeline : GLib.Object {
 
         idur = (int)(duration / 1000000);
         if(debug)
-            stdout.printf("Duration at server is %d\n",idur);
+            stdout.printf("Gstd>Duration at server is %d\n",idur);
 
         return idur;
     }
@@ -369,7 +386,7 @@ public class Pipeline : GLib.Object {
 
         ipos = (int)(position / 1000000);
         if(debug)
-            stdout.printf("Position at server is %d\n",ipos);
+            stdout.printf("Gstd>Position at server is %d\n",ipos);
 
         return ipos;
     }

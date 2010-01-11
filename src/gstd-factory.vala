@@ -31,7 +31,7 @@ public class Factory : GLib.Object {
         }
         pipes[next_id] = new Pipeline(description);
 
-        if (pipes[next_id] is Pipeline){
+        if (pipes[next_id].PipelineIsInitialized()){
             string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
             conn.register_object (objectpath, pipes[next_id]);
             next_id++;
@@ -51,7 +51,7 @@ public class Factory : GLib.Object {
             }
             pipes[next_id] = new Pipeline.withDebug(description,debug);
 
-            if (pipes[next_id] is Pipeline){
+            if (pipes[next_id].PipelineIsInitialized()){
                 string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
                 conn.register_object (objectpath, pipes[next_id]);
                 next_id++;
