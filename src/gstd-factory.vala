@@ -71,17 +71,10 @@ public class Factory : GLib.Object {
      @param objectpath, the dbus-objectpathe of the pipeline
      @return true,if succeded
      */
-    public bool Destroy(string objectpath){
+    public bool Destroy(int id){
 
-        int id = 0;
-
-        dynamic DBus.Object pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-                                        objectpath,
-                                        "com.ridgerun.gstreamer.gstd.PipelineInterface");
-
-        id = pipeline.PipelineId();
         if (id == -1){
-            stderr.printf("Fail to destroy pipeline:%s\n", objectpath);
+            stderr.printf("Fail to destroy pipeline\n");
             return false;
         }
 
