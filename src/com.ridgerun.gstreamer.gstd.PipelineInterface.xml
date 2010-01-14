@@ -99,6 +99,16 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineIsInitialized">
+        <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineId">
+        <arg type="i" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
 
     <!-- Signals definitions -->
     <signal name="Eos">
