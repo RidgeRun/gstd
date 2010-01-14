@@ -29,7 +29,7 @@ public class Factory : GLib.Object {
         while (pipes[next_id] != null){
             next_id = next_id++ % 20;
         }
-        pipes[next_id] = new Pipeline(description);
+        pipes[next_id] = new Pipeline(description,next_id);
 
         if (pipes[next_id].PipelineIsInitialized()){
             string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
@@ -49,7 +49,7 @@ public class Factory : GLib.Object {
             while (pipes[next_id] != null){
                 next_id = next_id++ % 20;
             }
-            pipes[next_id] = new Pipeline.withDebug(description,debug);
+            pipes[next_id] = new Pipeline.withDebug(description,next_id,debug);
 
             if (pipes[next_id].PipelineIsInitialized()){
                 string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
@@ -73,23 +73,20 @@ public class Factory : GLib.Object {
      */
     public bool Destroy(string objectpath){
 
-
         GLib.Object pipeline;
+        Pipeline pipe;
         int id = 0;
 
         pipeline = conn.lookup_object(objectpath);
+        pipe = pipeline as Pipeline;
 
-        /* Searching our pipeline*/
-        while(pipes[id] != pipeline){
-            id++;
-            if (id == 20){
-                stderr.printf("Fail to destroy pipeline:%s\n", objectpath);
-                return false;
-            }
+        id = pipe.PipelineId();
+        if (id == -1){
+            stderr.printf("Fail to destroy pipeline:%s\n", objectpath);
+            return false;
         }
 
         pipes[id] = null;
         return true;
-
     }
 }

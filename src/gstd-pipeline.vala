@@ -9,6 +9,7 @@ public class Pipeline : GLib.Object {
     private Gst.Element pipeline;
     private bool debug = false;
     private bool initialized = false;
+    private int id = -1;
 
     public signal void Eos();
     public signal void StateChanged();
@@ -17,7 +18,7 @@ public class Pipeline : GLib.Object {
     /**
      Create a new instance of a Pipeline 
      */
-    public Pipeline(string description){
+    public Pipeline(string description, int ids){
 
         try{
             /* Create the pipe */
@@ -25,6 +26,7 @@ public class Pipeline : GLib.Object {
             assert(pipeline != null);
 
             /* Set pipeline state to initialized */
+            id=ids;
             initialized = true;
 
             if (!this.PipelineSetState(State.PAUSED))
@@ -40,9 +42,9 @@ public class Pipeline : GLib.Object {
         }
     }
 
-    public Pipeline.withDebug(string description,bool _debug){
+    public Pipeline.withDebug(string description,int ids, bool _debug){
 
-        this(description);
+        this(description,ids);
         this.debug = _debug;
 
         if (_debug){
@@ -131,6 +133,12 @@ public class Pipeline : GLib.Object {
         return this.initialized;
     }
 
+    /**
+     Returns ID value.
+    */
+    public int PipelineId(){
+        return this.id;
+    }
     /**
      Sets a pipeline to play state. Returns when the pipeline already reached
      that state.

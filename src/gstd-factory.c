@@ -68,13 +68,14 @@ enum  {
 };
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
-Pipeline* pipeline_new (const char* description);
-Pipeline* pipeline_construct (GType object_type, const char* description);
+Pipeline* pipeline_new (const char* description, gint ids);
+Pipeline* pipeline_construct (GType object_type, const char* description, gint ids);
 gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 char* factory_Create (Factory* self, const char* description);
-Pipeline* pipeline_new_withDebug (const char* description, gboolean _debug);
-Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gboolean _debug);
+Pipeline* pipeline_new_withDebug (const char* description, gint ids, gboolean _debug);
+Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gint ids, gboolean _debug);
 char* factory_CreateWithDebug (Factory* self, const char* description, gboolean debug);
+gint pipeline_PipelineId (Pipeline* self);
 gboolean factory_Destroy (Factory* self, const char* objectpath);
 void factory_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 void _factory_dbus_unregister (DBusConnection* connection, void* _user_data_);
@@ -139,7 +140,7 @@ char* factory_Create (Factory* self, const char* description) {
 		}
 		self->priv->next_id = (self->priv->next_id++) % 20;
 	}
-	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
+	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description, self->priv->next_id), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
 	if (pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
 		char* _tmp1_;
 		char* _tmp2_;
@@ -167,7 +168,7 @@ char* factory_CreateWithDebug (Factory* self, const char* description, gboolean 
 			}
 			self->priv->next_id = (self->priv->next_id++) % 20;
 		}
-		self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new_withDebug (description, debug), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
+		self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new_withDebug (description, self->priv->next_id, debug), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
 		if (pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
 			char* _tmp1_;
 			char* _tmp2_;
@@ -197,29 +198,31 @@ static gpointer _g_object_ref0 (gpointer self) {
 gboolean factory_Destroy (Factory* self, const char* objectpath) {
 	gboolean result;
 	GObject* pipeline;
+	Pipeline* pipe;
 	gint id;
 	GObject* _tmp0_;
-	Pipeline* _tmp1_;
+	Pipeline* _tmp2_;
+	GObject* _tmp1_;
+	Pipeline* _tmp3_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (objectpath != NULL, FALSE);
 	pipeline = NULL;
+	pipe = NULL;
 	id = 0;
 	pipeline = (_tmp0_ = _g_object_ref0 (dbus_g_connection_lookup_g_object (conn, objectpath)), _g_object_unref0 (pipeline), _tmp0_);
-	while (TRUE) {
-		if (!(G_OBJECT (self->priv->pipes[id]) != pipeline)) {
-			break;
-		}
-		id++;
-		if (id == 20) {
-			fprintf (stderr, "Fail to destroy pipeline:%s\n", objectpath);
-			result = FALSE;
-			_g_object_unref0 (pipeline);
-			return result;
-		}
+	pipe = (_tmp2_ = _g_object_ref0 ((_tmp1_ = pipeline, IS_PIPELINE (_tmp1_) ? ((Pipeline*) _tmp1_) : NULL)), _g_object_unref0 (pipe), _tmp2_);
+	id = pipeline_PipelineId (pipe);
+	if (id == (-1)) {
+		fprintf (stderr, "Fail to destroy pipeline:%s\n", objectpath);
+		result = FALSE;
+		_g_object_unref0 (pipeline);
+		_g_object_unref0 (pipe);
+		return result;
 	}
-	self->priv->pipes[id] = (_tmp1_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp1_);
+	self->priv->pipes[id] = (_tmp3_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp3_);
 	result = TRUE;
 	_g_object_unref0 (pipeline);
+	_g_object_unref0 (pipe);
 	return result;
 }
 
