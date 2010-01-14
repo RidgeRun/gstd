@@ -73,14 +73,13 @@ public class Factory : GLib.Object {
      */
     public bool Destroy(string objectpath){
 
-        GLib.Object pipeline;
-        Pipeline pipe;
         int id = 0;
 
-        pipeline = conn.lookup_object(objectpath);
-        pipe = pipeline as Pipeline;
+        dynamic DBus.Object pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                        objectpath,
+                                        "com.ridgerun.gstreamer.gstd.PipelineInterface");
 
-        id = pipe.PipelineId();
+        id = pipeline.PipelineId();
         if (id == -1){
             stderr.printf("Fail to destroy pipeline:%s\n", objectpath);
             return false;

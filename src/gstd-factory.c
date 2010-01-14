@@ -75,7 +75,7 @@ char* factory_Create (Factory* self, const char* description);
 Pipeline* pipeline_new_withDebug (const char* description, gint ids, gboolean _debug);
 Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gint ids, gboolean _debug);
 char* factory_CreateWithDebug (Factory* self, const char* description, gboolean debug);
-gint pipeline_PipelineId (Pipeline* self);
+static gint _dynamic_PipelineId1 (DBusGProxy* self, GError** error);
 gboolean factory_Destroy (Factory* self, const char* objectpath);
 void factory_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 void _factory_dbus_unregister (DBusConnection* connection, void* _user_data_);
@@ -190,39 +190,45 @@ char* factory_CreateWithDebug (Factory* self, const char* description, gboolean 
 }
 
 
-static gpointer _g_object_ref0 (gpointer self) {
-	return self ? g_object_ref (self) : NULL;
+static gint _dynamic_PipelineId1 (DBusGProxy* self, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineId", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
+	if (*error) {
+		return 0;
+	}
+	return result;
 }
 
 
 gboolean factory_Destroy (Factory* self, const char* objectpath) {
 	gboolean result;
-	GObject* pipeline;
-	Pipeline* pipe;
+	GError * _inner_error_;
 	gint id;
-	GObject* _tmp0_;
-	Pipeline* _tmp2_;
-	GObject* _tmp1_;
-	Pipeline* _tmp3_;
+	DBusGProxy* pipeline;
+	gint _tmp0_;
+	Pipeline* _tmp1_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (objectpath != NULL, FALSE);
-	pipeline = NULL;
-	pipe = NULL;
+	_inner_error_ = NULL;
 	id = 0;
-	pipeline = (_tmp0_ = _g_object_ref0 (dbus_g_connection_lookup_g_object (conn, objectpath)), _g_object_unref0 (pipeline), _tmp0_);
-	pipe = (_tmp2_ = _g_object_ref0 ((_tmp1_ = pipeline, IS_PIPELINE (_tmp1_) ? ((Pipeline*) _tmp1_) : NULL)), _g_object_unref0 (pipe), _tmp2_);
-	id = pipeline_PipelineId (pipe);
+	pipeline = dbus_g_proxy_new_for_name (conn, "com.ridgerun.gstreamer.gstd", objectpath, "com.ridgerun.gstreamer.gstd.PipelineInterface");
+	_tmp0_ = _dynamic_PipelineId1 (pipeline, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		_g_object_unref0 (pipeline);
+		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	id = _tmp0_;
 	if (id == (-1)) {
 		fprintf (stderr, "Fail to destroy pipeline:%s\n", objectpath);
 		result = FALSE;
 		_g_object_unref0 (pipeline);
-		_g_object_unref0 (pipe);
 		return result;
 	}
-	self->priv->pipes[id] = (_tmp3_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp3_);
+	self->priv->pipes[id] = (_tmp1_ = NULL, _g_object_unref0 (self->priv->pipes[id]), _tmp1_);
 	result = TRUE;
 	_g_object_unref0 (pipeline);
-	_g_object_unref0 (pipe);
 	return result;
 }
 
