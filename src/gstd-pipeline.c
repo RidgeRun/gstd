@@ -56,7 +56,6 @@ GType pipeline_get_type (void);
 enum  {
 	PIPELINE_DUMMY_PROPERTY
 };
-static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state);
 static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* message);
 static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 Pipeline* pipeline_new (const char* description, gint ids);
@@ -64,6 +63,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gint i
 gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 Pipeline* pipeline_new_withDebug (const char* description, gint ids, gboolean _debug);
 Pipeline* pipeline_construct_withDebug (GType object_type, const char* description, gint ids, gboolean _debug);
+static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state);
 gint pipeline_PipelineId (Pipeline* self);
 gboolean pipeline_PipelinePlay (Pipeline* self);
 gboolean pipeline_PipelinePause (Pipeline* self);
@@ -119,7 +119,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gint i
 	Pipeline * self;
 	g_return_val_if_fail (description != NULL, NULL);
 	_inner_error_ = NULL;
-	self = (Pipeline*) g_object_new (object_type, NULL);
+	self = g_object_newv (object_type, 0, NULL);
 	{
 		GstElement* _tmp0_;
 		GstElement* _tmp2_;
@@ -134,9 +134,6 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gint i
 		g_assert (self->priv->pipeline != NULL);
 		self->priv->id = ids;
 		self->priv->initialized = TRUE;
-		if (!pipeline_PipelineSetState (self, GST_STATE_PAUSED)) {
-			self->priv->initialized = FALSE;
-		}
 		bus = gst_element_get_bus (self->priv->pipeline);
 		gst_bus_add_watch (bus, _pipeline_bus_callback_gst_bus_func, self);
 		_gst_object_unref0 (bus);

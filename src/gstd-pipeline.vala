@@ -29,9 +29,6 @@ public class Pipeline : GLib.Object {
             id=ids;
             initialized = true;
 
-            if (!this.PipelineSetState(State.PAUSED))
-                initialized = false;
-
             /*Get and watch bus*/
             Bus bus = pipeline.get_bus ();
             bus.add_watch (bus_callback);

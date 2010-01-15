@@ -97,7 +97,7 @@ static const _DBusObjectVTable _factory_dbus_vtable = {factory_dbus_register_obj
 Factory* factory_construct (GType object_type) {
 	Factory * self;
 	Pipeline** _tmp0_;
-	self = (Factory*) g_object_new (object_type, NULL);
+	self = g_object_newv (object_type, 0, NULL);
 	self->priv->next_id = 0;
 	self->priv->pipes = (_tmp0_ = g_new0 (Pipeline*, 20 + 1), self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL), self->priv->pipes_length1 = 20, self->priv->pipes_size = self->priv->pipes_length1, _tmp0_);
 	{
