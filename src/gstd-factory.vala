@@ -24,6 +24,7 @@ public class Factory : GLib.Object {
      */
     public string Create(string description){
 
+        string objectpath;
 
         /* Create our pipeline*/
         while (pipes[next_id] != null){
@@ -32,19 +33,19 @@ public class Factory : GLib.Object {
         pipes[next_id] = new Pipeline(description,next_id);
 
         if (pipes[next_id].PipelineIsInitialized()){
-            string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
+            objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
             conn.register_object (objectpath, pipes[next_id]);
             next_id++;
             return objectpath;
         }
-
         return "";
     }
 
     public string CreateWithDebug(string description,bool debug){
 
-        if(debug){
+        string objectpath;
 
+        if(debug){
             /* Create our pipeline*/
             while (pipes[next_id] != null){
                 next_id = next_id++ % 20;
@@ -52,14 +53,12 @@ public class Factory : GLib.Object {
             pipes[next_id] = new Pipeline.withDebug(description,next_id,debug);
 
             if (pipes[next_id].PipelineIsInitialized()){
-                string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
+                objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
                 conn.register_object (objectpath, pipes[next_id]);
                 next_id++;
                 return objectpath;
             }
-
             return "";
-
         }else { 
             string ret = Create(description);
             return ret;

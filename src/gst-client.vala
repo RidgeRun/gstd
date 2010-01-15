@@ -135,8 +135,7 @@ public class HarrierCli : GLib.Object {
 
     private bool pipeline_destroy(dynamic DBus.Object pipeline){
 
-        int id = pipeline.PipelineId();
-        bool ret = factory.Destroy(id);
+        bool ret = factory.Destroy((int)pipeline.PipelineId());
         if (!ret){
             stderr.printf("Failed to put the pipeline to null\n");
             return false;
