@@ -12,8 +12,8 @@ public class Pipeline : GLib.Object {
     private int id = -1;
 
     public signal void Eos();
-    public signal void StateChanged();
-    public signal void Error();
+    public signal void StateChanged(string old_state, string new_state);
+    public signal void Error(string err_message);
 
     /**
      Create a new instance of a Pipeline 
@@ -72,8 +72,7 @@ public class Pipeline : GLib.Object {
             message.parse_error (out err, out dbg);
 
             /*Sending Error Signal*/
-            /*Need TODO: Review if err.message can be sent*/
-            Error(/*err.message*/);
+            Error(err.message);
 
             if (debug)
                 stderr.printf("Error on pipeline: %s\n",err.message);
@@ -95,7 +94,7 @@ public class Pipeline : GLib.Object {
                                          out pending);
 
             /*Sending StateChanged Signal*/
-            StateChanged (/*newstate.to_string()*/);
+            StateChanged (oldstate.to_string(),newstate.to_string());
 
             break;
 

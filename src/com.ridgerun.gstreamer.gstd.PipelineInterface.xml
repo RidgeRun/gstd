@@ -114,8 +114,11 @@
     <signal name="Eos">
     </signal>
     <signal name="Error">
+        <arg type="s" name="err_message" direction="out"/>
     </signal>
     <signal name="StateChanged">
+        <arg type="s" name="old_state" direction="out"/>
+        <arg type="s" name="new_state" direction="out"/>
     </signal>
 
   </interface>
