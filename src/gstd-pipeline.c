@@ -66,8 +66,11 @@ Pipeline* pipeline_construct_withDebug (GType object_type, const char* descripti
 static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state);
 gint pipeline_PipelineId (Pipeline* self);
 gboolean pipeline_PipelinePlay (Pipeline* self);
+gboolean pipeline_PipelineAsyncPlay (Pipeline* self);
 gboolean pipeline_PipelinePause (Pipeline* self);
+gboolean pipeline_PipelineAsyncPause (Pipeline* self);
 gboolean pipeline_PipelineNull (Pipeline* self);
+gboolean pipeline_PipelineAsyncNull (Pipeline* self);
 gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const char* element, const char* property, gboolean val);
 gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const char* element, const char* property, gint val);
 gboolean pipeline_ElementSetPropertyLong (Pipeline* self, const char* element, const char* property, glong val);
@@ -86,8 +89,11 @@ static DBusHandlerResult _dbus_pipeline_property_get_all (Pipeline* self, DBusCo
 static DBusHandlerResult _dbus_pipeline_PipelineIsInitialized (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_PipelineId (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_PipelinePlay (Pipeline* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncPlay (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_PipelinePause (Pipeline* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncPause (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_PipelineNull (Pipeline* self, DBusConnection* connection, DBusMessage* message);
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncNull (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, DBusConnection* connection, DBusMessage* message);
 static DBusHandlerResult _dbus_pipeline_ElementSetPropertyLong (Pipeline* self, DBusConnection* connection, DBusMessage* message);
@@ -280,6 +286,15 @@ gboolean pipeline_PipelinePlay (Pipeline* self) {
 }
 
 
+gboolean pipeline_PipelineAsyncPlay (Pipeline* self) {
+	gboolean result;
+	g_return_val_if_fail (self != NULL, FALSE);
+	gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+	result = TRUE;
+	return result;
+}
+
+
 gboolean pipeline_PipelinePause (Pipeline* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -288,10 +303,28 @@ gboolean pipeline_PipelinePause (Pipeline* self) {
 }
 
 
+gboolean pipeline_PipelineAsyncPause (Pipeline* self) {
+	gboolean result;
+	g_return_val_if_fail (self != NULL, FALSE);
+	gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+	result = TRUE;
+	return result;
+}
+
+
 gboolean pipeline_PipelineNull (Pipeline* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
 	result = pipeline_PipelineSetState (self, GST_STATE_NULL);
+	return result;
+}
+
+
+gboolean pipeline_PipelineAsyncNull (Pipeline* self) {
+	gboolean result;
+	g_return_val_if_fail (self != NULL, FALSE);
+	gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+	result = TRUE;
 	return result;
 }
 
@@ -615,7 +648,7 @@ static DBusHandlerResult _dbus_pipeline_introspect (Pipeline* self, DBusConnecti
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.PipelineInterface\">\n  <method name=\"PipelineIsInitialized\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineId\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetDuration\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetPosition\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n    <arg name=\"old_state\" type=\"s\"/>\n    <arg name=\"new_state\" type=\"s\"/>\n  </signal>\n  <signal name=\"Error\">\n    <arg name=\"err_message\" type=\"s\"/>\n  </signal>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.PipelineInterface\">\n  <method name=\"PipelineIsInitialized\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineId\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePlay\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineAsyncPlay\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelinePause\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineAsyncPause\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineNull\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineAsyncNull\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"i\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"()\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementSetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"val\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyBoolean\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyInt\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyLong\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"()\" direction=\"out\"/>\n  </method>\n  <method name=\"ElementGetPropertyString\">\n    <arg name=\"element\" type=\"s\" direction=\"in\"/>\n    <arg name=\"property\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetDuration\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <method name=\"PipelineGetPosition\">\n    <arg name=\"result\" type=\"i\" direction=\"out\"/>\n  </method>\n  <signal name=\"Eos\">\n  </signal>\n  <signal name=\"StateChanged\">\n    <arg name=\"old_state\" type=\"s\"/>\n    <arg name=\"new_state\" type=\"s\"/>\n  </signal>\n  <signal name=\"Error\">\n    <arg name=\"err_message\" type=\"s\"/>\n  </signal>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -744,7 +777,7 @@ static DBusHandlerResult _dbus_pipeline_PipelinePlay (Pipeline* self, DBusConnec
 }
 
 
-static DBusHandlerResult _dbus_pipeline_PipelinePause (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncPlay (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
 	gboolean result;
@@ -755,11 +788,63 @@ static DBusHandlerResult _dbus_pipeline_PipelinePause (Pipeline* self, DBusConne
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	result = pipeline_PipelinePause (self);
+	result = pipeline_PipelineAsyncPlay (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_tmp4_ = result;
 	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp4_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_pipeline_PipelinePause (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp5_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	result = pipeline_PipelinePause (self);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_tmp5_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp5_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncPause (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp6_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	result = pipeline_PipelineAsyncPause (self);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_tmp6_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp6_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -775,7 +860,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineNull (Pipeline* self, DBusConnec
 	GError* error;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp5_;
+	dbus_bool_t _tmp7_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -784,8 +869,34 @@ static DBusHandlerResult _dbus_pipeline_PipelineNull (Pipeline* self, DBusConnec
 	result = pipeline_PipelineNull (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
-	_tmp5_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp5_);
+	_tmp7_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp7_);
+	if (reply) {
+		dbus_connection_send (connection, reply, NULL);
+		dbus_message_unref (reply);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+}
+
+
+static DBusHandlerResult _dbus_pipeline_PipelineAsyncNull (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
+	DBusMessageIter iter;
+	GError* error;
+	gboolean result;
+	DBusMessage* reply;
+	dbus_bool_t _tmp8_;
+	error = NULL;
+	if (strcmp (dbus_message_get_signature (message), "")) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	dbus_message_iter_init (message, &iter);
+	result = pipeline_PipelineAsyncNull (self);
+	reply = dbus_message_new_method_return (message);
+	dbus_message_iter_init_append (reply, &iter);
+	_tmp8_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp8_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -800,35 +911,35 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* sel
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp6_;
+	const char* _tmp9_;
 	char* property = NULL;
-	const char* _tmp7_;
+	const char* _tmp10_;
 	gboolean val = FALSE;
-	dbus_bool_t _tmp8_;
+	dbus_bool_t _tmp11_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp9_;
+	dbus_bool_t _tmp12_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ssb")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp6_);
+	dbus_message_iter_get_basic (&iter, &_tmp9_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp6_);
-	dbus_message_iter_get_basic (&iter, &_tmp7_);
+	element = g_strdup (_tmp9_);
+	dbus_message_iter_get_basic (&iter, &_tmp10_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp7_);
-	dbus_message_iter_get_basic (&iter, &_tmp8_);
+	property = g_strdup (_tmp10_);
+	dbus_message_iter_get_basic (&iter, &_tmp11_);
 	dbus_message_iter_next (&iter);
-	val = _tmp8_;
+	val = _tmp11_;
 	result = pipeline_ElementSetPropertyBoolean (self, element, property, val);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp9_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp9_);
+	_tmp12_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp12_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -843,35 +954,35 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, D
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp10_;
+	const char* _tmp13_;
 	char* property = NULL;
-	const char* _tmp11_;
+	const char* _tmp14_;
 	gint val = 0;
-	dbus_int32_t _tmp12_;
+	dbus_int32_t _tmp15_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp13_;
+	dbus_bool_t _tmp16_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ssi")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp10_);
+	dbus_message_iter_get_basic (&iter, &_tmp13_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp10_);
-	dbus_message_iter_get_basic (&iter, &_tmp11_);
+	element = g_strdup (_tmp13_);
+	dbus_message_iter_get_basic (&iter, &_tmp14_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp11_);
-	dbus_message_iter_get_basic (&iter, &_tmp12_);
+	property = g_strdup (_tmp14_);
+	dbus_message_iter_get_basic (&iter, &_tmp15_);
 	dbus_message_iter_next (&iter);
-	val = _tmp12_;
+	val = _tmp15_;
 	result = pipeline_ElementSetPropertyInt (self, element, property, val);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp13_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp13_);
+	_tmp16_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp16_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -886,36 +997,36 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyLong (Pipeline* self, 
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp14_;
+	const char* _tmp17_;
 	char* property = NULL;
-	const char* _tmp15_;
+	const char* _tmp18_;
 	glong val = 0L;
-	glong _tmp16_;
-	DBusMessageIter _tmp17_;
+	glong _tmp19_;
+	DBusMessageIter _tmp20_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp18_;
+	dbus_bool_t _tmp21_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ss()")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp14_);
+	dbus_message_iter_get_basic (&iter, &_tmp17_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp14_);
-	dbus_message_iter_get_basic (&iter, &_tmp15_);
+	element = g_strdup (_tmp17_);
+	dbus_message_iter_get_basic (&iter, &_tmp18_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp15_);
-	dbus_message_iter_recurse (&iter, &_tmp17_);
+	property = g_strdup (_tmp18_);
+	dbus_message_iter_recurse (&iter, &_tmp20_);
 	dbus_message_iter_next (&iter);
-	val = _tmp16_;
+	val = _tmp19_;
 	result = pipeline_ElementSetPropertyLong (self, element, property, val);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp18_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp18_);
+	_tmp21_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp21_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -930,36 +1041,36 @@ static DBusHandlerResult _dbus_pipeline_ElementSetPropertyString (Pipeline* self
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp19_;
+	const char* _tmp22_;
 	char* property = NULL;
-	const char* _tmp20_;
+	const char* _tmp23_;
 	char* val = NULL;
-	const char* _tmp21_;
+	const char* _tmp24_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp22_;
+	dbus_bool_t _tmp25_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "sss")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp19_);
+	dbus_message_iter_get_basic (&iter, &_tmp22_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp19_);
-	dbus_message_iter_get_basic (&iter, &_tmp20_);
+	element = g_strdup (_tmp22_);
+	dbus_message_iter_get_basic (&iter, &_tmp23_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp20_);
-	dbus_message_iter_get_basic (&iter, &_tmp21_);
+	property = g_strdup (_tmp23_);
+	dbus_message_iter_get_basic (&iter, &_tmp24_);
 	dbus_message_iter_next (&iter);
-	val = g_strdup (_tmp21_);
+	val = g_strdup (_tmp24_);
 	result = pipeline_ElementSetPropertyString (self, element, property, val);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
 	_g_free0 (val);
-	_tmp22_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp22_);
+	_tmp25_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp25_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -974,30 +1085,30 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* sel
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp23_;
+	const char* _tmp26_;
 	char* property = NULL;
-	const char* _tmp24_;
+	const char* _tmp27_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp25_;
+	dbus_bool_t _tmp28_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ss")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp23_);
+	dbus_message_iter_get_basic (&iter, &_tmp26_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp23_);
-	dbus_message_iter_get_basic (&iter, &_tmp24_);
+	element = g_strdup (_tmp26_);
+	dbus_message_iter_get_basic (&iter, &_tmp27_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp24_);
+	property = g_strdup (_tmp27_);
 	result = pipeline_ElementGetPropertyBoolean (self, element, property);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp25_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp25_);
+	_tmp28_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp28_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1012,30 +1123,30 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, D
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp26_;
+	const char* _tmp29_;
 	char* property = NULL;
-	const char* _tmp27_;
+	const char* _tmp30_;
 	gint result;
 	DBusMessage* reply;
-	dbus_int32_t _tmp28_;
+	dbus_int32_t _tmp31_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ss")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp26_);
+	dbus_message_iter_get_basic (&iter, &_tmp29_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp26_);
-	dbus_message_iter_get_basic (&iter, &_tmp27_);
+	element = g_strdup (_tmp29_);
+	dbus_message_iter_get_basic (&iter, &_tmp30_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp27_);
+	property = g_strdup (_tmp30_);
 	result = pipeline_ElementGetPropertyInt (self, element, property);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp28_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp28_);
+	_tmp31_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp31_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1050,30 +1161,30 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyLong (Pipeline* self, 
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp29_;
+	const char* _tmp32_;
 	char* property = NULL;
-	const char* _tmp30_;
+	const char* _tmp33_;
 	glong result;
 	DBusMessage* reply;
-	DBusMessageIter _tmp31_;
+	DBusMessageIter _tmp34_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ss")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp29_);
+	dbus_message_iter_get_basic (&iter, &_tmp32_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp29_);
-	dbus_message_iter_get_basic (&iter, &_tmp30_);
+	element = g_strdup (_tmp32_);
+	dbus_message_iter_get_basic (&iter, &_tmp33_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp30_);
+	property = g_strdup (_tmp33_);
 	result = pipeline_ElementGetPropertyLong (self, element, property);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	dbus_message_iter_open_container (&iter, DBUS_TYPE_STRUCT, NULL, &_tmp31_);
-	dbus_message_iter_close_container (&iter, &_tmp31_);
+	dbus_message_iter_open_container (&iter, DBUS_TYPE_STRUCT, NULL, &_tmp34_);
+	dbus_message_iter_close_container (&iter, &_tmp34_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1088,30 +1199,30 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyString (Pipeline* self
 	DBusMessageIter iter;
 	GError* error;
 	char* element = NULL;
-	const char* _tmp32_;
+	const char* _tmp35_;
 	char* property = NULL;
-	const char* _tmp33_;
+	const char* _tmp36_;
 	char* result;
 	DBusMessage* reply;
-	const char* _tmp34_;
+	const char* _tmp37_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "ss")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp32_);
+	dbus_message_iter_get_basic (&iter, &_tmp35_);
 	dbus_message_iter_next (&iter);
-	element = g_strdup (_tmp32_);
-	dbus_message_iter_get_basic (&iter, &_tmp33_);
+	element = g_strdup (_tmp35_);
+	dbus_message_iter_get_basic (&iter, &_tmp36_);
 	dbus_message_iter_next (&iter);
-	property = g_strdup (_tmp33_);
+	property = g_strdup (_tmp36_);
 	result = pipeline_ElementGetPropertyString (self, element, property);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (element);
 	_g_free0 (property);
-	_tmp34_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &_tmp34_);
+	_tmp37_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &_tmp37_);
 	_g_free0 (result);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
@@ -1128,7 +1239,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 	GError* error;
 	gint result;
 	DBusMessage* reply;
-	dbus_int32_t _tmp35_;
+	dbus_int32_t _tmp38_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1137,8 +1248,8 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 	result = pipeline_PipelineGetDuration (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
-	_tmp35_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp35_);
+	_tmp38_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp38_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1154,7 +1265,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBu
 	GError* error;
 	gint result;
 	DBusMessage* reply;
-	dbus_int32_t _tmp36_;
+	dbus_int32_t _tmp39_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1163,8 +1274,8 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBu
 	result = pipeline_PipelineGetPosition (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
-	_tmp36_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp36_);
+	_tmp39_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp39_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1188,10 +1299,16 @@ DBusHandlerResult pipeline_dbus_message (DBusConnection* connection, DBusMessage
 		result = _dbus_pipeline_PipelineId (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelinePlay")) {
 		result = _dbus_pipeline_PipelinePlay (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncPlay")) {
+		result = _dbus_pipeline_PipelineAsyncPlay (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelinePause")) {
 		result = _dbus_pipeline_PipelinePause (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncPause")) {
+		result = _dbus_pipeline_PipelineAsyncPause (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineNull")) {
 		result = _dbus_pipeline_PipelineNull (object, connection, message);
+	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncNull")) {
+		result = _dbus_pipeline_PipelineAsyncNull (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyBoolean")) {
 		result = _dbus_pipeline_ElementSetPropertyBoolean (object, connection, message);
 	} else if (dbus_message_is_method_call (message, "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyInt")) {
@@ -1237,15 +1354,15 @@ static void _dbus_pipeline_state_changed (GObject* _sender, const char* old_stat
 	const char * _path;
 	DBusMessage *_message;
 	DBusMessageIter _iter;
-	const char* _tmp37_;
-	const char* _tmp38_;
+	const char* _tmp40_;
+	const char* _tmp41_;
 	_path = g_object_get_data (_sender, "dbus_object_path");
 	_message = dbus_message_new_signal (_path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "StateChanged");
 	dbus_message_iter_init_append (_message, &_iter);
-	_tmp37_ = old_state;
-	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp37_);
-	_tmp38_ = new_state;
-	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp38_);
+	_tmp40_ = old_state;
+	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp40_);
+	_tmp41_ = new_state;
+	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp41_);
 	dbus_connection_send (_connection, _message, NULL);
 	dbus_message_unref (_message);
 }
@@ -1255,12 +1372,12 @@ static void _dbus_pipeline_error (GObject* _sender, const char* err_message, DBu
 	const char * _path;
 	DBusMessage *_message;
 	DBusMessageIter _iter;
-	const char* _tmp39_;
+	const char* _tmp42_;
 	_path = g_object_get_data (_sender, "dbus_object_path");
 	_message = dbus_message_new_signal (_path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "Error");
 	dbus_message_iter_init_append (_message, &_iter);
-	_tmp39_ = err_message;
-	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp39_);
+	_tmp42_ = err_message;
+	dbus_message_iter_append_basic (&_iter, DBUS_TYPE_STRING, &_tmp42_);
 	dbus_connection_send (_connection, _message, NULL);
 	dbus_message_unref (_message);
 }
