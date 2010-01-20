@@ -290,6 +290,9 @@ gboolean pipeline_PipelineAsyncPlay (Pipeline* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+	if (self->priv->debug) {
+		fprintf (stdout, "Gstd>Asynchronous state change to:playing\n");
+	}
 	result = TRUE;
 	return result;
 }
@@ -307,6 +310,9 @@ gboolean pipeline_PipelineAsyncPause (Pipeline* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+	if (self->priv->debug) {
+		fprintf (stdout, "Gstd>Asynchronous state change to:pause\n");
+	}
 	result = TRUE;
 	return result;
 }
@@ -324,6 +330,9 @@ gboolean pipeline_PipelineAsyncNull (Pipeline* self) {
 	gboolean result;
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+	if (self->priv->debug) {
+		fprintf (stdout, "Gstd>Asynchronous state change to:null\n");
+	}
 	result = TRUE;
 	return result;
 }

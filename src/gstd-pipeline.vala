@@ -130,13 +130,13 @@ public class Pipeline : GLib.Object {
     }
 
     /**
-     Returns ID value.
+     Returns ID value, set when initialized
     */
     public int PipelineId(){
         return this.id;
     }
     /**
-     Sets a pipeline to play state. Returns when the pipeline already reached
+     Sets a pipeline to play state. Returns when the pipeline has already reached
      that state.
     */
     public bool PipelinePlay(){
@@ -144,7 +144,17 @@ public class Pipeline : GLib.Object {
     }
 
     /**
-     Sets a pipeline to paused state. Returns when the pipeline already reached
+     Sets a pipeline to play state. Returns immediately
+    */
+    public bool PipelineAsyncPlay(){
+        pipeline.set_state(State.PLAYING);
+        if (debug)
+                stdout.printf("Gstd>Asynchronous state change to:playing\n");
+        return true;
+    }
+
+    /**
+     Sets a pipeline to paused state. Returns when the pipeline has already reached
      that state.
     */
     public bool PipelinePause(){
@@ -152,13 +162,33 @@ public class Pipeline : GLib.Object {
     }
 
     /**
-     Sets a pipeline to null state. Returns when the pipeline already reached
+     Sets a pipeline to paused state. Returns immediately
+    */
+    public bool PipelineAsyncPause(){
+        pipeline.set_state(State.PAUSED);
+        if (debug)
+                stdout.printf("Gstd>Asynchronous state change to:pause\n");
+        return true;
+    }
+
+    /**
+     Sets a pipeline to null state. Returns when the pipeline has already reached
      that state.
      On this state the pipeline releases all allocated resources, but can
      be reused again.
     */
     public bool PipelineNull(){
         return PipelineSetState(State.NULL);
+    }
+
+    /**
+     Sets a pipeline to null state. Returns immediately
+    */
+    public bool PipelineAsyncNull(){
+        pipeline.set_state(State.NULL);
+        if (debug)
+                stdout.printf("Gstd>Asynchronous state change to:null\n");
+        return true;
     }
 
     /**
