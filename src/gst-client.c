@@ -74,7 +74,7 @@ static gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_pause (HarrierCli* self, DBusGProxy* pipeline);
 static gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error);
 static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipeline);
-static DBusGProxy* _dynamic_PipelineId4 (DBusGProxy* self, GError** error);
+static gint _dynamic_PipelineId4 (DBusGProxy* self, GError** error);
 static gboolean _dynamic_Destroy5 (DBusGProxy* self, gint param1, GError** error);
 static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, DBusGProxy* pipeline);
 static gboolean _dynamic_ElementGetPropertyBoolean6 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
@@ -288,11 +288,11 @@ static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipelin
 }
 
 
-static DBusGProxy* _dynamic_PipelineId4 (DBusGProxy* self, GError** error) {
-	DBusGProxy* result;
-	dbus_g_proxy_call (self, "PipelineId", error, G_TYPE_INVALID, DBUS_TYPE_G_PROXY, &result, G_TYPE_INVALID);
+static gint _dynamic_PipelineId4 (DBusGProxy* self, GError** error) {
+	gint result;
+	dbus_g_proxy_call (self, "PipelineId", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return NULL;
+		return 0;
 	}
 	return result;
 }
@@ -311,18 +311,18 @@ static gboolean _dynamic_Destroy5 (DBusGProxy* self, gint param1, GError** error
 static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
-	DBusGProxy* _tmp0_;
+	gint id;
 	gboolean ret;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
-	_tmp0_ = _dynamic_PipelineId4 (pipeline, &_inner_error_);
+	id = _dynamic_PipelineId4 (pipeline, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
-	ret = _dynamic_Destroy5 (self->priv->factory, (gint) _tmp0_, &_inner_error_);
+	ret = _dynamic_Destroy5 (self->priv->factory, id, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);

@@ -134,6 +134,7 @@
     <signal name="StateChanged">
         <arg type="s" name="old_state" direction="out"/>
         <arg type="s" name="new_state" direction="out"/>
+        <arg type="s" name="src" direction="out"/>
     </signal>
 
   </interface>

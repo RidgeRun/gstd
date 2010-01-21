@@ -1,7 +1,7 @@
 using Gst;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EOS",
-	signals = "StateChanged" , signals = "Error")]
+        signals = "StateChanged" , signals = "Error")]
 
 public class Pipeline : GLib.Object {
 
@@ -12,7 +12,7 @@ public class Pipeline : GLib.Object {
     private int id = -1;
 
     public signal void Eos();
-    public signal void StateChanged(string old_state, string new_state);
+    public signal void StateChanged(string old_state, string new_state, string src);
     public signal void Error(string err_message);
 
     /**
@@ -75,7 +75,7 @@ public class Pipeline : GLib.Object {
             Error(err.message);
 
             if (debug)
-                stderr.printf("Error on pipeline: %s\n",err.message);
+                stderr.printf("Gstd>Error on pipeline: %s\n",err.message);
             break;
 
         case MessageType.EOS:
@@ -90,12 +90,15 @@ public class Pipeline : GLib.Object {
             Gst.State newstate;
             Gst.State pending;
 
+            string src = ((Element)message.src).get_name();
             message.parse_state_changed (out oldstate, out newstate,
                                          out pending);
+            if (debug)
+                stderr.printf("Gstd>%s:Change state from %s to %s\n",src,
+                               oldstate.to_string(),newstate.to_string());
 
             /*Sending StateChanged Signal*/
-            StateChanged (oldstate.to_string(),newstate.to_string());
-
+            StateChanged (oldstate.to_string(),newstate.to_string(),src);
             break;
 
         default:
