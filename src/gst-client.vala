@@ -1,9 +1,12 @@
 using GLib;
 
-public class HarrierCli : GLib.Object {
+public class GstdCli : GLib.Object {
 
     private DBus.Connection conn;
     private dynamic DBus.Object factory;
+    private string active_pipe = null;
+    private bool cli_enable = false;
+    dynamic DBus.Object pipeline = null;
 
     /**
     * Used as reference in option parser
@@ -57,7 +60,7 @@ public class HarrierCli : GLib.Object {
     /*
     * Constructor
     */
-    public HarrierCli() throws DBus.Error, GLib.Error {
+    public GstdCli() throws DBus.Error, GLib.Error {
 
         /*Getting a Gstd Factory proxy object*/
         conn = DBus.Bus.get (DBus.BusType.SYSTEM);
@@ -97,6 +100,12 @@ public class HarrierCli : GLib.Object {
             return false;
         }
 
+        if(cli_enable){ 
+            active_pipe = new_objpath;
+            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                         new_objpath,
+                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
+        }
         stdout.printf("Pipeline path created: %s\n", new_objpath);
 
         return true;
@@ -256,9 +265,28 @@ public class HarrierCli : GLib.Object {
         return true;
     }
 
-    public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
+    public void parse_options(string[] args){
 
-        dynamic DBus.Object pipeline = null;
+        /*Clean up global variables*/
+        _signals = false;
+        _debug = false;
+        _remaining_args = null;
+        obj_path = null;
+
+        /*Parsing options*/
+        var opt = new OptionContext("(For Commands HELP: 'gst-client help')");
+        opt.set_help_enabled(true);
+        opt.add_main_entries(options, null);
+        try{
+            opt.parse(ref args);
+        } catch (GLib.OptionError e) {
+            stderr.printf ("OptionError failure: %s\n",e.message);
+        }
+        if(obj_path!=null)active_pipe=obj_path;
+
+    }
+
+    public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
 
         if(obj_path != null){
             pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
@@ -276,7 +304,7 @@ public class HarrierCli : GLib.Object {
                 return false;
             }
 
-        }else if (args[0].down() != "create" && args[0].down() != "help"){
+        }else if (args[0].down() != "create" && args[0].down() != "help" && active_pipe == null){
             stderr.printf("Pipeline path was not specified\n");
             return false;
         }
@@ -284,6 +312,7 @@ public class HarrierCli : GLib.Object {
         /*Activating the reception of signals sent by the daemon*/
         /*Need to be FIXED*/
         if(_signals){
+            stdout.printf("Inside signals \n");
             if(args[0].down() != "create" && args[0].down() != "help"){
                 stdout.printf("Signals, activated\n");
                 pipeline.Error += this.Error_cb;
@@ -295,6 +324,11 @@ public class HarrierCli : GLib.Object {
         switch (args[0].down()){
 
         case "create":
+            if(cli_enable){
+                stdout.printf("\nDescription:");
+                string desc = stdin.read_line();
+                return pipeline_create(desc);
+            }
             return pipeline_create(args[1]);
 
         case "destroy":
@@ -349,46 +383,68 @@ public class HarrierCli : GLib.Object {
             }
             break;
         default:
-            stderr.printf("Unkown command: %s\n",args[1]);
+            stderr.printf("Unkown command:%s,%s\n",args[0],args[0]);
             return false;
         }
 
         return true;
     }
 
-    public bool cli(string[] args) throws DBus.Error, GLib.Error {
-/*
-        string line;
-        string tokens[40];
-        Scanner scan = new Scanner(null);
-        line = stdin.read_line();
-        scan.input_text(line,(uint)line.length);
-        Scanner.get_next_token(
-  */
-        stdout.printf("CLI mode not implement yet\n");
-        return false;
+    public bool cli() throws DBus.Error, GLib.Error {
+
+        string[] args;
+        string? cmd_line;
+        var label = new StringBuilder ();
+        var history = new StringBuilder ();
+
+        while (!stdin.eof()) {
+
+
+            label.assign("gst-client$ ");
+            stdout.printf(label.str);
+            cmd_line = stdin.read_line();
+
+            if (cmd_line != null) {
+
+                /*Saving command history*/
+                history.append(cmd_line+"\n");
+
+                /*Removes leading and trailing whitespace*/
+                cmd_line.strip();
+
+                /*Adding "gst_cli" as fisrt argument
+                 necessary to reuse parse_cmd function*/
+                label.append(cmd_line);
+
+                /*Split string into an array*/
+                args = label.str.split(" ",-1);
+                parse_options(args);
+                parse_cmd(_remaining_args);
+
+            }
+        }
+        stdout.printf ("\n-----\n %s\n", history.str);
+        return true;
     }
 
     public bool parse(string[] args) throws DBus.Error, GLib.Error {
             if (args.length > 0) {
                 return parse_cmd(args);
             } else {
-                return cli(args);
+                cli_enable = true;
+                return cli();
             }
-
     }
 
+
     static int main (string[] args) {
-        HarrierCli cli;
+        GstdCli cli;
 
         try {
             obj_path = null;
-            var opt = new OptionContext("(For Commands HELP: 'gst-client help')");
-            opt.set_help_enabled(true);
-            opt.add_main_entries(options, null);
-            opt.parse(ref args);
+            cli = new GstdCli();
 
-            cli = new HarrierCli();
+            cli.parse_options(args);
 
             if (!cli.parse(_remaining_args))
                 return -1;

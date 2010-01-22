@@ -12,113 +12,118 @@
 #include <stdio.h>
 
 
-#define TYPE_HARRIER_CLI (harrier_cli_get_type ())
-#define HARRIER_CLI(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_HARRIER_CLI, HarrierCli))
-#define HARRIER_CLI_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_HARRIER_CLI, HarrierCliClass))
-#define IS_HARRIER_CLI(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_HARRIER_CLI))
-#define IS_HARRIER_CLI_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_HARRIER_CLI))
-#define HARRIER_CLI_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_HARRIER_CLI, HarrierCliClass))
+#define TYPE_GSTD_CLI (gstd_cli_get_type ())
+#define GSTD_CLI(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_GSTD_CLI, GstdCli))
+#define GSTD_CLI_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_GSTD_CLI, GstdCliClass))
+#define IS_GSTD_CLI(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_GSTD_CLI))
+#define IS_GSTD_CLI_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_GSTD_CLI))
+#define GSTD_CLI_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_GSTD_CLI, GstdCliClass))
 
-typedef struct _HarrierCli HarrierCli;
-typedef struct _HarrierCliClass HarrierCliClass;
-typedef struct _HarrierCliPrivate HarrierCliPrivate;
+typedef struct _GstdCli GstdCli;
+typedef struct _GstdCliClass GstdCliClass;
+typedef struct _GstdCliPrivate GstdCliPrivate;
 #define _dbus_g_connection_unref0(var) ((var == NULL) ? NULL : (var = (dbus_g_connection_unref (var), NULL)))
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
+#define _g_string_free0(var) ((var == NULL) ? NULL : (var = (g_string_free (var, TRUE), NULL)))
 
-struct _HarrierCli {
+struct _GstdCli {
 	GObject parent_instance;
-	HarrierCliPrivate * priv;
+	GstdCliPrivate * priv;
 };
 
-struct _HarrierCliClass {
+struct _GstdCliClass {
 	GObjectClass parent_class;
 };
 
-struct _HarrierCliPrivate {
+struct _GstdCliPrivate {
 	DBusGConnection* conn;
 	DBusGProxy* factory;
+	char* active_pipe;
+	gboolean cli_enable;
+	DBusGProxy* pipeline;
 	char** cmds;
 	gint cmds_length1;
 	gint cmds_length2;
 };
 
 
-static char* harrier_cli_obj_path;
-static char* harrier_cli_obj_path = NULL;
-static gboolean harrier_cli__signals;
-static gboolean harrier_cli__signals = FALSE;
-static gboolean harrier_cli__debug;
-static gboolean harrier_cli__debug = FALSE;
-static char** harrier_cli__remaining_args;
-static char** harrier_cli__remaining_args = NULL;
-static gpointer harrier_cli_parent_class = NULL;
+static char* gstd_cli_obj_path;
+static char* gstd_cli_obj_path = NULL;
+static gboolean gstd_cli__signals;
+static gboolean gstd_cli__signals = FALSE;
+static gboolean gstd_cli__debug;
+static gboolean gstd_cli__debug = FALSE;
+static char** gstd_cli__remaining_args;
+static char** gstd_cli__remaining_args = NULL;
+static gpointer gstd_cli_parent_class = NULL;
 
-GType harrier_cli_get_type (void);
-#define HARRIER_CLI_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_HARRIER_CLI, HarrierCliPrivate))
+GType gstd_cli_get_type (void);
+#define GSTD_CLI_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_GSTD_CLI, GstdCliPrivate))
 enum  {
-	HARRIER_CLI_DUMMY_PROPERTY
+	GSTD_CLI_DUMMY_PROPERTY
 };
-HarrierCli* harrier_cli_new (GError** error);
-HarrierCli* harrier_cli_construct (GType object_type, GError** error);
-void harrier_cli_Error_cb (HarrierCli* self);
-void harrier_cli_Eos_cb (HarrierCli* self);
-void harrier_cli_StateChanged_cb (HarrierCli* self);
+GstdCli* gstd_cli_new (GError** error);
+GstdCli* gstd_cli_construct (GType object_type, GError** error);
+void gstd_cli_Error_cb (GstdCli* self);
+void gstd_cli_Eos_cb (GstdCli* self);
+void gstd_cli_StateChanged_cb (GstdCli* self);
 static char* _dynamic_CreateWithDebug0 (DBusGProxy* self, const char* param1, gboolean param2, GError** error);
-static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* description);
+static gboolean gstd_cli_pipeline_create (GstdCli* self, const char* description);
 static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error);
-static gboolean harrier_cli_pipeline_play (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_play (GstdCli* self, DBusGProxy* pipeline);
 static gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error);
-static gboolean harrier_cli_pipeline_pause (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_pause (GstdCli* self, DBusGProxy* pipeline);
 static gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error);
-static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_null (GstdCli* self, DBusGProxy* pipeline);
 static gint _dynamic_PipelineId4 (DBusGProxy* self, GError** error);
 static gboolean _dynamic_Destroy5 (DBusGProxy* self, gint param1, GError** error);
-static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_destroy (GstdCli* self, DBusGProxy* pipeline);
 static gboolean _dynamic_ElementGetPropertyBoolean6 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
 static gint _dynamic_ElementGetPropertyInt7 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
 static glong _dynamic_ElementGetPropertyLong8 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
 static char* _dynamic_ElementGetPropertyString9 (DBusGProxy* self, const char* param1, const char* param2, GError** error);
-static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1);
+static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
 static gboolean _dynamic_ElementSetPropertyBoolean10 (DBusGProxy* self, const char* param1, const char* param2, gboolean param3, GError** error);
 static gboolean _dynamic_ElementSetPropertyInt11 (DBusGProxy* self, const char* param1, const char* param2, gint param3, GError** error);
 static gboolean _dynamic_ElementSetPropertyLong12 (DBusGProxy* self, const char* param1, const char* param2, glong param3, GError** error);
 static gboolean _dynamic_ElementSetPropertyString13 (DBusGProxy* self, const char* param1, const char* param2, const char* param3, GError** error);
-static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1);
+static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
 static gint _dynamic_PipelineGetDuration14 (DBusGProxy* self, GError** error);
-static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipeline);
 static gint _dynamic_PipelineGetPosition15 (DBusGProxy* self, GError** error);
-static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline);
+static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipeline);
+void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1);
 static gboolean _dynamic_PipelineIsInitialized16 (DBusGProxy* self, GError** error);
-static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
+static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
+static void _gstd_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-static void _harrier_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self);
+static void _gstd_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1, GError** error);
-gboolean harrier_cli_cli (HarrierCli* self, char** args, int args_length1, GError** error);
-gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GError** error);
-static gint harrier_cli_main (char** args, int args_length1);
-static void harrier_cli_finalize (GObject* obj);
+gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GError** error);
+gboolean gstd_cli_cli (GstdCli* self, GError** error);
+gboolean gstd_cli_parse (GstdCli* self, char** args, int args_length1, GError** error);
+static gint gstd_cli_main (char** args, int args_length1);
+static void gstd_cli_finalize (GObject* obj);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
-static const GOptionEntry HARRIER_CLI_options[] = {{"by_path", 'p', 0, G_OPTION_ARG_STRING, &harrier_cli_obj_path, "Pipeline path, for which command will be apply.Usage:-p <path>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &harrier_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &harrier_cli__debug, "Flag to enable debug information on a pipeline,useful just for 'create' command.Usage:-d <1>", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &harrier_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
+static const GOptionEntry GSTD_CLI_options[] = {{"by_path", 'p', 0, G_OPTION_ARG_STRING, &gstd_cli_obj_path, "Pipeline path, for which command will be apply.Usage:-p <path>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &gstd_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &gstd_cli__debug, "Flag to enable debug information on a pipeline,useful just for 'create' command.Usage:-d <1>", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &gstd_cli__remaining_args, NULL, N_ ("[COMMANDS...]")}, {NULL}};
 
 
-HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
+GstdCli* gstd_cli_construct (GType object_type, GError** error) {
 	GError * _inner_error_;
-	HarrierCli * self;
+	GstdCli * self;
 	DBusGConnection* _tmp0_;
 	DBusGConnection* _tmp1_;
 	DBusGProxy* _tmp2_;
 	_inner_error_ = NULL;
-	self = (HarrierCli*) g_object_new (object_type, NULL);
+	self = (GstdCli*) g_object_new (object_type, NULL);
 	_tmp0_ = dbus_g_bus_get (DBUS_BUS_SYSTEM, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_propagate_error (error, _inner_error_);
@@ -130,24 +135,24 @@ HarrierCli* harrier_cli_construct (GType object_type, GError** error) {
 }
 
 
-HarrierCli* harrier_cli_new (GError** error) {
-	return harrier_cli_construct (TYPE_HARRIER_CLI, error);
+GstdCli* gstd_cli_new (GError** error) {
+	return gstd_cli_construct (TYPE_GSTD_CLI, error);
 }
 
 
-void harrier_cli_Error_cb (HarrierCli* self) {
+void gstd_cli_Error_cb (GstdCli* self) {
 	g_return_if_fail (self != NULL);
 	fprintf (stdout, "Error signal received\n");
 }
 
 
-void harrier_cli_Eos_cb (HarrierCli* self) {
+void gstd_cli_Eos_cb (GstdCli* self) {
 	g_return_if_fail (self != NULL);
 	fprintf (stdout, "End of Stream signal received\n");
 }
 
 
-void harrier_cli_StateChanged_cb (HarrierCli* self) {
+void gstd_cli_StateChanged_cb (GstdCli* self) {
 	g_return_if_fail (self != NULL);
 	fprintf (stdout, "StateChanged signal received\n");
 }
@@ -163,14 +168,14 @@ static char* _dynamic_CreateWithDebug0 (DBusGProxy* self, const char* param1, gb
 }
 
 
-static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* description) {
+static gboolean gstd_cli_pipeline_create (GstdCli* self, const char* description) {
 	gboolean result;
 	GError * _inner_error_;
 	char* new_objpath;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (description != NULL, FALSE);
 	_inner_error_ = NULL;
-	new_objpath = _dynamic_CreateWithDebug0 (self->priv->factory, description, harrier_cli__debug, &_inner_error_);
+	new_objpath = _dynamic_CreateWithDebug0 (self->priv->factory, description, gstd_cli__debug, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
 		g_clear_error (&_inner_error_);
@@ -181,6 +186,12 @@ static gboolean harrier_cli_pipeline_create (HarrierCli* self, const char* descr
 		result = FALSE;
 		_g_free0 (new_objpath);
 		return result;
+	}
+	if (self->priv->cli_enable) {
+		char* _tmp0_;
+		DBusGProxy* _tmp1_;
+		self->priv->active_pipe = (_tmp0_ = g_strdup (new_objpath), _g_free0 (self->priv->active_pipe), _tmp0_);
+		self->priv->pipeline = (_tmp1_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", new_objpath, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (self->priv->pipeline), _tmp1_);
 	}
 	fprintf (stdout, "Pipeline path created: %s\n", new_objpath);
 	result = TRUE;
@@ -199,7 +210,7 @@ static gboolean _dynamic_PipelinePlay1 (DBusGProxy* self, GError** error) {
 }
 
 
-static gboolean harrier_cli_pipeline_play (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_play (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gboolean ret;
@@ -232,7 +243,7 @@ static gboolean _dynamic_PipelinePause2 (DBusGProxy* self, GError** error) {
 }
 
 
-static gboolean harrier_cli_pipeline_pause (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_pause (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gboolean ret;
@@ -265,7 +276,7 @@ static gboolean _dynamic_PipelineNull3 (DBusGProxy* self, GError** error) {
 }
 
 
-static gboolean harrier_cli_pipeline_null (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_null (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gboolean ret;
@@ -308,7 +319,7 @@ static gboolean _dynamic_Destroy5 (DBusGProxy* self, gint param1, GError** error
 }
 
 
-static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_destroy (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gint id;
@@ -333,7 +344,7 @@ static gboolean harrier_cli_pipeline_destroy (HarrierCli* self, DBusGProxy* pipe
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, "Pipeline with path:%s, destroyed\n", harrier_cli_obj_path);
+	fprintf (stdout, "Pipeline with path:%s, destroyed\n", gstd_cli_obj_path);
 	result = TRUE;
 	return result;
 }
@@ -379,7 +390,7 @@ static char* _dynamic_ElementGetPropertyString9 (DBusGProxy* self, const char* p
 }
 
 
-static gboolean harrier_cli_pipeline_get_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
+static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
 	gboolean result;
 	GError * _inner_error_;
 	gboolean ret;
@@ -546,7 +557,7 @@ static gboolean _dynamic_ElementSetPropertyString13 (DBusGProxy* self, const cha
 }
 
 
-static gboolean harrier_cli_pipeline_set_property (HarrierCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
+static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
 	gboolean result;
 	GError * _inner_error_;
 	gboolean ret = FALSE;
@@ -673,7 +684,7 @@ static gint _dynamic_PipelineGetDuration14 (DBusGProxy* self, GError** error) {
 }
 
 
-static gboolean harrier_cli_pipeline_get_duration (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gint time;
@@ -707,7 +718,7 @@ static gint _dynamic_PipelineGetPosition15 (DBusGProxy* self, GError** error) {
 }
 
 
-static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy* pipeline) {
+static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result;
 	GError * _inner_error_;
 	gint pos;
@@ -731,6 +742,55 @@ static gboolean harrier_cli_pipeline_get_position (HarrierCli* self, DBusGProxy*
 }
 
 
+void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
+	GError * _inner_error_;
+	char** _tmp0_;
+	char* _tmp1_;
+	GOptionContext* opt;
+	g_return_if_fail (self != NULL);
+	_inner_error_ = NULL;
+	gstd_cli__signals = FALSE;
+	gstd_cli__debug = FALSE;
+	gstd_cli__remaining_args = (_tmp0_ = NULL, gstd_cli__remaining_args = (_vala_array_free (gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), (GDestroyNotify) g_free), NULL), _tmp0_);
+	gstd_cli_obj_path = (_tmp1_ = NULL, _g_free0 (gstd_cli_obj_path), _tmp1_);
+	opt = g_option_context_new ("(For Commands HELP: 'gst-client help')");
+	g_option_context_set_help_enabled (opt, TRUE);
+	g_option_context_add_main_entries (opt, GSTD_CLI_options, NULL);
+	{
+		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_OPTION_ERROR) {
+				goto __catch0_g_option_error;
+			}
+			goto __finally0;
+		}
+	}
+	goto __finally0;
+	__catch0_g_option_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stderr, "OptionError failure: %s\n", e->message);
+			_g_error_free0 (e);
+		}
+	}
+	__finally0:
+	if (_inner_error_ != NULL) {
+		_g_option_context_free0 (opt);
+		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+	if (gstd_cli_obj_path != NULL) {
+		char* _tmp2_;
+		self->priv->active_pipe = (_tmp2_ = g_strdup (gstd_cli_obj_path), _g_free0 (self->priv->active_pipe), _tmp2_);
+	}
+	_g_option_context_free0 (opt);
+}
+
+
 static gboolean _dynamic_PipelineIsInitialized16 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
@@ -741,8 +801,8 @@ static gboolean _dynamic_PipelineIsInitialized16 (DBusGProxy* self, GError** err
 }
 
 
-static void _harrier_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
-	harrier_cli_Error_cb (self);
+static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
+	gstd_cli_Error_cb (self);
 }
 
 
@@ -753,8 +813,8 @@ void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback 
 }
 
 
-static void _harrier_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self) {
-	harrier_cli_Eos_cb (self);
+static void _gstd_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self) {
+	gstd_cli_Eos_cb (self);
 }
 
 
@@ -765,8 +825,8 @@ void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback ha
 }
 
 
-static void _harrier_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self) {
-	harrier_cli_StateChanged_cb (self);
+static void _gstd_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self) {
+	gstd_cli_StateChanged_cb (self);
 }
 
 
@@ -777,147 +837,179 @@ void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCa
 }
 
 
-gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1, GError** error) {
+static char* g_file_stream_read_line (FILE* self) {
+	char* result;
+	gint c = 0;
+	GString* ret;
+	g_return_val_if_fail (self != NULL, NULL);
+	ret = NULL;
+	while (TRUE) {
+		if (!((c = fgetc (self)) != EOF)) {
+			break;
+		}
+		if (ret == NULL) {
+			GString* _tmp0_;
+			ret = (_tmp0_ = g_string_new (""), _g_string_free0 (ret), _tmp0_);
+		}
+		if (c == '\n') {
+			break;
+		}
+		g_string_append_c (ret, (gchar) c);
+	}
+	if (ret == NULL) {
+		result = NULL;
+		_g_string_free0 (ret);
+		return result;
+	} else {
+		result = g_strdup (ret->str);
+		_g_string_free0 (ret);
+		return result;
+	}
+	_g_string_free0 (ret);
+}
+
+
+gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
 	GError * _inner_error_;
-	DBusGProxy* pipeline;
-	GQuark _tmp10_;
-	char* _tmp9_;
-	static GQuark _tmp10__label0 = 0;
-	static GQuark _tmp10__label1 = 0;
-	static GQuark _tmp10__label2 = 0;
-	static GQuark _tmp10__label3 = 0;
-	static GQuark _tmp10__label4 = 0;
-	static GQuark _tmp10__label5 = 0;
-	static GQuark _tmp10__label6 = 0;
-	static GQuark _tmp10__label7 = 0;
-	static GQuark _tmp10__label8 = 0;
-	static GQuark _tmp10__label9 = 0;
+	GQuark _tmp11_;
+	char* _tmp10_;
+	static GQuark _tmp11__label0 = 0;
+	static GQuark _tmp11__label1 = 0;
+	static GQuark _tmp11__label2 = 0;
+	static GQuark _tmp11__label3 = 0;
+	static GQuark _tmp11__label4 = 0;
+	static GQuark _tmp11__label5 = 0;
+	static GQuark _tmp11__label6 = 0;
+	static GQuark _tmp11__label7 = 0;
+	static GQuark _tmp11__label8 = 0;
+	static GQuark _tmp11__label9 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
-	pipeline = NULL;
-	if (harrier_cli_obj_path != NULL) {
+	if (gstd_cli_obj_path != NULL) {
 		DBusGProxy* _tmp0_;
-		pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", harrier_cli_obj_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (pipeline), _tmp0_);
+		self->priv->pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", gstd_cli_obj_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (self->priv->pipeline), _tmp0_);
 		{
 			gboolean ret;
-			ret = _dynamic_PipelineIsInitialized16 (pipeline, &_inner_error_);
+			ret = _dynamic_PipelineIsInitialized16 (self->priv->pipeline, &_inner_error_);
 			if (_inner_error_ != NULL) {
-				goto __catch0_g_error;
-				goto __finally0;
+				goto __catch1_g_error;
+				goto __finally1;
 			}
 			if (!ret) {
-				fprintf (stderr, "Pipeline with path:%s, was not initialiazed\n", harrier_cli_obj_path);
+				fprintf (stderr, "Pipeline with path:%s, was not initialiazed\n", gstd_cli_obj_path);
 				result = FALSE;
-				_g_object_unref0 (pipeline);
 				return result;
 			}
 		}
-		goto __finally0;
-		__catch0_g_error:
+		goto __finally1;
+		__catch1_g_error:
 		{
 			GError * e;
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			{
-				fprintf (stderr, "Pipeline with path:%s, has not been created\n", harrier_cli_obj_path);
+				fprintf (stderr, "Pipeline with path:%s, has not been created\n", gstd_cli_obj_path);
 				result = FALSE;
 				_g_error_free0 (e);
-				_g_object_unref0 (pipeline);
 				return result;
 			}
 		}
-		__finally0:
+		__finally1:
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
-			_g_object_unref0 (pipeline);
 			return FALSE;
 		}
 	} else {
 		gboolean _tmp1_ = FALSE;
-		char* _tmp2_;
-		gboolean _tmp3_;
-		if ((_tmp3_ = _vala_strcmp0 (_tmp2_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp2_), _tmp3_)) {
-			char* _tmp4_;
-			_tmp1_ = _vala_strcmp0 (_tmp4_ = g_utf8_strdown (args[0], -1), "help") != 0;
-			_g_free0 (_tmp4_);
+		gboolean _tmp2_ = FALSE;
+		char* _tmp3_;
+		gboolean _tmp4_;
+		if ((_tmp4_ = _vala_strcmp0 (_tmp3_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp3_), _tmp4_)) {
+			char* _tmp5_;
+			_tmp2_ = _vala_strcmp0 (_tmp5_ = g_utf8_strdown (args[0], -1), "help") != 0;
+			_g_free0 (_tmp5_);
+		} else {
+			_tmp2_ = FALSE;
+		}
+		if (_tmp2_) {
+			_tmp1_ = self->priv->active_pipe == NULL;
 		} else {
 			_tmp1_ = FALSE;
 		}
 		if (_tmp1_) {
 			fprintf (stderr, "Pipeline path was not specified\n");
 			result = FALSE;
-			_g_object_unref0 (pipeline);
 			return result;
 		}
 	}
-	if (harrier_cli__signals) {
-		gboolean _tmp5_ = FALSE;
-		char* _tmp6_;
-		gboolean _tmp7_;
-		if ((_tmp7_ = _vala_strcmp0 (_tmp6_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp6_), _tmp7_)) {
-			char* _tmp8_;
-			_tmp5_ = _vala_strcmp0 (_tmp8_ = g_utf8_strdown (args[0], -1), "help") != 0;
-			_g_free0 (_tmp8_);
+	if (gstd_cli__signals) {
+		gboolean _tmp6_ = FALSE;
+		char* _tmp7_;
+		gboolean _tmp8_;
+		fprintf (stdout, "Inside signals \n");
+		if ((_tmp8_ = _vala_strcmp0 (_tmp7_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp7_), _tmp8_)) {
+			char* _tmp9_;
+			_tmp6_ = _vala_strcmp0 (_tmp9_ = g_utf8_strdown (args[0], -1), "help") != 0;
+			_g_free0 (_tmp9_);
 		} else {
-			_tmp5_ = FALSE;
+			_tmp6_ = FALSE;
 		}
-		if (_tmp5_) {
+		if (_tmp6_) {
 			fprintf (stdout, "Signals, activated\n");
-			_dynamic_Error1_connect (pipeline, "Error", (GCallback) _harrier_cli_Error_cb_dynamic_Error0_, self);
-			_dynamic_Eos3_connect (pipeline, "Eos", (GCallback) _harrier_cli_Eos_cb_dynamic_Eos2_, self);
-			_dynamic_StateChanged5_connect (pipeline, "StateChanged", (GCallback) _harrier_cli_StateChanged_cb_dynamic_StateChanged4_, self);
+			_dynamic_Error1_connect (self->priv->pipeline, "Error", (GCallback) _gstd_cli_Error_cb_dynamic_Error0_, self);
+			_dynamic_Eos3_connect (self->priv->pipeline, "Eos", (GCallback) _gstd_cli_Eos_cb_dynamic_Eos2_, self);
+			_dynamic_StateChanged5_connect (self->priv->pipeline, "StateChanged", (GCallback) _gstd_cli_StateChanged_cb_dynamic_StateChanged4_, self);
 		}
 	}
-	_tmp9_ = g_utf8_strdown (args[0], -1);
-	_tmp10_ = (NULL == _tmp9_) ? 0 : g_quark_from_string (_tmp9_);
-	g_free (_tmp9_);
-	if (_tmp10_ == ((0 != _tmp10__label0) ? _tmp10__label0 : (_tmp10__label0 = g_quark_from_static_string ("create"))))
+	_tmp10_ = g_utf8_strdown (args[0], -1);
+	_tmp11_ = (NULL == _tmp10_) ? 0 : g_quark_from_string (_tmp10_);
+	g_free (_tmp10_);
+	if (_tmp11_ == ((0 != _tmp11__label0) ? _tmp11__label0 : (_tmp11__label0 = g_quark_from_static_string ("create"))))
 	do {
-		result = harrier_cli_pipeline_create (self, args[1]);
-		_g_object_unref0 (pipeline);
+		if (self->priv->cli_enable) {
+			char* desc;
+			fprintf (stdout, "\nDescription:");
+			desc = g_file_stream_read_line (stdin);
+			result = gstd_cli_pipeline_create (self, desc);
+			_g_free0 (desc);
+			return result;
+		}
+		result = gstd_cli_pipeline_create (self, args[1]);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label1) ? _tmp10__label1 : (_tmp10__label1 = g_quark_from_static_string ("destroy"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label1) ? _tmp11__label1 : (_tmp11__label1 = g_quark_from_static_string ("destroy"))))
 	do {
-		result = harrier_cli_pipeline_destroy (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_destroy (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label2) ? _tmp10__label2 : (_tmp10__label2 = g_quark_from_static_string ("play"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label2) ? _tmp11__label2 : (_tmp11__label2 = g_quark_from_static_string ("play"))))
 	do {
-		result = harrier_cli_pipeline_play (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_play (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label3) ? _tmp10__label3 : (_tmp10__label3 = g_quark_from_static_string ("pause"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label3) ? _tmp11__label3 : (_tmp11__label3 = g_quark_from_static_string ("pause"))))
 	do {
-		result = harrier_cli_pipeline_pause (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_pause (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label4) ? _tmp10__label4 : (_tmp10__label4 = g_quark_from_static_string ("null"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label4) ? _tmp11__label4 : (_tmp11__label4 = g_quark_from_static_string ("null"))))
 	do {
-		result = harrier_cli_pipeline_null (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_null (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label5) ? _tmp10__label5 : (_tmp10__label5 = g_quark_from_static_string ("set"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label5) ? _tmp11__label5 : (_tmp11__label5 = g_quark_from_static_string ("set"))))
 	do {
-		result = harrier_cli_pipeline_set_property (self, pipeline, args, args_length1);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_set_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label6) ? _tmp10__label6 : (_tmp10__label6 = g_quark_from_static_string ("get"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label6) ? _tmp11__label6 : (_tmp11__label6 = g_quark_from_static_string ("get"))))
 	do {
-		result = harrier_cli_pipeline_get_property (self, pipeline, args, args_length1);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_get_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label7) ? _tmp10__label7 : (_tmp10__label7 = g_quark_from_static_string ("get-duration"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label7) ? _tmp11__label7 : (_tmp11__label7 = g_quark_from_static_string ("get-duration"))))
 	do {
-		result = harrier_cli_pipeline_get_duration (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_get_duration (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label8) ? _tmp10__label8 : (_tmp10__label8 = g_quark_from_static_string ("get-position"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label8) ? _tmp11__label8 : (_tmp11__label8 = g_quark_from_static_string ("get-position"))))
 	do {
-		result = harrier_cli_pipeline_get_position (self, pipeline);
-		_g_object_unref0 (pipeline);
+		result = gstd_cli_pipeline_get_position (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp10_ == ((0 != _tmp10__label9) ? _tmp10__label9 : (_tmp10__label9 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp11_ == ((0 != _tmp11__label9) ? _tmp11__label9 : (_tmp11__label9 = g_quark_from_static_string ("help"))))
 	do {
 		gint id;
 		id = 0;
@@ -931,14 +1023,12 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 					fprintf (stdout, "Description: %s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
 					fprintf (stdout, "Syntax: %s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 1]);
 					result = TRUE;
-					_g_object_unref0 (pipeline);
 					return result;
 				}
 				id++;
 			}
 			fprintf (stdout, "Unknown command: %s\n", args[1]);
 			result = FALSE;
-			_g_object_unref0 (pipeline);
 			return result;
 		} else {
 			fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
@@ -954,34 +1044,90 @@ gboolean harrier_cli_parse_cmd (HarrierCli* self, char** args, int args_length1,
 		break;
 	} while (0); else
 	do {
-		fprintf (stderr, "Unkown command: %s\n", args[1]);
+		fprintf (stderr, "Unkown command:%s,%s\n", args[0], args[0]);
 		result = FALSE;
-		_g_object_unref0 (pipeline);
 		return result;
 	} while (0);
 	result = TRUE;
-	_g_object_unref0 (pipeline);
 	return result;
 }
 
 
-gboolean harrier_cli_cli (HarrierCli* self, char** args, int args_length1, GError** error) {
+static char* string_strip (const char* self) {
+	char* result;
+	char* _result_;
+	g_return_val_if_fail (self != NULL, NULL);
+	_result_ = g_strdup (self);
+	g_strstrip (_result_);
+	result = _result_;
+	return result;
+}
+
+
+gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 	gboolean result;
+	GError * _inner_error_;
+	gint args_size;
+	gint args_length1;
+	char** args;
+	char* cmd_line;
+	GString* label;
+	GString* history;
 	g_return_val_if_fail (self != NULL, FALSE);
-	fprintf (stdout, "CLI mode not implement yet\n");
-	result = FALSE;
+	_inner_error_ = NULL;
+	args = (args_length1 = 0, NULL);
+	cmd_line = NULL;
+	label = g_string_new ("");
+	history = g_string_new ("");
+	while (TRUE) {
+		char* _tmp0_;
+		if (!(!feof (stdin))) {
+			break;
+		}
+		g_string_assign (label, "gst-client$ ");
+		fprintf (stdout, "%s", label->str);
+		cmd_line = (_tmp0_ = g_file_stream_read_line (stdin), _g_free0 (cmd_line), _tmp0_);
+		if (cmd_line != NULL) {
+			char* _tmp1_;
+			char* _tmp2_;
+			char** _tmp4_;
+			char** _tmp3_;
+			g_string_append (history, _tmp1_ = g_strconcat (cmd_line, "\n", NULL));
+			_g_free0 (_tmp1_);
+			_tmp2_ = string_strip (cmd_line);
+			_g_free0 (_tmp2_);
+			g_string_append (label, cmd_line);
+			args = (_tmp4_ = _tmp3_ = g_strsplit (label->str, " ", -1), args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL), args_length1 = _vala_array_length (_tmp3_), args_size = args_length1, _tmp4_);
+			gstd_cli_parse_options (self, args, args_length1);
+			gstd_cli_parse_cmd (self, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
+			if (_inner_error_ != NULL) {
+				g_propagate_error (error, _inner_error_);
+				args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
+				_g_free0 (cmd_line);
+				_g_string_free0 (label);
+				_g_string_free0 (history);
+				return FALSE;
+			}
+		}
+	}
+	fprintf (stdout, "\n-----\n %s\n", history->str);
+	result = TRUE;
+	args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (cmd_line);
+	_g_string_free0 (label);
+	_g_string_free0 (history);
 	return result;
 }
 
 
-gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GError** error) {
+gboolean gstd_cli_parse (GstdCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
 	GError * _inner_error_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	if (args_length1 > 0) {
 		gboolean _tmp0_;
-		_tmp0_ = harrier_cli_parse_cmd (self, args, args_length1, &_inner_error_);
+		_tmp0_ = gstd_cli_parse_cmd (self, args, args_length1, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
 			return FALSE;
@@ -990,7 +1136,8 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 		return result;
 	} else {
 		gboolean _tmp1_;
-		_tmp1_ = harrier_cli_cli (self, args, args_length1, &_inner_error_);
+		self->priv->cli_enable = TRUE;
+		_tmp1_ = gstd_cli_cli (self, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			g_propagate_error (error, _inner_error_);
 			return FALSE;
@@ -1001,60 +1148,44 @@ gboolean harrier_cli_parse (HarrierCli* self, char** args, int args_length1, GEr
 }
 
 
-static gint harrier_cli_main (char** args, int args_length1) {
+static gint gstd_cli_main (char** args, int args_length1) {
 	gint result;
 	GError * _inner_error_;
-	HarrierCli* cli;
+	GstdCli* cli;
 	_inner_error_ = NULL;
 	cli = NULL;
 	{
 		char* _tmp0_;
-		GOptionContext* opt;
-		HarrierCli* _tmp1_;
-		HarrierCli* _tmp2_;
+		GstdCli* _tmp1_;
+		GstdCli* _tmp2_;
 		gboolean _tmp3_;
-		harrier_cli_obj_path = (_tmp0_ = NULL, _g_free0 (harrier_cli_obj_path), _tmp0_);
-		opt = g_option_context_new ("(For Commands HELP: 'gst-client help')");
-		g_option_context_set_help_enabled (opt, TRUE);
-		g_option_context_add_main_entries (opt, HARRIER_CLI_options, NULL);
-		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
+		gstd_cli_obj_path = (_tmp0_ = NULL, _g_free0 (gstd_cli_obj_path), _tmp0_);
+		_tmp1_ = gstd_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
-			_g_option_context_free0 (opt);
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch1_dbus_gerror;
+				goto __catch2_dbus_gerror;
 			}
-			goto __catch1_g_error;
-			goto __finally1;
-		}
-		_tmp1_ = harrier_cli_new (&_inner_error_);
-		if (_inner_error_ != NULL) {
-			_g_option_context_free0 (opt);
-			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch1_dbus_gerror;
-			}
-			goto __catch1_g_error;
-			goto __finally1;
+			goto __catch2_g_error;
+			goto __finally2;
 		}
 		cli = (_tmp2_ = _tmp1_, _g_object_unref0 (cli), _tmp2_);
-		_tmp3_ = harrier_cli_parse (cli, harrier_cli__remaining_args, _vala_array_length (harrier_cli__remaining_args), &_inner_error_);
+		gstd_cli_parse_options (cli, args, args_length1);
+		_tmp3_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
 		if (_inner_error_ != NULL) {
-			_g_option_context_free0 (opt);
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch1_dbus_gerror;
+				goto __catch2_dbus_gerror;
 			}
-			goto __catch1_g_error;
-			goto __finally1;
+			goto __catch2_g_error;
+			goto __finally2;
 		}
 		if (!_tmp3_) {
 			result = -1;
-			_g_option_context_free0 (opt);
 			_g_object_unref0 (cli);
 			return result;
 		}
-		_g_option_context_free0 (opt);
 	}
-	goto __finally1;
-	__catch1_dbus_gerror:
+	goto __finally2;
+	__catch2_dbus_gerror:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1067,8 +1198,8 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	goto __finally1;
-	__catch1_g_error:
+	goto __finally2;
+	__catch2_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1081,7 +1212,7 @@ static gint harrier_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	__finally1:
+	__finally2:
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (cli);
 		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
@@ -1096,43 +1227,48 @@ static gint harrier_cli_main (char** args, int args_length1) {
 
 int main (int argc, char ** argv) {
 	g_type_init ();
-	return harrier_cli_main (argv, argc);
+	return gstd_cli_main (argv, argc);
 }
 
 
-static void harrier_cli_class_init (HarrierCliClass * klass) {
-	harrier_cli_parent_class = g_type_class_peek_parent (klass);
-	g_type_class_add_private (klass, sizeof (HarrierCliPrivate));
-	G_OBJECT_CLASS (klass)->finalize = harrier_cli_finalize;
+static void gstd_cli_class_init (GstdCliClass * klass) {
+	gstd_cli_parent_class = g_type_class_peek_parent (klass);
+	g_type_class_add_private (klass, sizeof (GstdCliPrivate));
+	G_OBJECT_CLASS (klass)->finalize = gstd_cli_finalize;
 }
 
 
-static void harrier_cli_instance_init (HarrierCli * self) {
+static void gstd_cli_instance_init (GstdCli * self) {
 	char** _tmp0_ = NULL;
-	self->priv = HARRIER_CLI_GET_PRIVATE (self);
+	self->priv = GSTD_CLI_GET_PRIVATE (self);
+	self->priv->active_pipe = NULL;
+	self->priv->cli_enable = FALSE;
+	self->priv->pipeline = NULL;
 	self->priv->cmds = (_tmp0_ = g_new0 (char*, (9 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("-p <path> destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p)"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("-p <path> play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("-p <path> pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("-p <path> null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("-p <path> set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the pipeline(option -p needed)"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("-p <path> get <element_name> <property_name> <data_type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the pipeline(option -p needed)"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("-p <path> get-duration"), _tmp0_[23] = g_strdup ("Gets the pipeline duration time(option -p needed)"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("-p <path> get-position"), _tmp0_[26] = g_strdup ("Gets the pipeline position(option -p needed)"), _tmp0_);
 	self->priv->cmds_length1 = 9;
 	self->priv->cmds_length2 = 3;
 }
 
 
-static void harrier_cli_finalize (GObject* obj) {
-	HarrierCli * self;
-	self = HARRIER_CLI (obj);
+static void gstd_cli_finalize (GObject* obj) {
+	GstdCli * self;
+	self = GSTD_CLI (obj);
 	_dbus_g_connection_unref0 (self->priv->conn);
 	_g_object_unref0 (self->priv->factory);
+	_g_free0 (self->priv->active_pipe);
+	_g_object_unref0 (self->priv->pipeline);
 	self->priv->cmds = (_vala_array_free (self->priv->cmds, self->priv->cmds_length1 * self->priv->cmds_length2, (GDestroyNotify) g_free), NULL);
-	G_OBJECT_CLASS (harrier_cli_parent_class)->finalize (obj);
+	G_OBJECT_CLASS (gstd_cli_parent_class)->finalize (obj);
 }
 
 
-GType harrier_cli_get_type (void) {
-	static GType harrier_cli_type_id = 0;
-	if (harrier_cli_type_id == 0) {
-		static const GTypeInfo g_define_type_info = { sizeof (HarrierCliClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) harrier_cli_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (HarrierCli), 0, (GInstanceInitFunc) harrier_cli_instance_init, NULL };
-		harrier_cli_type_id = g_type_register_static (G_TYPE_OBJECT, "HarrierCli", &g_define_type_info, 0);
+GType gstd_cli_get_type (void) {
+	static GType gstd_cli_type_id = 0;
+	if (gstd_cli_type_id == 0) {
+		static const GTypeInfo g_define_type_info = { sizeof (GstdCliClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) gstd_cli_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (GstdCli), 0, (GInstanceInitFunc) gstd_cli_instance_init, NULL };
+		gstd_cli_type_id = g_type_register_static (G_TYPE_OBJECT, "GstdCli", &g_define_type_info, 0);
 	}
-	return harrier_cli_type_id;
+	return gstd_cli_type_id;
 }
 
 
