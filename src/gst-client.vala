@@ -60,6 +60,9 @@ public class GstdCli : GLib.Object {
         {"list-pipes","list-pipes","Returns a list of all the dbus-path of the existing pipelines"},
         {"set-active","set-active <path>","Set active pipeline using the dbus-path returned when the pipeline was created"},
         {"get-active","get-active","Returns the active pipeline dbus-path"},
+        {"seek","seek <position[ms]>","Moves current playing position to a new one"},
+        {"skip","skip <period[ms]>","Skips a period, if positive: it moves foward, if negative: it moves backward"},
+        {"speed","speed <rate>","Changes playback rate, it enables fast-foward or fast-reverse playback"},
         {"quit","quit","Quit active console"}
     };
 
@@ -305,6 +308,54 @@ public class GstdCli : GLib.Object {
         return true;
     }
 
+    private bool pipeline_seek(dynamic DBus.Object pipeline,string[] args){
+
+        if(args[1]==null){
+            stdout.printf("Missing argument.Execute:'help seek'\n");
+            return false;
+        }
+
+        int pos_ms = args[1].to_int();
+        bool ret = pipeline.PipelineSeek(pos_ms);
+        if (!ret){
+            stderr.printf("Seek fail: Media type not seekable\n");
+            return false;
+        }
+        return ret;
+    }
+
+    private bool pipeline_skip(dynamic DBus.Object pipeline,string[] args){
+
+        if(args[1]==null){
+            stdout.printf("Missing argument.Execute:'help skip'\n");
+            return false;
+        }
+
+        int period_ms = args[1].to_int();
+        bool ret = pipeline.PipelineSkip(period_ms);
+        if (!ret){
+            stderr.printf("Skip fail: Media type not seekable\n");
+            return false;
+        }
+        return ret;
+    }
+
+    private bool pipeline_speed(dynamic DBus.Object pipeline,string[] args){
+
+        if(args[1]==null){
+            stdout.printf("Missing argument.Execute:'help speed'\n");
+            return false;
+        }
+
+        double rate = args[1].to_double();
+        bool ret = pipeline.PipelineSpeed(rate);
+        if (!ret){
+            stderr.printf("Speed could not be set\n");
+            return false;
+        }
+        return ret;
+    }
+
     private bool pipeline_list(){
 
         string[]? list = new string[20];
@@ -456,6 +507,15 @@ public class GstdCli : GLib.Object {
         case "get-state":
             return pipeline_get_state(pipeline);
 
+        case "seek":
+            return pipeline_seek(pipeline,args);
+
+        case "skip":
+            return pipeline_skip(pipeline,args);
+
+        case "speed":
+            return pipeline_speed(pipeline,args);
+
         case "list-pipes":
             return pipeline_list();
 
@@ -544,7 +604,7 @@ public class GstdCli : GLib.Object {
 
                 /*Split string into an array*/
                 args = label.str.split(" ",-1);
-                
+
                 parse_options(args);
 
                 parse_cmd(_remaining_args);

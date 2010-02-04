@@ -10,6 +10,8 @@
 #include <string.h>
 #include <glib/gi18n-lib.h>
 #include <stdio.h>
+#include <float.h>
+#include <math.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -100,9 +102,15 @@ static gint _dynamic_PipelineGetPosition15 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipeline);
 static char* _dynamic_PipelineGetState16 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline);
-static char** _dynamic_List17 (DBusGProxy* self, int* result_length1, GError** error);
+static gboolean _dynamic_PipelineSeek17 (DBusGProxy* self, gint param1, GError** error);
+static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
+static gboolean _dynamic_PipelineSkip18 (DBusGProxy* self, gint param1, GError** error);
+static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
+static gboolean _dynamic_PipelineSpeed19 (DBusGProxy* self, double param1, GError** error);
+static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
+static char** _dynamic_List20 (DBusGProxy* self, int* result_length1, GError** error);
 static gboolean gstd_cli_pipeline_list (GstdCli* self);
-static gboolean _dynamic_PipelineIsInitialized18 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelineIsInitialized21 (DBusGProxy* self, GError** error);
 void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1);
 static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
 void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
@@ -834,7 +842,127 @@ static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline
 }
 
 
-static char** _dynamic_List17 (DBusGProxy* self, int* result_length1, GError** error) {
+static gboolean _dynamic_PipelineSeek17 (DBusGProxy* self, gint param1, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelineSeek", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
+	gboolean result;
+	GError * _inner_error_;
+	gint pos_ms;
+	gboolean ret;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	_inner_error_ = NULL;
+	if (args[1] == NULL) {
+		fprintf (stdout, "Missing argument.Execute:'help seek'\n");
+		result = FALSE;
+		return result;
+	}
+	pos_ms = atoi (args[1]);
+	ret = _dynamic_PipelineSeek17 (pipeline, pos_ms, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	if (!ret) {
+		fprintf (stderr, "Seek fail: Media type not seekable\n");
+		result = FALSE;
+		return result;
+	}
+	result = ret;
+	return result;
+}
+
+
+static gboolean _dynamic_PipelineSkip18 (DBusGProxy* self, gint param1, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelineSkip", error, G_TYPE_INT, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
+	gboolean result;
+	GError * _inner_error_;
+	gint period_ms;
+	gboolean ret;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	_inner_error_ = NULL;
+	if (args[1] == NULL) {
+		fprintf (stdout, "Missing argument.Execute:'help skip'\n");
+		result = FALSE;
+		return result;
+	}
+	period_ms = atoi (args[1]);
+	ret = _dynamic_PipelineSkip18 (pipeline, period_ms, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	if (!ret) {
+		fprintf (stderr, "Skip fail: Media type not seekable\n");
+		result = FALSE;
+		return result;
+	}
+	result = ret;
+	return result;
+}
+
+
+static gboolean _dynamic_PipelineSpeed19 (DBusGProxy* self, double param1, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "PipelineSpeed", error, G_TYPE_DOUBLE, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1) {
+	gboolean result;
+	GError * _inner_error_;
+	double rate;
+	gboolean ret;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	_inner_error_ = NULL;
+	if (args[1] == NULL) {
+		fprintf (stdout, "Missing argument.Execute:'help speed'\n");
+		result = FALSE;
+		return result;
+	}
+	rate = g_ascii_strtod (args[1], NULL);
+	ret = _dynamic_PipelineSpeed19 (pipeline, rate, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	if (!ret) {
+		fprintf (stderr, "Speed could not be set\n");
+		result = FALSE;
+		return result;
+	}
+	result = ret;
+	return result;
+}
+
+
+static char** _dynamic_List20 (DBusGProxy* self, int* result_length1, GError** error) {
 	char** result;
 	dbus_g_proxy_call (self, "List", error, G_TYPE_INVALID, G_TYPE_STRV, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -879,7 +1007,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 			list[index] = (_tmp2_ = NULL, _g_free0 (list[index]), _tmp2_);
 		}
 	}
-	_tmp4_ = (_tmp5_ = _dynamic_List17 (self->priv->factory, &_tmp3_, &_inner_error_), _tmp4__length1 = _tmp3_, _tmp4__size = _tmp4__length1, _tmp5_);
+	_tmp4_ = (_tmp5_ = _dynamic_List20 (self->priv->factory, &_tmp3_, &_inner_error_), _tmp4__length1 = _tmp3_, _tmp4__size = _tmp4__length1, _tmp5_);
 	if (_inner_error_ != NULL) {
 		list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -915,7 +1043,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 }
 
 
-static gboolean _dynamic_PipelineIsInitialized18 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelineIsInitialized21 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -935,7 +1063,7 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 		self->priv->pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (self->priv->pipeline), _tmp0_);
 		{
 			gboolean ret;
-			ret = _dynamic_PipelineIsInitialized18 (self->priv->pipeline, &_inner_error_);
+			ret = _dynamic_PipelineIsInitialized21 (self->priv->pipeline, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				goto __catch0_g_error;
 				goto __finally0;
@@ -1084,6 +1212,9 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 	static GQuark _tmp18__label12 = 0;
 	static GQuark _tmp18__label13 = 0;
 	static GQuark _tmp18__label14 = 0;
+	static GQuark _tmp18__label15 = 0;
+	static GQuark _tmp18__label16 = 0;
+	static GQuark _tmp18__label17 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (!gstd_cli_create_proxypipe (self, gstd_cli_obj_path)) {
 		gboolean _tmp0_ = FALSE;
@@ -1205,11 +1336,23 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 	do {
 		result = gstd_cli_pipeline_get_state (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label10) ? _tmp18__label10 : (_tmp18__label10 = g_quark_from_static_string ("list-pipes"))))
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label10) ? _tmp18__label10 : (_tmp18__label10 = g_quark_from_static_string ("seek"))))
+	do {
+		result = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
+		return result;
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label11) ? _tmp18__label11 : (_tmp18__label11 = g_quark_from_static_string ("skip"))))
+	do {
+		result = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
+		return result;
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label12) ? _tmp18__label12 : (_tmp18__label12 = g_quark_from_static_string ("speed"))))
+	do {
+		result = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
+		return result;
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label13) ? _tmp18__label13 : (_tmp18__label13 = g_quark_from_static_string ("list-pipes"))))
 	do {
 		result = gstd_cli_pipeline_list (self);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label11) ? _tmp18__label11 : (_tmp18__label11 = g_quark_from_static_string ("set-active"))))
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label14) ? _tmp18__label14 : (_tmp18__label14 = g_quark_from_static_string ("set-active"))))
 	do {
 		if (self->priv->cli_enable) {
 			char* _tmp16_;
@@ -1222,7 +1365,7 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			result = FALSE;
 			return result;
 		}
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label12) ? _tmp18__label12 : (_tmp18__label12 = g_quark_from_static_string ("get-active"))))
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label15) ? _tmp18__label15 : (_tmp18__label15 = g_quark_from_static_string ("get-active"))))
 	do {
 		if (self->priv->cli_enable) {
 			fprintf (stdout, "The active pipeline path is:%s\n", self->priv->active_pipe);
@@ -1233,12 +1376,12 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			result = FALSE;
 			return result;
 		}
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label13) ? _tmp18__label13 : (_tmp18__label13 = g_quark_from_static_string ("quit"))))
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label16) ? _tmp18__label16 : (_tmp18__label16 = g_quark_from_static_string ("quit"))))
 	do {
 		self->priv->cli_enable = FALSE;
 		result = TRUE;
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label14) ? _tmp18__label14 : (_tmp18__label14 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp18_ == ((0 != _tmp18__label17) ? _tmp18__label17 : (_tmp18__label17 = g_quark_from_static_string ("help"))))
 	do {
 		gint id;
 		id = 0;
@@ -1483,8 +1626,8 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
 	self->priv->pipeline = NULL;
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (14 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("-p <path> destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("-p <path> play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("-p <path> pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active pipeline to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("get-duration"), _tmp0_[23] = g_strdup ("Gets the pipeline duration time"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("get-position"), _tmp0_[26] = g_strdup ("Gets the pipeline position"), _tmp0_[27] = g_strdup ("get-state"), _tmp0_[28] = g_strdup ("get-state"), _tmp0_[29] = g_strdup ("Get the state of an specific pipeline(-p option) or the active pipeline"), _tmp0_[30] = g_strdup ("list-pipes"), _tmp0_[31] = g_strdup ("list-pipes"), _tmp0_[32] = g_strdup ("Returns a list of all the dbus-path of the existing pipelines"), _tmp0_[33] = g_strdup ("set-active"), _tmp0_[34] = g_strdup ("set-active <path>"), _tmp0_[35] = g_strdup ("Set active pipeline using the dbus-path returned when the pipeline was created"), _tmp0_[36] = g_strdup ("get-active"), _tmp0_[37] = g_strdup ("get-active"), _tmp0_[38] = g_strdup ("Returns the active pipeline dbus-path"), _tmp0_[39] = g_strdup ("quit"), _tmp0_[40] = g_strdup ("quit"), _tmp0_[41] = g_strdup ("Quit active console"), _tmp0_);
-	self->priv->cmds_length1 = 14;
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (17 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("-p <path> destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("-p <path> play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("-p <path> pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active pipeline to null state"), _tmp0_[15] = g_strdup ("set"), _tmp0_[16] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[17] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[18] = g_strdup ("get"), _tmp0_[19] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[20] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[21] = g_strdup ("get-duration"), _tmp0_[22] = g_strdup ("get-duration"), _tmp0_[23] = g_strdup ("Gets the pipeline duration time"), _tmp0_[24] = g_strdup ("get-position"), _tmp0_[25] = g_strdup ("get-position"), _tmp0_[26] = g_strdup ("Gets the pipeline position"), _tmp0_[27] = g_strdup ("get-state"), _tmp0_[28] = g_strdup ("get-state"), _tmp0_[29] = g_strdup ("Get the state of an specific pipeline(-p option) or the active pipeline"), _tmp0_[30] = g_strdup ("list-pipes"), _tmp0_[31] = g_strdup ("list-pipes"), _tmp0_[32] = g_strdup ("Returns a list of all the dbus-path of the existing pipelines"), _tmp0_[33] = g_strdup ("set-active"), _tmp0_[34] = g_strdup ("set-active <path>"), _tmp0_[35] = g_strdup ("Set active pipeline using the dbus-path returned when the pipeline was created"), _tmp0_[36] = g_strdup ("get-active"), _tmp0_[37] = g_strdup ("get-active"), _tmp0_[38] = g_strdup ("Returns the active pipeline dbus-path"), _tmp0_[39] = g_strdup ("seek"), _tmp0_[40] = g_strdup ("seek <position[ms]>"), _tmp0_[41] = g_strdup ("Moves current playing position to a new one"), _tmp0_[42] = g_strdup ("skip"), _tmp0_[43] = g_strdup ("skip <period[ms]>"), _tmp0_[44] = g_strdup ("Skips a period, if positive: it moves foward, if negative: it moves backward"), _tmp0_[45] = g_strdup ("speed"), _tmp0_[46] = g_strdup ("speed <rate>"), _tmp0_[47] = g_strdup ("Changes playback rate, it enables fast-foward or fast-reverse playback"), _tmp0_[48] = g_strdup ("quit"), _tmp0_[49] = g_strdup ("quit"), _tmp0_[50] = g_strdup ("Quit active console"), _tmp0_);
+	self->priv->cmds_length1 = 17;
 	self->priv->cmds_length2 = 3;
 }
 

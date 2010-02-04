@@ -315,7 +315,7 @@ public class Pipeline : GLib.Object {
 
         return true;
     }
-    
+
     /**
      Gets an element's bool property value of a specific pipeline
      @param element, whose property value wants to be known
@@ -453,6 +453,67 @@ public class Pipeline : GLib.Object {
             stdout.printf("Gstd>Position at server is %d\n",ipos);
 
         return ipos;
+    }
+
+    /**
+     Seeks a specific time position
+    */
+    public bool PipelineSeek(int ipos_ms){
+
+        Gst.Format format = Gst.Format.TIME;
+        Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
+        int64 pos_ns = 0;
+
+        pos_ns = (int64)(ipos_ms * MSECOND);
+        if(! pipeline.seek_simple(format,flag,pos_ns))
+            if(debug){
+                stdout.printf("Gstd>Media type not seekable\n");
+                return false;
+            }
+        return true;
+    }
+
+    /**
+     Skips time, it moves position forward and backwards from
+     the current position
+    */
+    public bool PipelineSkip(int period_ms){
+
+        Gst.Format format = Gst.Format.TIME;
+        Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
+        int64 pos_ns = 0;
+        int64 seek_ns = 0;
+
+        if (! pipeline.query_position (ref format, out pos_ns)){
+            return false;
+        }
+        seek_ns = pos_ns + (int64)(period_ms * MSECOND);
+        if(! pipeline.seek_simple(format,flag,seek_ns))
+            if(debug){
+                stdout.printf("Gstd>Media type not seekable\n");
+                return false;
+            }
+        return true;
+    }
+
+    /**
+     Changes pipeline speed, it enable fast-foward and
+     fast-reverse playback
+    */
+    public bool PipelineSpeed(double rate){
+
+        Gst.Format format = Gst.Format.TIME;
+        Gst.SeekFlags flag = Gst.SeekFlags.SKIP;
+        Gst.SeekType type = Gst.SeekType.NONE;
+        int64 pos_ns = CLOCK_TIME_NONE;
+
+        if(! pipeline.seek(rate,format,flag,type,pos_ns,type,pos_ns)){
+            if(debug){
+                stdout.printf("Gstd>Speed could not be changed\n");
+                return false;
+            }
+        }
+        return true;
     }
 
 }
