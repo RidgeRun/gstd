@@ -10,6 +10,7 @@ public class Pipeline : GLib.Object {
     private bool debug = false;
     private bool initialized = false;
     private int id = -1;
+    private string path = "";
 
     public signal void Eos();
     public signal void StateChanged(string old_state, string new_state, string src);
@@ -34,8 +35,7 @@ public class Pipeline : GLib.Object {
             bus.add_watch (bus_callback);
 
         } catch (GLib.Error e) {
-            stderr.printf("Gstd>Failed to create pipeline with description: %s.\n" +
-                "Gstd>Error: %s\n",description,e.message);
+            stderr.printf("Gstd>Error: %s\n",e.message);
         }
     }
 
@@ -138,6 +138,33 @@ public class Pipeline : GLib.Object {
     public int PipelineId(){
         return this.id;
     }
+
+    /**
+     Returns dbus-path,assigned when created
+    */
+    public string PipelineGetPath(){
+        return this.path;
+    }
+
+    /**
+     Sets a dbus-path,assigned when connected to daemon
+    */
+    public bool PipelineSetPath(string dbuspath){
+        this.path = dbuspath;
+        return true;
+    }
+
+    /**
+     Gets the pipeline state
+    */
+    public string PipelineGetState(){
+
+        State current, pending;
+
+        pipeline.get_state(out current,out pending, (Gst.ClockTime)2000000000u);
+        return current.to_string();
+    }
+
     /**
      Sets a pipeline to play state. Returns when the pipeline has already reached
      that state.

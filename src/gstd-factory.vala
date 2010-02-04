@@ -33,6 +33,7 @@ public class Factory : GLib.Object {
         if (pipes[next_id].PipelineIsInitialized()){
             string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string();
             conn.register_object (objectpath, pipes[next_id]);
+            pipes[next_id].PipelineSetPath(objectpath);
             next_id++;
             return objectpath;
         }
@@ -62,7 +63,7 @@ public class Factory : GLib.Object {
     }
 
     /**
-     Destroy a pipeline from a gst-launch like descrition
+     Destroy a pipeline from a gst-launch like description
      @param objectpath, the dbus-objectpathe of the pipeline
      @return true,if succeded
      */
@@ -75,5 +76,29 @@ public class Factory : GLib.Object {
 
         pipes[id] = null;
         return true;
+    }
+
+    /**
+     List the existing pipelines
+     @return pipe_list with the corresponding paths
+     */
+    public string[] List(){
+
+        int counter = 0;
+        int index = 0;
+        string[] pipelist = new string[20];
+
+        for(index=0; index<20;index++){
+            if (pipes[index] != null){
+                pipelist[counter]=pipes[index].PipelineGetPath();
+                counter++;
+            }
+        }
+        for(index=0; index<pipelist.length; index++){
+            stdout.printf("  %i.%s\n",index,pipelist[index]);
+        }
+        stdout.printf("Everything is fine before returning\n");
+        return pipelist;
+
     }
 }

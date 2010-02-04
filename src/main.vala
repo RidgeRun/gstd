@@ -32,11 +32,11 @@ public void main (string[] args) {
 
             loop.run ();
         } else {
-            stderr.printf("Failed to obtain primary ownership of the service\n");
-            stderr.printf("This usually means there is another instance of " +
+            stderr.printf("Gstd>Failed to obtain primary ownership of the service\n");
+            stderr.printf("Gstd>This usually means there is another instance of " +
                 "harrier already running\n");
         }
     } catch (Error e) {
-        stderr.printf ("Oops: %s\n", e.message);
+        stderr.printf ("Gstd>Oops: %s\n", e.message);
     }
 }

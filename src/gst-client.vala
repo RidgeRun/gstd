@@ -1,5 +1,6 @@
 using GLib;
 
+///
 public class GstdCli : GLib.Object {
 
     private DBus.Connection conn;
@@ -45,16 +46,21 @@ public class GstdCli : GLib.Object {
     private string[,] cmds = {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
          "Creates a new pipeline and returns the dbus-path to access it"},
-        {"destroy","-p <path> destroy","Destroys the pipeline specified by_path(-p)"},
-        {"play","-p <path> play","Sets the pipeline specified by_path(-p) to play state"},
-        {"pause","-p <path> pause","Sets the pipeline specified by_path(-p) to pause state"},
-        {"null","-p <path> null","Sets the pipeline specified by_path(-p) to null state"},
-        {"set","-p <path> set <element_name> <property_name> <data-type> <value>",
-         "Sets an element's property value of the pipeline(option -p needed)"},
-        {"get","-p <path> get <element_name> <property_name> <data_type>",
-         "Gets an element's property value of the pipeline(option -p needed)"},
-        {"get-duration","-p <path> get-duration","Gets the pipeline duration time(option -p needed)"},
-        {"get-position","-p <path> get-position","Gets the pipeline position(option -p needed)"}
+        {"destroy","-p <path> destroy","Destroys the pipeline specified by_path(-p) or the active pipeline"},
+        {"play","-p <path> play","Sets the pipeline specified by_path(-p) or the active pipeline to play state"},
+        {"pause","-p <path> pause","Sets the pipeline specified by_path(-p) or the active pipeline to pause state"},
+        {"null","null","Sets the pipeline specified by_path(-p) or active pipeline to null state"},
+        {"set","set <element_name> <property_name> <data-type> <value>",
+         "Sets an element's property value of the pipeline"},
+        {"get","get <element_name> <property_name> <data_type>",
+         "Gets an element's property value of the pipeline"},
+        {"get-duration","get-duration","Gets the pipeline duration time"},
+        {"get-position","get-position","Gets the pipeline position"},
+        {"get-state","get-state","Get the state of an specific pipeline(-p option) or the active pipeline"},
+        {"list-pipes","list-pipes","Returns a list of all the dbus-path of the existing pipelines"},
+        {"set-active","set-active <path>","Set active pipeline using the dbus-path returned when the pipeline was created"},
+        {"get-active","get-active","Returns the active pipeline dbus-path"},
+        {"quit","quit","Quit active console"}
     };
 
     /*
@@ -70,7 +76,7 @@ public class GstdCli : GLib.Object {
     }
 
     /**
-    *Callback Functions for the receiving signals
+    *Callback functions for the receiving signals
     */
 
     public void Error_cb(){
@@ -91,7 +97,12 @@ public class GstdCli : GLib.Object {
     * Console Commands Functions
     */
 
-    private bool pipeline_create(string description){
+    private bool pipeline_create(string? description){
+
+        if(description == null){
+            stderr.printf("Pipeline description between quotes(\"\") needed\n");
+            return false;
+        }
 
         string new_objpath = factory.CreateWithDebug(description,_debug);
 
@@ -100,14 +111,32 @@ public class GstdCli : GLib.Object {
             return false;
         }
 
-        if(cli_enable){ 
+        /*Set and create the active pipeline
+          when interactive console is enabled*/
+        if(cli_enable){
             active_pipe = new_objpath;
-            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-                                         new_objpath,
-                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
+            create_proxypipe(active_pipe);
         }
-        stdout.printf("Pipeline path created: %s\n", new_objpath);
 
+        stdout.printf("Pipeline path created: %s\n", new_objpath);
+        return true;
+    }
+
+    private bool pipeline_destroy(dynamic DBus.Object pipeline){
+
+        /*This needs to be reviewed, casting compiles but does not
+          function*/
+        int id = pipeline.PipelineId();
+        bool ret = factory.Destroy(id);
+        if (!ret){
+            stderr.printf("Failed to put the pipeline to null\n");
+            return false;
+        }
+        if(cli_enable){
+            stdout.printf("The active pipeline:%s,was destroyed\n", active_pipe);
+            active_pipe=null;
+        }else
+            stdout.printf("Pipeline with path:%s, destroyed\n", obj_path);
         return true;
     }
 
@@ -142,23 +171,16 @@ public class GstdCli : GLib.Object {
         return ret;
     }
 
-    private bool pipeline_destroy(dynamic DBus.Object pipeline){
-
-        /*This needs to be reviewed, casting compiles but does not
-          function*/
-        int id = pipeline.PipelineId();
-        bool ret = factory.Destroy(id);
-        if (!ret){
-            stderr.printf("Failed to put the pipeline to null\n");
-            return false;
-        }
-        stdout.printf("Pipeline with path:%s, destroyed\n", obj_path);
-        return true;
-    }
 
     private bool pipeline_get_property(dynamic DBus.Object pipeline, string[] args){
 
         bool ret = true;
+
+        if(args[1]==null || args[2]==null || args[3]==null){
+            stdout.printf("Missing argument.Execute:'help get'\n");
+            return false;
+        }
+
         string element = args[1];
         string property = args[2];
 
@@ -201,6 +223,12 @@ public class GstdCli : GLib.Object {
     private bool pipeline_set_property(dynamic DBus.Object pipeline, string[] args){
 
         bool ret;
+
+        if(args[1]==null || args[2]==null || args[3]==null || args[4]==null){
+            stdout.printf("Missing argument.Execute:'help set'\n");
+            return false;
+        }
+
         string element = args[1];
         string property = args[2];
 
@@ -265,9 +293,84 @@ public class GstdCli : GLib.Object {
         return true;
     }
 
+    private bool pipeline_get_state(dynamic DBus.Object pipeline){
+
+        string state = pipeline.PipelineGetState();
+        if (state==null){
+            stderr.printf("Failed to get the pipeline state\n");
+            return false;
+        }
+
+        stdout.printf(">>The pipeline state is: %s\n",state);
+        return true;
+    }
+
+    private bool pipeline_list(){
+
+        string[]? list = new string[20];
+        int index = 0;
+
+        for(index=0; index<list.length; index++){
+            list[index] = null;
+        }
+
+        list = factory.List();
+
+        if (list[0]==null){
+            stderr.printf("There is no pipelines on factory!\n");
+            return false;
+        }
+
+        stdout.printf("The actual pipelines are:\n");
+        for(index=0; index<list.length; index++){
+            stdout.printf("  %i.%s\n",index,list[index]);
+        }
+        return true;
+    }
+
+    /*
+    *Create a proxy-object of the pipeline
+    */
+    public bool create_proxypipe(string? object_path){
+
+        if(object_path != null){
+
+            /*Create a proxy-object of the pipeline*/
+            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                         object_path,
+                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
+            try{
+                bool ret=pipeline.PipelineIsInitialized();
+                if(!ret){
+                    stderr.printf("Pipeline was not initialiazed\n");
+                    return false;
+                }
+            } catch (Error e) {
+                stderr.printf ("Error:creating proxy_pipeline, invalid path\n");
+                return false;
+            }
+            return true;
+
+        }else{
+            return false;
+        }
+    }
+
+    /*
+    *Parse entry-options or flags:
+    *_signals:  flag to enable signals reception,
+    *           useful when executing interactive console.
+    *_debug:    flag to enable debug information
+    *           when creating a pipeline.
+    *obj_path:  option to specified the pipeline
+    *           when executing a single command.
+    *_remaining_args: command to be executed remains here,
+    *                 if there is no remaining args interactive
+    *                 console is enable.
+    */
     public void parse_options(string[] args){
 
-        /*Clean up global variables*/
+        /*Clean up global reference variables*/
         _signals = false;
         _debug = false;
         _remaining_args = null;
@@ -277,42 +380,35 @@ public class GstdCli : GLib.Object {
         var opt = new OptionContext("(For Commands HELP: 'gst-client help')");
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
+
         try{
             opt.parse(ref args);
         } catch (GLib.OptionError e) {
             stderr.printf ("OptionError failure: %s\n",e.message);
         }
-        if(obj_path!=null)active_pipe=obj_path;
-
+        if(cli_enable && obj_path!=null) active_pipe = obj_path;
     }
 
+    /*
+    * Parse single command
+    */
     public bool parse_cmd(string[] args) throws DBus.Error, GLib.Error {
 
-        if(obj_path != null){
-            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-                                         obj_path,
-                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
-
-            try{
-                bool ret=pipeline.PipelineIsInitialized();
-                if(!ret){
-                    stderr.printf("Pipeline with path:%s, was not initialiazed\n",obj_path);
-                    return false;
-                }
-            } catch (Error e) {
-                stderr.printf ("Pipeline with path:%s, has not been created\n",obj_path);
+        if(!create_proxypipe(obj_path)){
+            if (args[0].down() != "create" && args[0].down() != "help"
+                && args[0].down() != "set-active" && args[0].down() != "quit"
+                && active_pipe == null){
+                if(cli_enable)
+                    stderr.printf("There is no active pipeline.See \"set-active\" or \"create\" command\n");
+                else
+                    stderr.printf("Pipeline path was not specified\n");
                 return false;
             }
 
-        }else if (args[0].down() != "create" && args[0].down() != "help" && active_pipe == null){
-            stderr.printf("Pipeline path was not specified\n");
-            return false;
-        }
+        }else if(_signals){
 
-        /*Activating the reception of signals sent by the daemon*/
-        /*Need to be FIXED*/
-        if(_signals){
-            stdout.printf("Inside signals \n");
+            /*Enable the reception of signals, if _signals flag was activated*/
+            stdout.printf("Signals need to be fixed! \n");
             if(args[0].down() != "create" && args[0].down() != "help"){
                 stdout.printf("Signals, activated\n");
                 pipeline.Error += this.Error_cb;
@@ -325,9 +421,11 @@ public class GstdCli : GLib.Object {
 
         case "create":
             if(cli_enable){
-                stdout.printf("\nDescription:");
-                string desc = stdin.read_line();
-                return pipeline_create(desc);
+                string[] description;
+                /*Join command and split it using '\"'
+                  character as reference*/
+                description = string.joinv(" ",args).split("\"",-1);
+                return pipeline_create(description[1]);
             }
             return pipeline_create(args[1]);
 
@@ -354,6 +452,35 @@ public class GstdCli : GLib.Object {
 
         case "get-position":
             return pipeline_get_position(pipeline);
+
+        case "get-state":
+            return pipeline_get_state(pipeline);
+
+        case "list-pipes":
+            return pipeline_list();
+
+        case "set-active":
+            if(cli_enable){
+                active_pipe = _remaining_args[1];
+                create_proxypipe(active_pipe);
+                return true;
+            }else{
+                stderr.printf("This command is exclusive for interactive console mode\n");
+                return false;
+            }
+
+        case "get-active":
+            if(cli_enable){
+                stdout.printf("The active pipeline path is:%s\n",active_pipe);
+                return true;
+            }else{
+                stderr.printf("Command used on the interactive console mode\n");
+                return false;
+            }
+
+        case "quit":
+            cli_enable = false;
+            return true;
 
         case "help":
             int id=0;
@@ -383,31 +510,30 @@ public class GstdCli : GLib.Object {
             }
             break;
         default:
-            stderr.printf("Unkown command:%s,%s\n",args[0],args[0]);
+            stderr.printf("Unkown command:%s\n",args[0]);
             return false;
         }
 
         return true;
     }
 
+    /*
+    *Interactive Console management
+    */
     public bool cli() throws DBus.Error, GLib.Error {
 
         string[] args;
-        string? cmd_line;
         var label = new StringBuilder ();
-        var history = new StringBuilder ();
 
         while (!stdin.eof()) {
 
-
             label.assign("gst-client$ ");
-            stdout.printf(label.str);
-            cmd_line = stdin.read_line();
+            var cmd_line = Readline.readline ("gst-client$ ");
 
             if (cmd_line != null) {
 
-                /*Saving command history*/
-                history.append(cmd_line+"\n");
+                /*Saving command on history*/
+                Readline.History.add (cmd_line);
 
                 /*Removes leading and trailing whitespace*/
                 cmd_line.strip();
@@ -418,24 +544,30 @@ public class GstdCli : GLib.Object {
 
                 /*Split string into an array*/
                 args = label.str.split(" ",-1);
+                
                 parse_options(args);
-                parse_cmd(_remaining_args);
 
+                parse_cmd(_remaining_args);
+                if (!cli_enable) break;
             }
         }
-        stdout.printf ("\n-----\n %s\n", history.str);
         return true;
     }
 
+    /*
+    * Parse entry arguments
+    * If there are no arguments,enable interactive console.
+    */
     public bool parse(string[] args) throws DBus.Error, GLib.Error {
             if (args.length > 0) {
+                /*Parse single command*/
                 return parse_cmd(args);
             } else {
+                /*Execute interactive console*/
                 cli_enable = true;
                 return cli();
             }
     }
-
 
     static int main (string[] args) {
         GstdCli cli;
@@ -444,10 +576,14 @@ public class GstdCli : GLib.Object {
             obj_path = null;
             cli = new GstdCli();
 
+            /*Parse entry options or flags and
+              fill the reference variables*/
             cli.parse_options(args);
 
+            /*Parse commands*/
             if (!cli.parse(_remaining_args))
                 return -1;
+
         } catch (DBus.Error e) {
             stderr.printf ("DBus failure: %s\n",e.message);
             return 1;

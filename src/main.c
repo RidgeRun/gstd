@@ -89,8 +89,8 @@ void _main (char** args, int args_length1) {
 			g_main_loop_run (loop);
 			_g_object_unref0 (factory);
 		} else {
-			fprintf (stderr, "Failed to obtain primary ownership of the service\n");
-			fprintf (stderr, "%s", "This usually means there is another instance of " "harrier already running\n");
+			fprintf (stderr, "Gstd>Failed to obtain primary ownership of the service\n");
+			fprintf (stderr, "%s", "Gstd>This usually means there is another instance of " "harrier already running\n");
 		}
 		_g_object_unref0 (bus);
 	}
@@ -101,13 +101,13 @@ void _main (char** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Oops: %s\n", e->message);
+			fprintf (stderr, "Gstd>Oops: %s\n", e->message);
 			_g_error_free0 (e);
 		}
 	}
 	__finally0:
 	if (_inner_error_ != NULL) {
-		g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, _inner_error_->message);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return;
 	}
