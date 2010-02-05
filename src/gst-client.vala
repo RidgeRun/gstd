@@ -358,23 +358,25 @@ public class GstdCli : GLib.Object {
 
     private bool pipeline_list(){
 
-        string[]? list = new string[20];
+        string[] list = new string[20];
+        string paths = "";
         int index = 0;
 
         for(index=0; index<list.length; index++){
             list[index] = null;
         }
 
-        list = factory.List();
+        paths = factory.List();
 
-        if (list[0]==null){
+        if (list==null){
             stderr.printf("There is no pipelines on factory!\n");
             return false;
         }
 
+        list = paths.split(",",-1);
         stdout.printf("The actual pipelines are:\n");
         for(index=0; index<list.length; index++){
-            stdout.printf("  %i.%s\n",index,list[index]);
+            stdout.printf("  %i. %s\n",index+1,list[index]);
         }
         return true;
     }
@@ -384,27 +386,21 @@ public class GstdCli : GLib.Object {
     */
     public bool create_proxypipe(string? object_path){
 
-        if(object_path != null){
+        if(object_path == null || object_path[0] != '/')
+            return false;
 
-            /*Create a proxy-object of the pipeline*/
-            pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-                                         object_path,
-                                         "com.ridgerun.gstreamer.gstd.PipelineInterface");
-            try{
-                bool ret=pipeline.PipelineIsInitialized();
-                if(!ret){
-                    stderr.printf("Pipeline was not initialiazed\n");
-                    return false;
-                }
-            } catch (Error e) {
-                stderr.printf ("Error:creating proxy_pipeline, invalid path\n");
-                return false;
-            }
-            return true;
-
-        }else{
+        /*Create a proxy-object of the pipeline*/
+        pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
+                                     object_path,
+                                    "com.ridgerun.gstreamer.gstd.PipelineInterface");
+        try{
+            bool ret=pipeline.PipelineIsInitialized();
+            if(!ret) return false;
+        }catch (Error e){
             return false;
         }
+
+        return true;
     }
 
     /*
@@ -521,8 +517,9 @@ public class GstdCli : GLib.Object {
 
         case "set-active":
             if(cli_enable){
-                active_pipe = _remaining_args[1];
-                create_proxypipe(active_pipe);
+                active_pipe = args[1];
+                if(! create_proxypipe(active_pipe))
+                    stderr.printf ("Error: Invalid path\n");
                 return true;
             }else{
                 stderr.printf("This command is exclusive for interactive console mode\n");
@@ -645,10 +642,10 @@ public class GstdCli : GLib.Object {
                 return -1;
 
         } catch (DBus.Error e) {
-            stderr.printf ("DBus failure: %s\n",e.message);
+            stderr.printf ("gst-client> DBus failure: %s\n",e.message);
             return 1;
         } catch (GLib.Error e) {
-            stderr.printf ("Dynamic method failure\n");
+            stderr.printf ("gst-client> Dynamic method failure\n");
             return 1;
         }
 

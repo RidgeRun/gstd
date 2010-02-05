@@ -107,7 +107,7 @@ static gboolean _dynamic_PipelineSkip18 (DBusGProxy* self, gint param1, GError**
 static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
 static gboolean _dynamic_PipelineSpeed19 (DBusGProxy* self, double param1, GError** error);
 static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, char** args, int args_length1);
-static char** _dynamic_List20 (DBusGProxy* self, int* result_length1, GError** error);
+static char* _dynamic_List20 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_list (GstdCli* self);
 static gboolean _dynamic_PipelineIsInitialized21 (DBusGProxy* self, GError** error);
 void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1);
@@ -961,13 +961,12 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, ch
 }
 
 
-static char** _dynamic_List20 (DBusGProxy* self, int* result_length1, GError** error) {
-	char** result;
-	dbus_g_proxy_call (self, "List", error, G_TYPE_INVALID, G_TYPE_STRV, &result, G_TYPE_INVALID);
+static char* _dynamic_List20 (DBusGProxy* self, GError** error) {
+	char* result;
+	dbus_g_proxy_call (self, "List", error, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
 	if (*error) {
 		return NULL;
 	}
-	*result_length1 = g_strv_length (result);
 	return result;
 }
 
@@ -979,16 +978,16 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 	gint list_size;
 	gint list_length1;
 	char** list;
+	char* paths;
 	gint index;
-	char** _tmp5_;
-	gint _tmp4__size;
-	gint _tmp4__length1;
-	gint _tmp3_;
-	char** _tmp4_;
+	char* _tmp3_;
+	char* _tmp4_;
 	char** _tmp6_;
+	char** _tmp5_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	list = (_tmp0_ = g_new0 (char*, 20 + 1), list_length1 = 20, list_size = list_length1, _tmp0_);
+	paths = g_strdup ("");
 	index = 0;
 	{
 		gboolean _tmp1_;
@@ -1006,20 +1005,23 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 			list[index] = (_tmp2_ = NULL, _g_free0 (list[index]), _tmp2_);
 		}
 	}
-	_tmp4_ = (_tmp5_ = _dynamic_List20 (self->priv->factory, &_tmp3_, &_inner_error_), _tmp4__length1 = _tmp3_, _tmp4__size = _tmp4__length1, _tmp5_);
+	_tmp3_ = _dynamic_List20 (self->priv->factory, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (paths);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
-	list = (_tmp6_ = _tmp4_, list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL), list_length1 = _tmp4__length1, list_size = list_length1, _tmp6_);
-	if (list[0] == NULL) {
+	paths = (_tmp4_ = _tmp3_, _g_free0 (paths), _tmp4_);
+	if (list == NULL) {
 		fprintf (stderr, "There is no pipelines on factory!\n");
 		result = FALSE;
 		list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
+		_g_free0 (paths);
 		return result;
 	}
+	list = (_tmp6_ = _tmp5_ = g_strsplit (paths, ",", -1), list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL), list_length1 = _vala_array_length (_tmp5_), list_size = list_length1, _tmp6_);
 	fprintf (stdout, "The actual pipelines are:\n");
 	{
 		gboolean _tmp7_;
@@ -1033,11 +1035,12 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 			if (!(index < list_length1)) {
 				break;
 			}
-			fprintf (stdout, "  %i.%s\n", index, list[index]);
+			fprintf (stdout, "  %i. %s\n", index + 1, list[index]);
 		}
 	}
 	result = TRUE;
 	list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (paths);
 	return result;
 }
 
@@ -1055,49 +1058,52 @@ static gboolean _dynamic_PipelineIsInitialized21 (DBusGProxy* self, GError** err
 gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 	gboolean result;
 	GError * _inner_error_;
+	gboolean _tmp0_ = FALSE;
+	DBusGProxy* _tmp1_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
-	if (object_path != NULL) {
-		DBusGProxy* _tmp0_;
-		self->priv->pipeline = (_tmp0_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (self->priv->pipeline), _tmp0_);
-		{
-			gboolean ret;
-			ret = _dynamic_PipelineIsInitialized21 (self->priv->pipeline, &_inner_error_);
-			if (_inner_error_ != NULL) {
-				goto __catch0_g_error;
-				goto __finally0;
-			}
-			if (!ret) {
-				fprintf (stderr, "Pipeline was not initialiazed\n");
-				result = FALSE;
-				return result;
-			}
-		}
-		goto __finally0;
-		__catch0_g_error:
-		{
-			GError * e;
-			e = _inner_error_;
-			_inner_error_ = NULL;
-			{
-				fprintf (stderr, "Error:creating proxy_pipeline, invalid path\n");
-				result = FALSE;
-				_g_error_free0 (e);
-				return result;
-			}
-		}
-		__finally0:
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
-		}
-		result = TRUE;
-		return result;
+	if (object_path == NULL) {
+		_tmp0_ = TRUE;
 	} else {
+		_tmp0_ = g_utf8_get_char (g_utf8_offset_to_pointer (object_path, 0)) != '/';
+	}
+	if (_tmp0_) {
 		result = FALSE;
 		return result;
 	}
+	self->priv->pipeline = (_tmp1_ = dbus_g_proxy_new_for_name (self->priv->conn, "com.ridgerun.gstreamer.gstd", object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface"), _g_object_unref0 (self->priv->pipeline), _tmp1_);
+	{
+		gboolean ret;
+		ret = _dynamic_PipelineIsInitialized21 (self->priv->pipeline, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch0_g_error;
+			goto __finally0;
+		}
+		if (!ret) {
+			result = FALSE;
+			return result;
+		}
+	}
+	goto __finally0;
+	__catch0_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			result = FALSE;
+			_g_error_free0 (e);
+			return result;
+		}
+	}
+	__finally0:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	result = TRUE;
+	return result;
 }
 
 
@@ -1364,8 +1370,10 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 	do {
 		if (self->priv->cli_enable) {
 			char* _tmp18_;
-			self->priv->active_pipe = (_tmp18_ = g_strdup (gstd_cli__remaining_args[1]), _g_free0 (self->priv->active_pipe), _tmp18_);
-			gstd_cli_create_proxypipe (self, self->priv->active_pipe);
+			self->priv->active_pipe = (_tmp18_ = g_strdup (args[1]), _g_free0 (self->priv->active_pipe), _tmp18_);
+			if (!gstd_cli_create_proxypipe (self, self->priv->active_pipe)) {
+				fprintf (stderr, "Error: Invalid path\n");
+			}
 			result = TRUE;
 			return result;
 		} else {
@@ -1581,7 +1589,7 @@ static gint gstd_cli_main (char** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "DBus failure: %s\n", e->message);
+			fprintf (stderr, "gst-client> DBus failure: %s\n", e->message);
 			result = 1;
 			_g_error_free0 (e);
 			_g_object_unref0 (cli);
@@ -1595,7 +1603,7 @@ static gint gstd_cli_main (char** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Dynamic method failure\n");
+			fprintf (stderr, "gst-client> Dynamic method failure\n");
 			result = 1;
 			_g_error_free0 (e);
 			_g_object_unref0 (cli);

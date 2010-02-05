@@ -82,11 +82,12 @@ public class Factory : GLib.Object {
      List the existing pipelines
      @return pipe_list with the corresponding paths
      */
-    public string[] List(){
+    public string List(){
 
         int counter = 0;
         int index = 0;
         string[] pipelist = new string[20];
+        string paths = "";
 
         for(index=0; index<20;index++){
             if (pipes[index] != null){
@@ -94,11 +95,8 @@ public class Factory : GLib.Object {
                 counter++;
             }
         }
-        for(index=0; index<pipelist.length; index++){
-            stdout.printf("  %i.%s\n",index,pipelist[index]);
-        }
-        stdout.printf("Everything is fine before returning\n");
-        return pipelist;
+        paths = string.joinv(",",pipelist);
+        return paths;
 
     }
 }
