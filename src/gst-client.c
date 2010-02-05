@@ -31,7 +31,6 @@ typedef struct _GstdCliPrivate GstdCliPrivate;
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
-#define _g_string_free0(var) ((var == NULL) ? NULL : (var = (g_string_free (var, TRUE), NULL)))
 
 struct _GstdCli {
 	GObject parent_instance;
@@ -1195,52 +1194,61 @@ void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCa
 
 gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
-	GQuark _tmp18_;
-	char* _tmp17_;
-	static GQuark _tmp18__label0 = 0;
-	static GQuark _tmp18__label1 = 0;
-	static GQuark _tmp18__label2 = 0;
-	static GQuark _tmp18__label3 = 0;
-	static GQuark _tmp18__label4 = 0;
-	static GQuark _tmp18__label5 = 0;
-	static GQuark _tmp18__label6 = 0;
-	static GQuark _tmp18__label7 = 0;
-	static GQuark _tmp18__label8 = 0;
-	static GQuark _tmp18__label9 = 0;
-	static GQuark _tmp18__label10 = 0;
-	static GQuark _tmp18__label11 = 0;
-	static GQuark _tmp18__label12 = 0;
-	static GQuark _tmp18__label13 = 0;
-	static GQuark _tmp18__label14 = 0;
-	static GQuark _tmp18__label15 = 0;
-	static GQuark _tmp18__label16 = 0;
-	static GQuark _tmp18__label17 = 0;
+	GQuark _tmp20_;
+	char* _tmp19_;
+	static GQuark _tmp20__label0 = 0;
+	static GQuark _tmp20__label1 = 0;
+	static GQuark _tmp20__label2 = 0;
+	static GQuark _tmp20__label3 = 0;
+	static GQuark _tmp20__label4 = 0;
+	static GQuark _tmp20__label5 = 0;
+	static GQuark _tmp20__label6 = 0;
+	static GQuark _tmp20__label7 = 0;
+	static GQuark _tmp20__label8 = 0;
+	static GQuark _tmp20__label9 = 0;
+	static GQuark _tmp20__label10 = 0;
+	static GQuark _tmp20__label11 = 0;
+	static GQuark _tmp20__label12 = 0;
+	static GQuark _tmp20__label13 = 0;
+	static GQuark _tmp20__label14 = 0;
+	static GQuark _tmp20__label15 = 0;
+	static GQuark _tmp20__label16 = 0;
+	static GQuark _tmp20__label17 = 0;
+	static GQuark _tmp20__label18 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (!gstd_cli_create_proxypipe (self, gstd_cli_obj_path)) {
 		gboolean _tmp0_ = FALSE;
 		gboolean _tmp1_ = FALSE;
 		gboolean _tmp2_ = FALSE;
 		gboolean _tmp3_ = FALSE;
-		char* _tmp4_;
-		gboolean _tmp5_;
-		if ((_tmp5_ = _vala_strcmp0 (_tmp4_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp4_), _tmp5_)) {
-			char* _tmp6_;
-			_tmp3_ = _vala_strcmp0 (_tmp6_ = g_utf8_strdown (args[0], -1), "help") != 0;
-			_g_free0 (_tmp6_);
+		gboolean _tmp4_ = FALSE;
+		char* _tmp5_;
+		gboolean _tmp6_;
+		if ((_tmp6_ = _vala_strcmp0 (_tmp5_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp5_), _tmp6_)) {
+			char* _tmp7_;
+			_tmp4_ = _vala_strcmp0 (_tmp7_ = g_utf8_strdown (args[0], -1), "help") != 0;
+			_g_free0 (_tmp7_);
+		} else {
+			_tmp4_ = FALSE;
+		}
+		if (_tmp4_) {
+			char* _tmp8_;
+			_tmp3_ = _vala_strcmp0 (_tmp8_ = g_utf8_strdown (args[0], -1), "set-active") != 0;
+			_g_free0 (_tmp8_);
 		} else {
 			_tmp3_ = FALSE;
 		}
 		if (_tmp3_) {
-			char* _tmp7_;
-			_tmp2_ = _vala_strcmp0 (_tmp7_ = g_utf8_strdown (args[0], -1), "set-active") != 0;
-			_g_free0 (_tmp7_);
+			char* _tmp9_;
+			_tmp2_ = _vala_strcmp0 (_tmp9_ = g_utf8_strdown (args[0], -1), "quit") != 0;
+			_g_free0 (_tmp9_);
 		} else {
 			_tmp2_ = FALSE;
 		}
 		if (_tmp2_) {
-			char* _tmp8_;
-			_tmp1_ = _vala_strcmp0 (_tmp8_ = g_utf8_strdown (args[0], -1), "quit") != 0;
-			_g_free0 (_tmp8_);
+			char* _tmp10_;
+			_tmp1_ = _vala_strcmp0 (_tmp10_ = g_utf8_strdown (args[0], -1), "exit") != 0;
+			_g_free0 (_tmp10_);
 		} else {
 			_tmp1_ = FALSE;
 		}
@@ -1251,7 +1259,7 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 		}
 		if (_tmp0_) {
 			if (self->priv->cli_enable) {
-				fprintf (stderr, "There is no active pipeline.See \"set-active\" or \"create\" command\n");
+				fprintf (stderr, "There is no active pipeline. See \"set-active\" or \"create\" command\n");
 			} else {
 				fprintf (stderr, "Pipeline path was not specified\n");
 			}
@@ -1260,18 +1268,18 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 		}
 	} else {
 		if (gstd_cli__signals) {
-			gboolean _tmp9_ = FALSE;
-			char* _tmp10_;
-			gboolean _tmp11_;
+			gboolean _tmp11_ = FALSE;
+			char* _tmp12_;
+			gboolean _tmp13_;
 			fprintf (stdout, "Signals need to be fixed! \n");
-			if ((_tmp11_ = _vala_strcmp0 (_tmp10_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp10_), _tmp11_)) {
-				char* _tmp12_;
-				_tmp9_ = _vala_strcmp0 (_tmp12_ = g_utf8_strdown (args[0], -1), "help") != 0;
-				_g_free0 (_tmp12_);
+			if ((_tmp13_ = _vala_strcmp0 (_tmp12_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp12_), _tmp13_)) {
+				char* _tmp14_;
+				_tmp11_ = _vala_strcmp0 (_tmp14_ = g_utf8_strdown (args[0], -1), "help") != 0;
+				_g_free0 (_tmp14_);
 			} else {
-				_tmp9_ = FALSE;
+				_tmp11_ = FALSE;
 			}
-			if (_tmp9_) {
+			if (_tmp11_) {
 				fprintf (stdout, "Signals, activated\n");
 				_dynamic_Error1_connect (self->priv->pipeline, "Error", (GCallback) _gstd_cli_Error_cb_dynamic_Error0_, self);
 				_dynamic_Eos3_connect (self->priv->pipeline, "Eos", (GCallback) _gstd_cli_Eos_cb_dynamic_Eos2_, self);
@@ -1279,84 +1287,84 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			}
 		}
 	}
-	_tmp17_ = g_utf8_strdown (args[0], -1);
-	_tmp18_ = (NULL == _tmp17_) ? 0 : g_quark_from_string (_tmp17_);
-	g_free (_tmp17_);
-	if (_tmp18_ == ((0 != _tmp18__label0) ? _tmp18__label0 : (_tmp18__label0 = g_quark_from_static_string ("create"))))
+	_tmp19_ = g_utf8_strdown (args[0], -1);
+	_tmp20_ = (NULL == _tmp19_) ? 0 : g_quark_from_string (_tmp19_);
+	g_free (_tmp19_);
+	if (_tmp20_ == ((0 != _tmp20__label0) ? _tmp20__label0 : (_tmp20__label0 = g_quark_from_static_string ("create"))))
 	do {
 		if (self->priv->cli_enable) {
 			gint description_size;
 			gint description_length1;
 			char** description;
-			char** _tmp15_;
-			char** _tmp14_;
-			char* _tmp13_;
+			char** _tmp17_;
+			char** _tmp16_;
+			char* _tmp15_;
 			description = (description_length1 = 0, NULL);
-			description = (_tmp15_ = _tmp14_ = g_strsplit (_tmp13_ = g_strjoinv (" ", args), "\"", -1), description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL), description_length1 = _vala_array_length (_tmp14_), description_size = description_length1, _tmp15_);
-			_g_free0 (_tmp13_);
+			description = (_tmp17_ = _tmp16_ = g_strsplit (_tmp15_ = g_strjoinv (" ", args), "\"", -1), description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL), description_length1 = _vala_array_length (_tmp16_), description_size = description_length1, _tmp17_);
+			_g_free0 (_tmp15_);
 			result = gstd_cli_pipeline_create (self, description[1]);
 			description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL);
 			return result;
 		}
 		result = gstd_cli_pipeline_create (self, args[1]);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label1) ? _tmp18__label1 : (_tmp18__label1 = g_quark_from_static_string ("destroy"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label1) ? _tmp20__label1 : (_tmp20__label1 = g_quark_from_static_string ("destroy"))))
 	do {
 		result = gstd_cli_pipeline_destroy (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label2) ? _tmp18__label2 : (_tmp18__label2 = g_quark_from_static_string ("play"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label2) ? _tmp20__label2 : (_tmp20__label2 = g_quark_from_static_string ("play"))))
 	do {
 		result = gstd_cli_pipeline_play (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label3) ? _tmp18__label3 : (_tmp18__label3 = g_quark_from_static_string ("pause"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label3) ? _tmp20__label3 : (_tmp20__label3 = g_quark_from_static_string ("pause"))))
 	do {
 		result = gstd_cli_pipeline_pause (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label4) ? _tmp18__label4 : (_tmp18__label4 = g_quark_from_static_string ("null"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label4) ? _tmp20__label4 : (_tmp20__label4 = g_quark_from_static_string ("null"))))
 	do {
 		result = gstd_cli_pipeline_null (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label5) ? _tmp18__label5 : (_tmp18__label5 = g_quark_from_static_string ("set"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label5) ? _tmp20__label5 : (_tmp20__label5 = g_quark_from_static_string ("set"))))
 	do {
 		result = gstd_cli_pipeline_set_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label6) ? _tmp18__label6 : (_tmp18__label6 = g_quark_from_static_string ("get"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label6) ? _tmp20__label6 : (_tmp20__label6 = g_quark_from_static_string ("get"))))
 	do {
 		result = gstd_cli_pipeline_get_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label7) ? _tmp18__label7 : (_tmp18__label7 = g_quark_from_static_string ("get-duration"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label7) ? _tmp20__label7 : (_tmp20__label7 = g_quark_from_static_string ("get-duration"))))
 	do {
 		result = gstd_cli_pipeline_get_duration (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label8) ? _tmp18__label8 : (_tmp18__label8 = g_quark_from_static_string ("get-position"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label8) ? _tmp20__label8 : (_tmp20__label8 = g_quark_from_static_string ("get-position"))))
 	do {
 		result = gstd_cli_pipeline_get_position (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label9) ? _tmp18__label9 : (_tmp18__label9 = g_quark_from_static_string ("get-state"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label9) ? _tmp20__label9 : (_tmp20__label9 = g_quark_from_static_string ("get-state"))))
 	do {
 		result = gstd_cli_pipeline_get_state (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label10) ? _tmp18__label10 : (_tmp18__label10 = g_quark_from_static_string ("seek"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label10) ? _tmp20__label10 : (_tmp20__label10 = g_quark_from_static_string ("seek"))))
 	do {
 		result = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label11) ? _tmp18__label11 : (_tmp18__label11 = g_quark_from_static_string ("skip"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label11) ? _tmp20__label11 : (_tmp20__label11 = g_quark_from_static_string ("skip"))))
 	do {
 		result = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label12) ? _tmp18__label12 : (_tmp18__label12 = g_quark_from_static_string ("speed"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label12) ? _tmp20__label12 : (_tmp20__label12 = g_quark_from_static_string ("speed"))))
 	do {
 		result = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label13) ? _tmp18__label13 : (_tmp18__label13 = g_quark_from_static_string ("list-pipes"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label13) ? _tmp20__label13 : (_tmp20__label13 = g_quark_from_static_string ("list-pipes"))))
 	do {
 		result = gstd_cli_pipeline_list (self);
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label14) ? _tmp18__label14 : (_tmp18__label14 = g_quark_from_static_string ("set-active"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label14) ? _tmp20__label14 : (_tmp20__label14 = g_quark_from_static_string ("set-active"))))
 	do {
 		if (self->priv->cli_enable) {
-			char* _tmp16_;
-			self->priv->active_pipe = (_tmp16_ = g_strdup (gstd_cli__remaining_args[1]), _g_free0 (self->priv->active_pipe), _tmp16_);
+			char* _tmp18_;
+			self->priv->active_pipe = (_tmp18_ = g_strdup (gstd_cli__remaining_args[1]), _g_free0 (self->priv->active_pipe), _tmp18_);
 			gstd_cli_create_proxypipe (self, self->priv->active_pipe);
 			result = TRUE;
 			return result;
@@ -1365,23 +1373,28 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			result = FALSE;
 			return result;
 		}
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label15) ? _tmp18__label15 : (_tmp18__label15 = g_quark_from_static_string ("get-active"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label15) ? _tmp20__label15 : (_tmp20__label15 = g_quark_from_static_string ("get-active"))))
 	do {
 		if (self->priv->cli_enable) {
 			fprintf (stdout, "The active pipeline path is:%s\n", self->priv->active_pipe);
 			result = TRUE;
 			return result;
 		} else {
-			fprintf (stderr, "Command used on the interactive console mode\n");
+			fprintf (stderr, "Command used only on the interactive console mode\n");
 			result = FALSE;
 			return result;
 		}
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label16) ? _tmp18__label16 : (_tmp18__label16 = g_quark_from_static_string ("quit"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label16) ? _tmp20__label16 : (_tmp20__label16 = g_quark_from_static_string ("quit"))))
 	do {
 		self->priv->cli_enable = FALSE;
 		result = TRUE;
 		return result;
-	} while (0); else if (_tmp18_ == ((0 != _tmp18__label17) ? _tmp18__label17 : (_tmp18__label17 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label17) ? _tmp20__label17 : (_tmp20__label17 = g_quark_from_static_string ("exit"))))
+	do {
+		self->priv->cli_enable = FALSE;
+		result = TRUE;
+		return result;
+	} while (0); else if (_tmp20_ == ((0 != _tmp20__label18) ? _tmp20__label18 : (_tmp20__label18 = g_quark_from_static_string ("help"))))
 	do {
 		gint id;
 		id = 0;
@@ -1458,17 +1471,14 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 	gint args_size;
 	gint args_length1;
 	char** args;
-	GString* label;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	args = (args_length1 = 0, NULL);
-	label = g_string_new ("");
 	while (TRUE) {
 		char* cmd_line;
 		if (!(!feof (stdin))) {
 			break;
 		}
-		g_string_assign (label, "gst-client$ ");
 		cmd_line = __readline ("gst-client$ ");
 		if (cmd_line != NULL) {
 			char* _tmp0_;
@@ -1477,16 +1487,15 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 			add_history (cmd_line);
 			_tmp0_ = string_strip (cmd_line);
 			_g_free0 (_tmp0_);
-			g_string_append (label, cmd_line);
-			args = (_tmp2_ = _tmp1_ = g_strsplit (label->str, " ", -1), args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL), args_length1 = _vala_array_length (_tmp1_), args_size = args_length1, _tmp2_);
-			gstd_cli_parse_options (self, args, args_length1);
-			gstd_cli_parse_cmd (self, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
-			if (_inner_error_ != NULL) {
-				g_propagate_error (error, _inner_error_);
-				_g_free0 (cmd_line);
-				args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
-				_g_string_free0 (label);
-				return FALSE;
+			args = (_tmp2_ = _tmp1_ = g_strsplit (cmd_line, " ", -1), args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL), args_length1 = _vala_array_length (_tmp1_), args_size = args_length1, _tmp2_);
+			if (args[0] != NULL) {
+				gstd_cli_parse_cmd (self, args, args_length1, &_inner_error_);
+				if (_inner_error_ != NULL) {
+					g_propagate_error (error, _inner_error_);
+					_g_free0 (cmd_line);
+					args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
+					return FALSE;
+				}
 			}
 			if (!self->priv->cli_enable) {
 				_g_free0 (cmd_line);
@@ -1497,7 +1506,6 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 	}
 	result = TRUE;
 	args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
-	_g_string_free0 (label);
 	return result;
 }
 

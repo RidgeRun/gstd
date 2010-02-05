@@ -448,9 +448,9 @@ public class GstdCli : GLib.Object {
         if(!create_proxypipe(obj_path)){
             if (args[0].down() != "create" && args[0].down() != "help"
                 && args[0].down() != "set-active" && args[0].down() != "quit"
-                && active_pipe == null){
+                && args[0].down() != "exit" && active_pipe == null){
                 if(cli_enable)
-                    stderr.printf("There is no active pipeline.See \"set-active\" or \"create\" command\n");
+                    stderr.printf("There is no active pipeline. See \"set-active\" or \"create\" command\n");
                 else
                     stderr.printf("Pipeline path was not specified\n");
                 return false;
@@ -534,11 +534,15 @@ public class GstdCli : GLib.Object {
                 stdout.printf("The active pipeline path is:%s\n",active_pipe);
                 return true;
             }else{
-                stderr.printf("Command used on the interactive console mode\n");
+                stderr.printf("Command used only on the interactive console mode\n");
                 return false;
             }
 
         case "quit":
+            cli_enable = false;
+            return true;
+
+        case "exit":
             cli_enable = false;
             return true;
 
@@ -583,31 +587,27 @@ public class GstdCli : GLib.Object {
     public bool cli() throws DBus.Error, GLib.Error {
 
         string[] args;
-        var label = new StringBuilder ();
 
         while (!stdin.eof()) {
 
-            label.assign("gst-client$ ");
+            /*Get the command from the stdin*/
             var cmd_line = Readline.readline ("gst-client$ ");
 
             if (cmd_line != null) {
-
                 /*Saving command on history*/
                 Readline.History.add (cmd_line);
 
                 /*Removes leading and trailing whitespace*/
                 cmd_line.strip();
 
-                /*Adding "gst_cli" as fisrt argument
-                 necessary to reuse parse_cmd function*/
-                label.append(cmd_line);
+                /*Splits string into an array*/
+                args = cmd_line.split(" ",-1);
 
-                /*Split string into an array*/
-                args = label.str.split(" ",-1);
+                /*Execute the command*/
+                if(args[0]!=null)
+                    parse_cmd(args);
 
-                parse_options(args);
-
-                parse_cmd(_remaining_args);
+                /*Exit from cli*/
                 if (!cli_enable) break;
             }
         }

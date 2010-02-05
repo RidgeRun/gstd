@@ -11,6 +11,7 @@ public class Pipeline : GLib.Object {
     private bool initialized = false;
     private int id = -1;
     private string path = "";
+    private double rate = 1.0;
 
     public signal void Eos();
     public signal void StateChanged(string old_state, string new_state, string src);
@@ -462,14 +463,22 @@ public class Pipeline : GLib.Object {
 
         Gst.Format format = Gst.Format.TIME;
         Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-        int64 pos_ns = 0;
+        Gst.SeekType cur_type = Gst.SeekType.SET;
+        Gst.SeekType stp_type = Gst.SeekType.NONE;
+        int64 stp_pos_ns = CLOCK_TIME_NONE;
+        int64 cur_pos_ns = 0;
 
-        pos_ns = (int64)(ipos_ms * MSECOND);
-        if(! pipeline.seek_simple(format,flag,pos_ns))
+        /*Converts the current position, which
+          is in miliseconds to nanoseconds*/
+        cur_pos_ns = (int64)(ipos_ms * MSECOND);
+
+        /*Set the current position*/
+        if(! pipeline.seek(rate,format,flag,cur_type,cur_pos_ns,stp_type,stp_pos_ns)){
             if(debug){
                 stdout.printf("Gstd>Media type not seekable\n");
                 return false;
             }
+        }
         return true;
     }
 
@@ -481,18 +490,27 @@ public class Pipeline : GLib.Object {
 
         Gst.Format format = Gst.Format.TIME;
         Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-        int64 pos_ns = 0;
+        Gst.SeekType cur_type = Gst.SeekType.SET;
+        Gst.SeekType stp_type = Gst.SeekType.NONE;
+        int64 stp_pos_ns = CLOCK_TIME_NONE;
+        int64 cur_pos_ns = 0;
         int64 seek_ns = 0;
 
-        if (! pipeline.query_position (ref format, out pos_ns)){
+        /*Gets the current position*/
+        if (! pipeline.query_position (ref format, out cur_pos_ns)){
             return false;
         }
-        seek_ns = pos_ns + (int64)(period_ms * MSECOND);
-        if(! pipeline.seek_simple(format,flag,seek_ns))
+
+        /*Sets the new position relative to the current one*/
+        seek_ns = cur_pos_ns + (int64)(period_ms * MSECOND);
+
+        /*Set the current position*/
+        if(! pipeline.seek(rate,format,flag,cur_type,seek_ns,stp_type,stp_pos_ns)){
             if(debug){
                 stdout.printf("Gstd>Media type not seekable\n");
                 return false;
             }
+        }
         return true;
     }
 
@@ -500,13 +518,17 @@ public class Pipeline : GLib.Object {
      Changes pipeline speed, it enable fast-foward and
      fast-reverse playback
     */
-    public bool PipelineSpeed(double rate){
+    public bool PipelineSpeed(double new_rate){
 
         Gst.Format format = Gst.Format.TIME;
         Gst.SeekFlags flag = Gst.SeekFlags.SKIP;
         Gst.SeekType type = Gst.SeekType.NONE;
         int64 pos_ns = CLOCK_TIME_NONE;
 
+        /*Sets the new rate*/
+        rate = new_rate;
+
+        /*Changes the rate on the pipeline*/
         if(! pipeline.seek(rate,format,flag,type,pos_ns,type,pos_ns)){
             if(debug){
                 stdout.printf("Gstd>Speed could not be changed\n");
