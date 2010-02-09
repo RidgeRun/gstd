@@ -17,6 +17,7 @@ public class Pipeline : GLib.Object {
     public signal void StateChanged(string old_state, string new_state, string src);
     public signal void Error(string err_message);
 
+
     /**
      Create a new instance of a Pipeline 
      */
@@ -34,6 +35,11 @@ public class Pipeline : GLib.Object {
             /*Get and watch bus*/
             Bus bus = pipeline.get_bus ();
             bus.add_watch (bus_callback);
+            /* The bus watch increases our ref count, so we need to unreference
+             * ourselfs in order to provide properly release behavior of this
+             * object
+             */
+            g_object_unref(this);
 
         } catch (GLib.Error e) {
             stderr.printf("Gstd>Error: %s\n",e.message);

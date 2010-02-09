@@ -159,6 +159,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gint i
 		self->priv->initialized = TRUE;
 		bus = gst_element_get_bus (self->priv->pipeline);
 		gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
+		g_object_unref (self);
 		_gst_object_unref0 (bus);
 	}
 	goto __finally1;
