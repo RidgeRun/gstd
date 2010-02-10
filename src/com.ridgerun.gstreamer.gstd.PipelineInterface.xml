@@ -124,6 +124,40 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineSpeed">
+        <arg type="d" name ="newrate" direction = "in" />
+        <arg type="b" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineSkip">
+        <arg type="i" name ="period_ms" direction = "in" />
+        <arg type="b" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineSeek">
+        <arg type="i" name ="ipos_ms" direction = "in" />
+        <arg type="b" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineSetPath">
+        <arg type="s" name ="dbuspath" direction = "in" />
+        <arg type="b" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineGetPath">
+        <arg type="s" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineGetState">
+        <arg type="s" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
 
     <!-- Signals definitions -->
     <signal name="Eos">

@@ -601,7 +601,7 @@ public class GstdCli : GLib.Object {
                 args = cmd_line.split(" ",-1);
 
                 /*Execute the command*/
-                if(args[0]!=null)
+                if(args[0]!=null && cmd_line[0]!='#')
                     parse_cmd(args);
 
                 /*Exit from cli*/

@@ -19,9 +19,21 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
+    <method name="CreateWithDebug">
+        <arg type="s" name ="description" direction = "in" />
+        <arg type="b" name ="debug" direction = "in" />
+        <arg type="s" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
     <method name="Destroy">
         <arg type="i" name ="id" direction = "in" />
         <arg type="b" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="List">
+        <arg type="s" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>

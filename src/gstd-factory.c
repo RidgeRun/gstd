@@ -212,7 +212,6 @@ gboolean factory_Destroy (Factory* self, gint id) {
 char* factory_List (Factory* self) {
 	char* result;
 	gint counter;
-	gint index;
 	char** _tmp0_;
 	gint pipelist_size;
 	gint pipelist_length1;
@@ -221,25 +220,27 @@ char* factory_List (Factory* self) {
 	char* _tmp3_;
 	g_return_val_if_fail (self != NULL, NULL);
 	counter = 0;
-	index = 0;
 	pipelist = (_tmp0_ = g_new0 (char*, 20 + 1), pipelist_length1 = 20, pipelist_size = pipelist_length1, _tmp0_);
 	paths = g_strdup ("");
 	{
-		gboolean _tmp1_;
+		gint index;
 		index = 0;
-		_tmp1_ = TRUE;
-		while (TRUE) {
-			if (!_tmp1_) {
-				index++;
-			}
-			_tmp1_ = FALSE;
-			if (!(index < 20)) {
-				break;
-			}
-			if (self->priv->pipes[index] != NULL) {
-				char* _tmp2_;
-				pipelist[counter] = (_tmp2_ = pipeline_PipelineGetPath (self->priv->pipes[index]), _g_free0 (pipelist[counter]), _tmp2_);
-				counter++;
+		{
+			gboolean _tmp1_;
+			_tmp1_ = TRUE;
+			while (TRUE) {
+				if (!_tmp1_) {
+					index++;
+				}
+				_tmp1_ = FALSE;
+				if (!(index < 20)) {
+					break;
+				}
+				if (self->priv->pipes[index] != NULL) {
+					char* _tmp2_;
+					pipelist[counter] = (_tmp2_ = pipeline_PipelineGetPath (self->priv->pipes[index]), _g_free0 (pipelist[counter]), _tmp2_);
+					counter++;
+				}
 			}
 		}
 	}

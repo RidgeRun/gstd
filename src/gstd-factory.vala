@@ -63,9 +63,10 @@ public class Factory : GLib.Object {
     }
 
     /**
-     Destroy a pipeline from a gst-launch like description
-     @param objectpath, the dbus-objectpathe of the pipeline
+     Destroy a pipeline
+     @param id, the pipeline id assigned when created
      @return true,if succeded
+     @see PipelineId
      */
     public bool Destroy(int id){
 
@@ -85,11 +86,10 @@ public class Factory : GLib.Object {
     public string List(){
 
         int counter = 0;
-        int index = 0;
         string[] pipelist = new string[20];
         string paths = "";
 
-        for(index=0; index<20;index++){
+        for(int index=0; index<20;index++){
             if (pipes[index] != null){
                 pipelist[counter]=pipes[index].PipelineGetPath();
                 counter++;
