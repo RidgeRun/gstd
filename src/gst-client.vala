@@ -62,11 +62,12 @@ public class GstdCli : GLib.Object {
         {"get-state","get-state","Get the state of an specific pipeline(-p option) or the active pipeline"},
         {"list-pipes","list-pipes","Returns a list of all the dbus-path of the existing pipelines"},
         {"ping","ping","Just to see if gstd is alive"},
-        {"set-active","set-active <path>","Set active pipeline using the dbus-path returned when the pipeline was created"},
-        {"get-active","get-active","Returns the active pipeline dbus-path"},
+        {"active","active <path>","Sets the active pipeline,if no <path> is passed:it returns the actual active pipeline"},
         {"seek","seek <position[ms]>","Moves current playing position to a new one"},
-        {"skip","skip <period[ms]>","Skips a period, if positive: it moves foward, if negative: it moves backward"},
-        {"speed","speed <rate>","Changes playback rate, it enables fast-foward or fast-reverse playback"},
+        {"skip","skip <period[ms]>","Skips a period, if period is positive: it moves foward, if negative: it moves backward"},
+        {"speed","speed <rate>",
+        "Changes playback rate,if rate>1.0: it enables fast-foward playback, if rate<1.0:slow-forward playback,\n        "+
+        " rate=1.0:is the normal speed. If rate is negative: it enables fast|slow-reverse playback "},
         {"exit","exit","Exit active console"},
         {"quit","quit","Quit active console"}
     };
@@ -391,6 +392,33 @@ public class GstdCli : GLib.Object {
         return ret;
     }
 
+    private bool set_active(string path){
+        if(cli_enable){
+            active_pipe = path;
+            if(! create_proxypipe(active_pipe))
+                stderr.printf ("Error: Invalid path\n");
+            return true;
+        }else{
+            stderr.printf("This command is exclusive for interactive console mode\n");
+            return false;
+        }
+    }
+
+    private bool get_active(){
+        if(cli_enable){
+            if(active_pipe != null){
+                stdout.printf("The active pipeline path is:%s\n",active_pipe);
+                return true;
+            }else{
+                stderr.printf("There is no active pipeline\n");
+                return false;
+                }
+        }else{
+            stderr.printf("Command used only on the interactive console mode\n");
+            return false;
+        }
+    }
+
     private bool pipeline_list(){
 
         string[] list = new string[20];
@@ -403,12 +431,12 @@ public class GstdCli : GLib.Object {
 
         paths = factory.List();
 
-        if (list==null){
+        list = paths.split(",",-1);
+
+        if (list[0]==null){
             stderr.printf("There is no pipelines on factory!\n");
             return false;
         }
-
-        list = paths.split(",",-1);
         stdout.printf("The actual pipelines are:\n");
         for(index=0; index<list.length; index++){
             stdout.printf("  %i. %s\n",index+1,list[index]);
@@ -478,11 +506,11 @@ public class GstdCli : GLib.Object {
 
         if(!create_proxypipe(obj_path)){
             if (args[0].down() != "create" && args[0].down() != "help"
-                && args[0].down() != "set-active" && args[0].down() != "quit"
+                && args[0].down() != "active" && args[0].down() != "quit"
                 && args[0].down() != "list-pipes" && args[0].down() != "ping"
                 && args[0].down() != "exit" && active_pipe == null){
                 if(cli_enable)
-                    stderr.printf("There is no active pipeline. See \"set-active\" or \"create\" command\n");
+                    stderr.printf("There is no active pipeline. See \"active\" or \"create\" command\n");
                 else
                     stderr.printf("Pipeline path was not specified\n");
                 return false;
@@ -563,24 +591,13 @@ public class GstdCli : GLib.Object {
         case "ping":
             return gstd_ping();
 
-        case "set-active":
-            if(cli_enable){
-                active_pipe = args[1];
-                if(! create_proxypipe(active_pipe))
-                    stderr.printf ("Error: Invalid path\n");
-                return true;
+        case "active":
+            if (args[1] == null){
+                /*If path was not passed, it returns the active pipeline*/
+                return get_active();
             }else{
-                stderr.printf("This command is exclusive for interactive console mode\n");
-                return false;
-            }
-
-        case "get-active":
-            if(cli_enable){
-                stdout.printf("The active pipeline path is:%s\n",active_pipe);
-                return true;
-            }else{
-                stderr.printf("Command used only on the interactive console mode\n");
-                return false;
+                /*Otherwise it sets the active pipeline with the new path*/
+                return set_active(args[1]);
             }
 
         case "quit":
