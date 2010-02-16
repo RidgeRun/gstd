@@ -50,9 +50,9 @@ public class GstdCli : GLib.Object {
         {"play","play","Sets the pipeline specified by_path(-p) or the active pipeline to play state"},
         {"pause","pause","Sets the pipeline specified by_path(-p) or the active pipeline to pause state"},
         {"null","null","Sets the pipeline specified by_path(-p) or active pipeline to null state"},
-        {"play-async","play-async","Sets the pipeline to play state, it does not wait to change to be done"},
-        {"pause-async","pause-async","Sets the pipeline to pause state, it does not wait to change to be done"},
-        {"null-async","null-async","Sets the pipeline to null state, it does not wait to change to be done"},
+        {"aplay","play-async","Sets the pipeline to play state, it does not wait the change to be done"},
+        {"apause","pause-async","Sets the pipeline to pause state, it does not wait the change to be done"},
+        {"anull","null-async","Sets the pipeline to null state, it does not wait the change to be done"},
         {"set","set <element_name> <property_name> <data-type> <value>",
          "Sets an element's property value of the pipeline"},
         {"get","get <element_name> <property_name> <data_type>",
@@ -67,6 +67,7 @@ public class GstdCli : GLib.Object {
         {"seek","seek <position[ms]>","Moves current playing position to a new one"},
         {"skip","skip <period[ms]>","Skips a period, if positive: it moves foward, if negative: it moves backward"},
         {"speed","speed <rate>","Changes playback rate, it enables fast-foward or fast-reverse playback"},
+        {"exit","exit","Exit active console"},
         {"quit","quit","Quit active console"}
     };
 
@@ -523,13 +524,13 @@ public class GstdCli : GLib.Object {
         case "null":
             return pipeline_null(pipeline,true);
 
-        case "play-async":
+        case "aplay":
             return pipeline_play(pipeline,false);
 
-        case "pause-async":
+        case "apause":
             return pipeline_pause(pipeline,false);
 
-        case "null-async":
+        case "anull":
             return pipeline_null(pipeline,false);
 
         case "set":
