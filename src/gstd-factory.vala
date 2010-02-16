@@ -99,4 +99,13 @@ public class Factory : GLib.Object {
         return paths;
 
     }
+
+    /**
+     Ping to Gstd, just to see if it is alive
+     @return true if alive
+     */
+    public bool Ping(){
+        /*Gstd received the Ping method call*/
+        return true;
+    }
 }

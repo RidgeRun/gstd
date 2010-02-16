@@ -46,10 +46,13 @@ public class GstdCli : GLib.Object {
     private string[,] cmds = {
         {"create","create <\"gst-launch like pipeline description in quotes\">",
          "Creates a new pipeline and returns the dbus-path to access it"},
-        {"destroy","-p <path> destroy","Destroys the pipeline specified by_path(-p) or the active pipeline"},
-        {"play","-p <path> play","Sets the pipeline specified by_path(-p) or the active pipeline to play state"},
-        {"pause","-p <path> pause","Sets the pipeline specified by_path(-p) or the active pipeline to pause state"},
+        {"destroy","destroy","Destroys the pipeline specified by_path(-p) or the active pipeline"},
+        {"play","play","Sets the pipeline specified by_path(-p) or the active pipeline to play state"},
+        {"pause","pause","Sets the pipeline specified by_path(-p) or the active pipeline to pause state"},
         {"null","null","Sets the pipeline specified by_path(-p) or active pipeline to null state"},
+        {"play-async","play-async","Sets the pipeline to play state, it does not wait to change to be done"},
+        {"pause-async","pause-async","Sets the pipeline to pause state, it does not wait to change to be done"},
+        {"null-async","null-async","Sets the pipeline to null state, it does not wait to change to be done"},
         {"set","set <element_name> <property_name> <data-type> <value>",
          "Sets an element's property value of the pipeline"},
         {"get","get <element_name> <property_name> <data_type>",
@@ -58,6 +61,7 @@ public class GstdCli : GLib.Object {
         {"get-position","get-position","Gets the pipeline position"},
         {"get-state","get-state","Get the state of an specific pipeline(-p option) or the active pipeline"},
         {"list-pipes","list-pipes","Returns a list of all the dbus-path of the existing pipelines"},
+        {"ping","ping","Just to see if gstd is alive"},
         {"set-active","set-active <path>","Set active pipeline using the dbus-path returned when the pipeline was created"},
         {"get-active","get-active","Returns the active pipeline dbus-path"},
         {"seek","seek <position[ms]>","Moves current playing position to a new one"},
@@ -143,9 +147,14 @@ public class GstdCli : GLib.Object {
         return true;
     }
 
-    private bool pipeline_play(dynamic DBus.Object pipeline){
+    private bool pipeline_play(dynamic DBus.Object pipeline,bool sync){
 
-        bool ret = pipeline.PipelinePlay();
+        bool ret;
+
+        if (sync)
+            ret = pipeline.PipelinePlay();
+        else
+            ret = pipeline.PipelineAsyncPlay();
         if (!ret){
             stdout.printf("Failed to put the pipeline to play\n");
             return false;
@@ -153,9 +162,14 @@ public class GstdCli : GLib.Object {
         return ret;
     }
 
-    private bool pipeline_pause(dynamic DBus.Object pipeline){
+    private bool pipeline_pause(dynamic DBus.Object pipeline,bool sync){
 
-        bool ret = pipeline.PipelinePause();
+        bool ret;
+
+        if (sync)
+            ret = pipeline.PipelinePause();
+        else
+            ret = pipeline.PipelineAsyncPause();
         if (!ret){
             stdout.printf("Failed to put the pipeline to pause\n");
             return false;
@@ -164,13 +178,33 @@ public class GstdCli : GLib.Object {
         return ret;
     }
 
-    private bool pipeline_null(dynamic DBus.Object pipeline){
+    private bool pipeline_null(dynamic DBus.Object pipeline, bool sync){
 
-        bool ret = pipeline.PipelineNull();
+        bool ret;
+
+        if (sync)
+            ret = pipeline.PipelineNull();
+        else
+            ret = pipeline.PipelineAsyncNull();
         if (!ret){
             stderr.printf("Failed to put the pipeline to null\n");
             return false;
         }
+        return ret;
+    }
+
+    private bool gstd_ping(){
+
+        bool ret = false;
+
+        try{
+            ret = factory.Ping();
+        }catch(Error e){
+            stderr.printf("Failed to reach gstd!\n");
+            return ret;
+        }
+
+        stdout.printf ("pong\n");
         return ret;
     }
 
@@ -444,6 +478,7 @@ public class GstdCli : GLib.Object {
         if(!create_proxypipe(obj_path)){
             if (args[0].down() != "create" && args[0].down() != "help"
                 && args[0].down() != "set-active" && args[0].down() != "quit"
+                && args[0].down() != "list-pipes" && args[0].down() != "ping"
                 && args[0].down() != "exit" && active_pipe == null){
                 if(cli_enable)
                     stderr.printf("There is no active pipeline. See \"set-active\" or \"create\" command\n");
@@ -480,13 +515,22 @@ public class GstdCli : GLib.Object {
             return pipeline_destroy(pipeline);
 
         case "play":
-            return pipeline_play(pipeline);
+            return pipeline_play(pipeline,true);
 
         case "pause":
-            return pipeline_pause(pipeline);
+            return pipeline_pause(pipeline,true);
 
         case "null":
-            return pipeline_null(pipeline);
+            return pipeline_null(pipeline,true);
+
+        case "play-async":
+            return pipeline_play(pipeline,false);
+
+        case "pause-async":
+            return pipeline_pause(pipeline,false);
+
+        case "null-async":
+            return pipeline_null(pipeline,false);
 
         case "set":
             return pipeline_set_property(pipeline,args);
@@ -514,6 +558,9 @@ public class GstdCli : GLib.Object {
 
         case "list-pipes":
             return pipeline_list();
+
+        case "ping":
+            return gstd_ping();
 
         case "set-active":
             if(cli_enable){
