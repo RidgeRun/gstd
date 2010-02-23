@@ -1,232 +1,240 @@
 using Gst;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EOS",
-        signals = "StateChanged" , signals = "Error")]
+        signals = "StateChanged", signals = "Error")]
 
-public class Pipeline : GLib.Object {
+     public class Pipeline:GLib.Object
+     {
 
-    /* Private data */
-    private Gst.Element pipeline;
-    private bool debug = false;
-    private bool initialized = false;
-    private int id = -1;
-    private string path = "";
-    private double rate = 1.0;
+       /* Private data */
+       private Gst.Element pipeline;
+       private bool debug = false;
+       private bool initialized = false;
+       private string path = "";
+       private double rate = 1.0;
 
-    public signal void Eos();
-    public signal void StateChanged(string old_state, string new_state, string src);
-    public signal void Error(string err_message);
+       public signal void Eos ();
+       public signal void StateChanged (string old_state, string new_state,
+           string src);
+       public signal void Error (string err_message);
 
 
     /**
-     Create a new instance of a Pipeline 
+     Create a new instance of a Pipeline
+     @param description, gst-launch style string description of the pipeline
+     @param ids, pipeline identifier
+     @param _debug, flag to enable debug information
      */
-    public Pipeline(string description, int ids){
+       public Pipeline (string description, bool _debug)
+       {
 
-        try{
-            /* Create the pipe */
-            pipeline = parse_launch(description) as Element;
-            assert(pipeline != null);
+         try {
+           /* Create the pipe */
+           pipeline = parse_launch (description) as Element;
 
-            /* Set pipeline state to initialized */
-            id=ids;
-            initialized = true;
+           /*Get and watch bus */
+           Gst.Bus bus = pipeline.get_bus ();
+             bus.add_watch (bus_callback);
+           /* The bus watch increases our ref count, so we need to unreference
+            * ourselfs in order to provide properly release behavior of this
+            * object
+            */
+             g_object_unref (this);
 
-            /*Get and watch bus*/
-            Bus bus = pipeline.get_bus ();
-            bus.add_watch (bus_callback);
-            /* The bus watch increases our ref count, so we need to unreference
-             * ourselfs in order to provide properly release behavior of this
-             * object
-             */
-            g_object_unref(this);
+           /* Set pipeline state to initialized */
+             initialized = true;
 
-        } catch (GLib.Error e) {
-            stderr.printf("Gstd>Error: %s\n",e.message);
-        }
-    }
+         } catch (GLib.Error e)
+         {
+           stderr.printf ("Gstd>Error: %s\n", e.message);
+         }
 
-    public Pipeline.withDebug(string description,int ids, bool _debug){
+         this.debug = _debug;
 
-        this(description,ids);
-        this.debug = _debug;
-
-        if (_debug){
-            if(this.PipelineIsInitialized())
-                stdout.printf("Gstd>Pipeline created: %s\n",description);
-            else
-                stderr.printf("Pipeline could not be initialized\n");
-        }
-    }
+         if (_debug) {
+           if (this.PipelineIsInitialized ())
+             stdout.printf ("Gstd>Pipeline created: %s\n", description);
+           else
+             stderr.printf ("Pipeline could not be initialized\n");
+         }
+       }
 
     /**
      Destroy a instance of a Pipeline 
      */
-    ~Pipeline(){
-        /* Destroy the pipeline */
-        if (!PipelineSetState(State.NULL))
-            stderr.printf("Gstd>Failed to destroy pipeline\n");
-    }
+       ~Pipeline () {
+         /* Destroy the pipeline */
+         if (!PipelineSetState (State.NULL))
+           stderr.printf ("Gstd>Failed to destroy pipeline\n");
+       }
 
-    private bool bus_callback (Gst.Bus bus, Gst.Message message) {
-        switch (message.type) {
-        case MessageType.ERROR:
+       private bool bus_callback (Gst.Bus bus, Gst.Message message)
+       {
+         switch (message.type) {
+           case MessageType.ERROR:
 
-            GLib.Error err;
-            string dbg;
+             GLib.Error err;
+             string dbg;
 
-            /*Parse error*/
-            message.parse_error (out err, out dbg);
+             /*Parse error */
+             message.parse_error (out err, out dbg);
 
-            /*Sending Error Signal*/
-            Error(err.message);
+             /*Sending Error Signal */
+             Error (err.message);
 
-            if (debug)
-                stderr.printf("Gstd>Error on pipeline: %s\n",err.message);
-            break;
+             if (debug)
+               stderr.printf ("Gstd>Error on pipeline: %s\n", err.message);
+             break;
 
-        case MessageType.EOS:
+           case MessageType.EOS:
 
-            /*Sending Eos Signal*/
-            Eos();
-            break;
+             /*Sending Eos Signal */
+             Eos ();
+             break;
 
-        case MessageType.STATE_CHANGED:
+           case MessageType.STATE_CHANGED:
 
-            Gst.State oldstate;
-            Gst.State newstate;
-            Gst.State pending;
+             Gst.State oldstate;
+             Gst.State newstate;
+             Gst.State pending;
 
-            string src = ((Element)message.src).get_name();
-            message.parse_state_changed (out oldstate, out newstate,
-                                         out pending);
-            if (debug)
-                stderr.printf("Gstd>%s:Change state from %s to %s\n",src,
-                               oldstate.to_string(),newstate.to_string());
+             string src = ((Element) message.src).get_name ();
+             message.parse_state_changed (out oldstate, out newstate,
+                 out pending);
+             if (debug)
+               stderr.printf ("Gstd>%s:Change state from %s to %s\n", src,
+                   oldstate.to_string (), newstate.to_string ());
 
-            /*Sending StateChanged Signal*/
-            StateChanged (oldstate.to_string(),newstate.to_string(),src);
-            break;
+             /*Sending StateChanged Signal */
+             StateChanged (oldstate.to_string (), newstate.to_string (), src);
+             break;
 
-        default:
-            break;
-        }
+           default:
+             break;
+         }
 
-        return true;
-    }
+         return true;
+       }
 
-    private bool PipelineSetState(State state){
+       private bool PipelineSetState (State state)
+       {
 
-        State current, pending;
+         State current, pending;
 
-        pipeline.set_state(state);
-        /* Wait for the transition at most 8 secs */
-        pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
-        pipeline.get_state(out current,out pending, (Gst.ClockTime)4000000000u);
-        if (current != state) {
-            if (debug)
-                stderr.printf("Gstd>Element, failed to change state %s\n",
-                state.to_string());
-            return false;
-        }
-        return true;
-    }
+         pipeline.set_state (state);
+         /* Wait for the transition at most 8 secs */
+         pipeline.get_state (out current, out pending,
+             (Gst.ClockTime) 4000000000u);
+         pipeline.get_state (out current, out pending,
+             (Gst.ClockTime) 4000000000u);
+         if (current != state) {
+           if (debug)
+             stderr.printf ("Gstd>Element, failed to change state %s\n",
+                 state.to_string ());
+           return false;
+         }
+         return true;
+       }
 
     /**
      Returns initialized flag value.
     */
-    public bool PipelineIsInitialized(){
-        return this.initialized;
-    }
+       public bool PipelineIsInitialized ()
+       {
+         return this.initialized;
+       }
 
     /**
-     Returns ID value, set when initialized
+     Returns the dbus-path assigned when created
     */
-    public int PipelineId(){
-        return this.id;
-    }
+       public string PipelineGetPath ()
+       {
+         return this.path;
+       }
 
     /**
-     Returns dbus-path,assigned when created
+     Sets a dbus-path,this is assigned when connected to daemon
     */
-    public string PipelineGetPath(){
-        return this.path;
-    }
-
-    /**
-     Sets a dbus-path,assigned when connected to daemon
-    */
-    public bool PipelineSetPath(string dbuspath){
-        this.path = dbuspath;
-        return true;
-    }
+       public bool PipelineSetPath (string dbuspath)
+       {
+         this.path = dbuspath;
+         return true;
+       }
 
     /**
      Gets the pipeline state
     */
-    public string PipelineGetState(){
+       public string PipelineGetState ()
+       {
 
-        State current, pending;
+         State current, pending;
 
-        pipeline.get_state(out current,out pending, (Gst.ClockTime)2000000000u);
-        return current.to_string();
-    }
+         pipeline.get_state (out current, out pending,
+             (Gst.ClockTime) 2000000000u);
+         return current.to_string ();
+       }
 
     /**
-     Sets a pipeline to play state. Returns when the pipeline has already reached
-     that state.
+     Sets a pipeline to play state. Returns when the pipeline has
+     already reached that state.
     */
-    public bool PipelinePlay(){
-        return PipelineSetState(State.PLAYING);
-    }
+       public bool PipelinePlay ()
+       {
+         return PipelineSetState (State.PLAYING);
+       }
 
     /**
      Sets a pipeline to play state. Returns immediately
     */
-    public bool PipelineAsyncPlay(){
-        pipeline.set_state(State.PLAYING);
-        if (debug)
-                stdout.printf("Gstd>Asynchronous state change to:playing\n");
-        return true;
-    }
+       public bool PipelineAsyncPlay ()
+       {
+         pipeline.set_state (State.PLAYING);
+         if (debug)
+           stdout.printf ("Gstd>Asynchronous state change to:playing\n");
+         return true;
+       }
 
     /**
-     Sets a pipeline to paused state. Returns when the pipeline has already reached
-     that state.
+     Sets a pipeline to paused state. Returns when the pipeline has
+     already reached that state.
     */
-    public bool PipelinePause(){
-        return PipelineSetState(State.PAUSED);
-    }
+       public bool PipelinePause ()
+       {
+         return PipelineSetState (State.PAUSED);
+       }
 
     /**
      Sets a pipeline to paused state. Returns immediately
     */
-    public bool PipelineAsyncPause(){
-        pipeline.set_state(State.PAUSED);
-        if (debug)
-                stdout.printf("Gstd>Asynchronous state change to:pause\n");
-        return true;
-    }
+       public bool PipelineAsyncPause ()
+       {
+         pipeline.set_state (State.PAUSED);
+         if (debug)
+           stdout.printf ("Gstd>Asynchronous state change to:pause\n");
+         return true;
+       }
 
     /**
-     Sets a pipeline to null state. Returns when the pipeline has already reached
-     that state.
+     Sets a pipeline to null state. Returns when the pipeline has already 
+     reached that state.
      On this state the pipeline releases all allocated resources, but can
      be reused again.
     */
-    public bool PipelineNull(){
-        return PipelineSetState(State.NULL);
-    }
+       public bool PipelineNull ()
+       {
+         return PipelineSetState (State.NULL);
+       }
 
     /**
      Sets a pipeline to null state. Returns immediately
     */
-    public bool PipelineAsyncNull(){
-        pipeline.set_state(State.NULL);
-        if (debug)
-                stdout.printf("Gstd>Asynchronous state change to:null\n");
-        return true;
-    }
+       public bool PipelineAsyncNull ()
+       {
+         pipeline.set_state (State.NULL);
+         if (debug)
+           stdout.printf ("Gstd>Asynchronous state change to:null\n");
+         return true;
+       }
 
     /**
      Sets a boolean property for an element on the pipeline
@@ -234,23 +242,32 @@ public class Pipeline : GLib.Object {
      @param property,property name
      @param val, bool property value
      */
-    public bool ElementSetPropertyBoolean(string element,
-        string property, bool val){
-        Gst.Element e;
-        Gst.Pipeline pipe;
+       public bool ElementSetPropertyBoolean (string element,
+           string property, bool val)
+       {
+         Gst.Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-            return false;
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return false;
+         }
 
-        e.set(property,val,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return false;
+         }
 
-        return true;
-    }
+         e.set (property, val, null);
+         return true;
+       }
 
     /**
      Sets an int property for an element on the pipeline
@@ -258,46 +275,66 @@ public class Pipeline : GLib.Object {
      @param property,property name
      @param val, int property value
      */
-    public bool ElementSetPropertyInt(string element,
-        string property, int val){
-        Element e;
-        Gst.Pipeline pipe;
+       public bool ElementSetPropertyInt (string element,
+           string property, int val)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline\n",element);
-            return false;
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline\n", element);
+           return false;
+         }
 
-        e.set(property,val,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return false;
+         }
 
-        return true;
-    }
+         e.set (property, val, null);
+
+         return true;
+       }
 
     /**
      Sets an long property for an element on the pipeline
      @param element, whose property needs to be set
      @param property,property name
      @param val, long property value     */
-    public bool ElementSetPropertyLong(string element,
-        string property, long val){
-        Element e;
-        Gst.Pipeline pipe;
+       public bool ElementSetPropertyLong (string element,
+           string property, long val)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-            return false;
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return false;
+         }
 
-        e.set(property,val,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return false;
+         }
 
-        return true;
-    }
+         e.set (property, val, null);
+
+         return true;
+       }
 
     /**
      Sets a string property for an element on the pipeline
@@ -305,243 +342,305 @@ public class Pipeline : GLib.Object {
      @param property,property name
      @param val,string property value
      */
-    public bool ElementSetPropertyString(string element,
-        string property, string val){
-        Element e;
-        Gst.Pipeline pipe;
+       public bool ElementSetPropertyString (string element,
+           string property, string val)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-            return false;
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return false;
+         }
 
-        e.set(property,val,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return false;
+         }
 
-        return true;
-    }
+         e.set (property, val, null);
+
+         return true;
+       }
 
     /**
      Gets an element's bool property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
      */
-    public bool ElementGetPropertyBoolean(string element,
-        string property){
-        Element e;
-        Gst.Pipeline pipe;
-        bool bool_v = false;
+       public bool ElementGetPropertyBoolean (string element, string property)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
+         bool bool_v = false;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+         }
 
-        e.get(property,&bool_v,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return false;
+         }
 
-        return bool_v;
-    }
+         e.get (property, &bool_v, null);
+
+         return bool_v;
+       }
 
     /**
      Gets an element's int property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
      */
-    public int ElementGetPropertyInt(string element,
-        string property){
-        Element e;
-        Gst.Pipeline pipe;
-        int integer_v = -1;
+       public int? ElementGetPropertyInt (string element, string property)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
+         int integer_v = -1;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return null;
+         }
 
-        e.get(property,&integer_v,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return null;
+         }
 
-        return integer_v;
-    }
+         e.get (property, &integer_v, null);
+         return integer_v;
+       }
 
     /**
      Gets an element's long property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
      */
-    public long ElementGetPropertyLong(string element,
-        string property){
-        Element e;
-        Gst.Pipeline pipe;
-        long long_v = -1;
+       public long? ElementGetPropertyLong (string element, string property)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
+         long long_v = -1;
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return null;
+         }
 
-        e.get(property,&long_v,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return null;
+         }
 
-        return long_v;
-    }
+         e.get (property, &long_v, null);
+         return long_v;
+       }
 
     /**
      Gets an element's string property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
      */
-    public string ElementGetPropertyString(string element,
-        string property){
-        Element e;
-        Gst.Pipeline pipe;
-        string string_v = "";
+       public string? ElementGetPropertyString (string element, string property)
+       {
+         Element e;
+         Gst.Pipeline pipe;
+         GLib.ParamSpec spec;
+         string string_v = "";
 
-        pipe = pipeline as Gst.Pipeline;
-        e = pipe.get_child_by_name(element) as Element;
-        if (e == null){
-            if(debug)
-                stderr.printf("Gstd>Element %s not found on pipeline",element);
-        }
+         pipe = pipeline as Gst.Pipeline;
+         e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+           return null;
+         }
 
-        e.get(property,&string_v,null);
+         spec = e.get_class().find_property(property);
+         if(spec == null){
+           if(debug)
+               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               element, property);
+           return null;
+         }
 
-        return string_v;
-    }
+         e.get (property, &string_v, null);
+         return string_v;
+       }
 
     /**
      Query duration to a pipeline on the server
+     @return time in milliseconds or null if not available
     */
-    public int PipelineGetDuration(){
+       public int? PipelineGetDuration ()
+       {
 
-        Format format = Gst.Format.TIME;
-        int64 duration = 0;
-        int idur = 0;
+         Format format = Gst.Format.TIME;
+         int64 duration = 0;
+         int idur = 0;
 
-        /* Query duration */
-        if (! pipeline.query_duration (ref format, out duration)){
-            return -1;
-        }
+         /* Query duration */
+         if (!pipeline.query_duration (ref format, out duration)) {
+           return null;
+         }
 
-        if (duration == Gst.CLOCK_TIME_NONE)
-            return -1;
+         if (duration == Gst.CLOCK_TIME_NONE)
+           return null;
 
-        idur = (int)(duration / 1000000);
-        if(debug)
-            stdout.printf("Gstd>Duration at server is %d\n",idur);
+         idur = (int) (duration / 1000000);
+         if (debug)
+           stdout.printf ("Gstd>Duration at server is %d\n", idur);
 
-        return idur;
-    }
+         return idur;
+       }
 
     /**
      Query position to a pipeline on the server
+     @return position in milliseconds or null if not available
     */
-    public int PipelineGetPosition(){
+       public int? PipelineGetPosition ()
+       {
 
-        Format format = Gst.Format.TIME;
-        int64 position = 0;
-        int ipos = 0;
+         Format format = Gst.Format.TIME;
+         int64 position = 0;
+         int ipos = 0;
 
-        if (! pipeline.query_position (ref format, out position)){
-            return -1;
-        }
+         if (!pipeline.query_position (ref format, out position)) {
+           return null;
+         }
 
-        if (position == Gst.CLOCK_TIME_NONE)
-            return -1;
+         if (position == Gst.CLOCK_TIME_NONE)
+           return null;
 
-        ipos = (int)(position / 1000000);
-        if(debug)
-            stdout.printf("Gstd>Position at server is %d\n",ipos);
+         ipos = (int) (position / 1000000);
+         if (debug)
+           stdout.printf ("Gstd>Position at server is %d\n", ipos);
 
-        return ipos;
-    }
+         return ipos;
+       }
 
     /**
-     Seeks a specific time position
+     Seeks a specific time position.
+     Data in the pipeline is flushed.
+     @param ipos_ms, absolute position in milliseconds
     */
-    public bool PipelineSeek(int ipos_ms){
+       public bool PipelineSeek (int ipos_ms)
+       {
 
-        Gst.Format format = Gst.Format.TIME;
-        Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-        Gst.SeekType cur_type = Gst.SeekType.SET;
-        Gst.SeekType stp_type = Gst.SeekType.NONE;
-        int64 stp_pos_ns = CLOCK_TIME_NONE;
-        int64 cur_pos_ns = 0;
+         Gst.Format format = Gst.Format.TIME;
+         Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
+         Gst.SeekType cur_type = Gst.SeekType.SET;
+         Gst.SeekType stp_type = Gst.SeekType.NONE;
+         int64 stp_pos_ns = CLOCK_TIME_NONE;
+         int64 cur_pos_ns = 0;
 
-        /*Converts the current position, which
-          is in miliseconds to nanoseconds*/
-        cur_pos_ns = (int64)(ipos_ms * MSECOND);
+         /*Converts the current position, which
+            is in milliseconds to nanoseconds */
+         cur_pos_ns = (int64) (ipos_ms * MSECOND);
 
-        /*Set the current position*/
-        if(! pipeline.seek(rate,format,flag,cur_type,cur_pos_ns,stp_type,stp_pos_ns)){
-            if(debug){
-                stdout.printf("Gstd>Media type not seekable\n");
-                return false;
-            }
-        }
-        return true;
-    }
+         /*Set the current position */
+         if (!pipeline.seek (rate, format, flag, cur_type, cur_pos_ns, stp_type,
+                 stp_pos_ns)) {
+           if (debug) {
+             stdout.printf ("Gstd>Media type not seekable\n");
+             return false;
+           }
+         }
+         return true;
+       }
 
     /**
      Skips time, it moves position forward and backwards from
-     the current position
+     the current position.
+     Data in the pipeline is flushed.
+     @param period_ms, relative time in milliseconds
     */
-    public bool PipelineSkip(int period_ms){
+       public bool PipelineSkip (int period_ms)
+       {
 
-        Gst.Format format = Gst.Format.TIME;
-        Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-        Gst.SeekType cur_type = Gst.SeekType.SET;
-        Gst.SeekType stp_type = Gst.SeekType.NONE;
-        int64 stp_pos_ns = CLOCK_TIME_NONE;
-        int64 cur_pos_ns = 0;
-        int64 seek_ns = 0;
+         Gst.Format format = Gst.Format.TIME;
+         Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
+         Gst.SeekType cur_type = Gst.SeekType.SET;
+         Gst.SeekType stp_type = Gst.SeekType.NONE;
+         int64 stp_pos_ns = CLOCK_TIME_NONE;
+         int64 cur_pos_ns = 0;
+         int64 seek_ns = 0;
 
-        /*Gets the current position*/
-        if (! pipeline.query_position (ref format, out cur_pos_ns)){
-            return false;
-        }
+         /*Gets the current position */
+         if (!pipeline.query_position (ref format, out cur_pos_ns)) {
+           return false;
+         }
 
-        /*Sets the new position relative to the current one*/
-        seek_ns = cur_pos_ns + (int64)(period_ms * MSECOND);
+         /*Sets the new position relative to the current one */
+         seek_ns = cur_pos_ns + (int64) (period_ms * MSECOND);
 
-        /*Set the current position*/
-        if(! pipeline.seek(rate,format,flag,cur_type,seek_ns,stp_type,stp_pos_ns)){
-            if(debug){
-                stdout.printf("Gstd>Media type not seekable\n");
-                return false;
-            }
-        }
-        return true;
-    }
+         /*Set the current position */
+         if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,
+                 stp_pos_ns)) {
+           if (debug) {
+             stdout.printf ("Gstd>Media type not seekable\n");
+             return false;
+           }
+         }
+         return true;
+       }
 
     /**
-     Changes pipeline speed, it enable fast-foward and
-     fast-reverse playback
+     Changes pipeline speed, it enable fast|slow foward and
+     fast|slow -reverse playback
+     @param new_rate, values great than zero play forward, reverse
+            otherwise.  Values greater than 1 (or -1 for reverse) 
+            play faster than normal, otherwise slower than normal.
     */
-    public bool PipelineSpeed(double new_rate){
+       public bool PipelineSpeed (double new_rate)
+       {
 
-        Gst.Format format = Gst.Format.TIME;
-        Gst.SeekFlags flag = Gst.SeekFlags.SKIP;
-        Gst.SeekType type = Gst.SeekType.NONE;
-        int64 pos_ns = CLOCK_TIME_NONE;
+         Gst.Format format = Gst.Format.TIME;
+         Gst.SeekFlags flag = Gst.SeekFlags.SKIP;
+         Gst.SeekType type = Gst.SeekType.NONE;
+         int64 pos_ns = CLOCK_TIME_NONE;
 
-        /*Sets the new rate*/
-        rate = new_rate;
+         /*Sets the new rate */
+         rate = new_rate;
 
-        /*Changes the rate on the pipeline*/
-        if(! pipeline.seek(rate,format,flag,type,pos_ns,type,pos_ns)){
-            if(debug){
-                stdout.printf("Gstd>Speed could not be changed\n");
-                return false;
-            }
-        }
-        return true;
-    }
+         /*Changes the rate on the pipeline */
+         if (!pipeline.seek (rate, format, flag, type, pos_ns, type, pos_ns)) {
+           if (debug) {
+             stdout.printf ("Gstd>Speed could not be changed\n");
+             return false;
+           }
+         }
+         return true;
+       }
 
-}
+     }
