@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include <readline/readline.h>
 #include <readline/history.h>
+#include <readline/readline.h>
 
 
 #define TYPE_GSTD_CLI (gstd_cli_get_type ())
@@ -1655,9 +1655,15 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 	gint args_size;
 	gint args_length1;
 	char** args;
+	char* home;
+	char* _tmp0_;
+	char* _tmp5_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	args = (args_length1 = 0, NULL);
+	home = g_strdup (g_getenv ("HOME"));
+	read_history (_tmp0_ = g_strconcat (home, "/.gst-client_history", NULL));
+	_g_free0 (_tmp0_);
 	while (TRUE) {
 		char* cmd_line;
 		if (!(!feof (stdin))) {
@@ -1665,25 +1671,26 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 		}
 		cmd_line = __readline ("gst-client$ ");
 		if (cmd_line != NULL) {
-			char* _tmp0_;
+			char* _tmp1_;
+			char** _tmp3_;
 			char** _tmp2_;
-			char** _tmp1_;
-			gboolean _tmp3_ = FALSE;
+			gboolean _tmp4_ = FALSE;
 			add_history (cmd_line);
-			_tmp0_ = string_strip (cmd_line);
-			_g_free0 (_tmp0_);
-			args = (_tmp2_ = _tmp1_ = g_strsplit (cmd_line, " ", -1), args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL), args_length1 = _vala_array_length (_tmp1_), args_size = args_length1, _tmp2_);
+			_tmp1_ = string_strip (cmd_line);
+			_g_free0 (_tmp1_);
+			args = (_tmp3_ = _tmp2_ = g_strsplit (cmd_line, " ", -1), args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL), args_length1 = _vala_array_length (_tmp2_), args_size = args_length1, _tmp3_);
 			if (args[0] != NULL) {
-				_tmp3_ = g_utf8_get_char (g_utf8_offset_to_pointer (cmd_line, 0)) != '#';
+				_tmp4_ = g_utf8_get_char (g_utf8_offset_to_pointer (cmd_line, 0)) != '#';
 			} else {
-				_tmp3_ = FALSE;
+				_tmp4_ = FALSE;
 			}
-			if (_tmp3_) {
+			if (_tmp4_) {
 				gstd_cli_parse_cmd (self, args, args_length1, &_inner_error_);
 				if (_inner_error_ != NULL) {
 					g_propagate_error (error, _inner_error_);
 					_g_free0 (cmd_line);
 					args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
+					_g_free0 (home);
 					return FALSE;
 				}
 			}
@@ -1694,8 +1701,11 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 		}
 		_g_free0 (cmd_line);
 	}
+	write_history (_tmp5_ = g_strconcat (home, "/.gst-client_history", NULL));
+	_g_free0 (_tmp5_);
 	result = TRUE;
 	args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
+	_g_free0 (home);
 	return result;
 }
 

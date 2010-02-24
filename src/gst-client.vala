@@ -591,7 +591,7 @@ public class GstdCli:GLib.Object
       case "destroy":
         if(cli_enable){
             bool ret = pipeline_destroy (active_pipe);
-            if(ret) 
+            if(ret)
             {
                 active_pipe = null;
                 return true;
@@ -709,6 +709,9 @@ public class GstdCli:GLib.Object
 
     string[] args;
 
+    string home = GLib.Environment.get_variable ("HOME");
+    Readline.History.read (home + "/.gst-client_history");
+
     while (!stdin.eof ())
     {
 
@@ -735,6 +738,7 @@ public class GstdCli:GLib.Object
           break;
       }
     }
+    Readline.History.write (home + "/.gst-client_history");
     return true;
   }
 
