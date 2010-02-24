@@ -630,7 +630,7 @@ using Gst;
        {
 
          Gst.Format format = Gst.Format.TIME;
-         Gst.SeekFlags flag = Gst.SeekFlags.SKIP;
+         Gst.SeekFlags flag = Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH;
          Gst.SeekType type = Gst.SeekType.NONE;
          int64 pos_ns = CLOCK_TIME_NONE;
 

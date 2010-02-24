@@ -915,7 +915,7 @@ gboolean pipeline_PipelineSpeed (Pipeline* self, double new_rate) {
 	gint64 pos_ns;
 	g_return_val_if_fail (self != NULL, FALSE);
 	format = GST_FORMAT_TIME;
-	flag = GST_SEEK_FLAG_SKIP;
+	flag = GST_SEEK_FLAG_SKIP | GST_SEEK_FLAG_FLUSH;
 	type = GST_SEEK_TYPE_NONE;
 	pos_ns = (gint64) GST_CLOCK_TIME_NONE;
 	self->priv->rate = new_rate;
