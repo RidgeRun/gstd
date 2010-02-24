@@ -61,9 +61,11 @@ using DBus;
        public bool Destroy (string objectpath)
        {
          for (int index = 0; index < 20; index++) {
-           if (pipes[index].PipelineGetPath () == objectpath) {
-             pipes[index] = null;
-             return true;
+           if (pipes[index]!=null){
+             if (pipes[index].PipelineGetPath () == objectpath) {
+               pipes[index] = null;
+               return true;
+             }
            }
          }
 

@@ -176,8 +176,6 @@ gboolean factory_Destroy (Factory* self, const char* objectpath) {
 			gboolean _tmp0_;
 			_tmp0_ = TRUE;
 			while (TRUE) {
-				char* _tmp1_;
-				gboolean _tmp2_;
 				if (!_tmp0_) {
 					index++;
 				}
@@ -185,11 +183,15 @@ gboolean factory_Destroy (Factory* self, const char* objectpath) {
 				if (!(index < 20)) {
 					break;
 				}
-				if ((_tmp2_ = _vala_strcmp0 (_tmp1_ = pipeline_PipelineGetPath (self->priv->pipes[index]), objectpath) == 0, _g_free0 (_tmp1_), _tmp2_)) {
-					Pipeline* _tmp3_;
-					self->priv->pipes[index] = (_tmp3_ = NULL, _g_object_unref0 (self->priv->pipes[index]), _tmp3_);
-					result = TRUE;
-					return result;
+				if (self->priv->pipes[index] != NULL) {
+					char* _tmp1_;
+					gboolean _tmp2_;
+					if ((_tmp2_ = _vala_strcmp0 (_tmp1_ = pipeline_PipelineGetPath (self->priv->pipes[index]), objectpath) == 0, _g_free0 (_tmp1_), _tmp2_)) {
+						Pipeline* _tmp3_;
+						self->priv->pipes[index] = (_tmp3_ = NULL, _g_object_unref0 (self->priv->pipes[index]), _tmp3_);
+						result = TRUE;
+						return result;
+					}
 				}
 			}
 		}

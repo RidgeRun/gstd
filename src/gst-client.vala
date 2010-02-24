@@ -23,8 +23,9 @@ public class GstdCli:GLib.Object
     */
   const OptionEntry[] options = {
 
-    {"by_path", 'p', 0, OptionArg.STRING, ref obj_path,
-        "Pipeline path, for which command will be apply.Usage:-p <path>", null},
+    {"path", 'p', 0, OptionArg.STRING, ref obj_path,
+        "Pipeline path or path_id, for which command will be apply."
+        +"Usage:-p <path_id>", null},
 
     {"enable_signals", 's', 0, OptionArg.INT, ref _signals,
         "Flag to enable the signals reception.Usage:-s <1>", null},
@@ -71,16 +72,16 @@ public class GstdCli:GLib.Object
           + " or the active pipeline"},
     {"list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
           + "the existing pipelines"},
-    {"ping", "ping", "Just to see if gstd is alive"},
+    {"ping", "ping", "Shows if gstd is alive"},
     {"active", "active <path>", "Sets the active pipeline,if no <path> is "
           + "passed:it returns the actual active pipeline"},
     {"seek", "seek <position[ms]>", "Moves current playing position to a new"
           + " one"},
     {"skip", "skip <period[ms]>", "Skips a period, if period is positive: it"
           + " moves foward, if negative: it moves backward"},
-    {"speed", "speed <rate>", "Changes playback rate,if rate>1.0: it enables"
-          + "fast-foward playback, if rate<1.0:slow-forward playback,\n        "
-          + " rate=1.0:is the normal speed. If rate is negative: it enables "
+    {"speed", "speed <rate>", "Changes playback rate:\n\t*rate>1.0: "
+          + "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t"
+          + "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables "
           + "fast|slow-reverse playback "},
     {"exit", "exit", "Exit active console"},
     {"quit", "quit", "Quit active console"}
@@ -248,26 +249,26 @@ public class GstdCli:GLib.Object
     switch (args[3].down ()) {
       case "boolean":
         bool boolean_v = pipeline.ElementGetPropertyBoolean (element, property);
-        stdout.printf (">>The '%s' value on element '%s' is: %s\n",
+        stdout.printf ("The '%s' value on element '%s' is: %s\n",
             property, element, boolean_v ? "true" : "false");
         break;
       case "integer":
         int integer_v = pipeline.ElementGetPropertyInt (element, property);
-        stdout.printf (">>The '%s' value on element '%s' is: %d\n",
+        stdout.printf ("The '%s' value on element '%s' is: %d\n",
             property, element, integer_v);
         if (integer_v == -1)
           ret = false;
         break;
       case "long":
         long long_v = pipeline.ElementGetPropertyLong (element, property);
-        stdout.printf (">>The '%s' value on element '%s' is: %ld\n",
+        stdout.printf ("The '%s' value on element '%s' is: %ld\n",
             property, element, long_v);
         if (long_v == -1)
           ret = false;
         break;
       case "string":
         string string_v = pipeline.ElementGetPropertyString (element, property);
-        stdout.printf (">>The '%s' value on element '%s' is: %s\n",
+        stdout.printf ("The '%s' value on element '%s' is: %s\n",
             property, element, string_v);
         if (string_v == "")
           ret = false;
@@ -345,7 +346,7 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    stdout.printf (">>The duration on pipeline is %d, FORMAT need to be fix \n",
+    stdout.printf ("The duration on pipeline is %d, FORMAT need to be fix \n",
         time);
     return true;
   }
@@ -359,7 +360,7 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    stdout.printf (">>The position on pipeline is: %d, FORMAT need to be fix\n",
+    stdout.printf ("The position on pipeline is: %d, FORMAT need to be fix\n",
         pos);
     return true;
   }
@@ -373,7 +374,7 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    stdout.printf (">>The pipeline state is: %s\n", state);
+    stdout.printf ("The pipeline state is: %s\n", state);
     return true;
   }
 
@@ -431,7 +432,11 @@ public class GstdCli:GLib.Object
   private bool set_active (string path)
   {
     if (cli_enable) {
-      active_pipe = path;
+      if(path[0] != '/') {
+        active_pipe = "/com/ridgerun/gstreamer/gstd/pipe" + path;
+      } else {
+        active_pipe = path;
+      }
       if (!create_proxypipe (active_pipe))
         stderr.printf ("Error: Invalid path\n");
       return true;
@@ -446,7 +451,7 @@ public class GstdCli:GLib.Object
   {
     if (cli_enable) {
       if (active_pipe != null) {
-        stdout.printf ("The active pipeline path is:%s\n", active_pipe);
+        stdout.printf ("The active pipeline path is: %s\n", active_pipe);
         return true;
       } else {
         stderr.printf ("There is no active pipeline\n");
@@ -490,7 +495,7 @@ public class GstdCli:GLib.Object
   public bool create_proxypipe (string ? object_path)
   {
 
-    if (object_path == null || object_path[0] != '/')
+    if (object_path == null)
       return false;
 
     /*Create a proxy-object of the pipeline */
@@ -536,6 +541,8 @@ public class GstdCli:GLib.Object
 
     try {
       opt.parse (ref args);
+      if (obj_path != null && obj_path[0] != '/')
+        obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
     } catch (GLib.OptionError e) {
       stderr.printf ("OptionError failure: %s\n", e.message);
     }

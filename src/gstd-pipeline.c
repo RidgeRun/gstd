@@ -156,6 +156,14 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gboole
 		gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
 		g_object_unref (self);
 		self->priv->initialized = TRUE;
+		self->priv->debug = _debug;
+		if (_debug) {
+			if (pipeline_PipelineIsInitialized (self)) {
+				fprintf (stdout, "Gstd: Pipeline created, %s\n", description);
+			} else {
+				fprintf (stderr, "Gstd: Pipeline could not be initialized\n");
+			}
+		}
 		_gst_object_unref0 (bus);
 	}
 	goto __finally1;
@@ -165,7 +173,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gboole
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Gstd>Error: %s\n", e->message);
+			fprintf (stderr, "Gstd: Error, %s\n", e->message);
 			_g_error_free0 (e);
 		}
 	}
@@ -174,14 +182,6 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gboole
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return NULL;
-	}
-	self->priv->debug = _debug;
-	if (_debug) {
-		if (pipeline_PipelineIsInitialized (self)) {
-			fprintf (stdout, "Gstd>Pipeline created: %s\n", description);
-		} else {
-			fprintf (stderr, "Pipeline could not be initialized\n");
-		}
 	}
 	return self;
 }
@@ -212,7 +212,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			dbg = (_tmp3_ = _tmp2_, _g_free0 (dbg), _tmp3_);
 			g_signal_emit_by_name (self, "error", err->message);
 			if (self->priv->debug) {
-				fprintf (stderr, "Gstd>Error on pipeline: %s\n", err->message);
+				fprintf (stderr, "Gstd: Error on pipeline, %s\n", err->message);
 			}
 			_g_error_free0 (err);
 			_g_free0 (dbg);
@@ -232,7 +232,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			src = gst_object_get_name ((GstObject*) GST_ELEMENT (message->src));
 			gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
 			if (self->priv->debug) {
-				fprintf (stderr, "Gstd>%s:Change state from %s to %s\n", src, gst_element_state_get_name (oldstate), gst_element_state_get_name (newstate));
+				fprintf (stderr, "Gstd: %s,changes state from %s to %s\n", src, gst_element_state_get_name (oldstate), gst_element_state_get_name (newstate));
 			}
 			g_signal_emit_by_name (self, "state-changed", gst_element_state_get_name (oldstate), gst_element_state_get_name (newstate), src);
 			_g_free0 (src);
@@ -258,7 +258,7 @@ static gboolean pipeline_PipelineSetState (Pipeline* self, GstState state) {
 	gst_element_get_state (self->priv->pipeline, &current, &pending, (GstClockTime) 4000000000u);
 	if (current != state) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element, failed to change state %s\n", gst_element_state_get_name (state));
+			fprintf (stderr, "Gstd: Element, failed to change state %s\n", gst_element_state_get_name (state));
 		}
 		result = FALSE;
 		return result;
@@ -319,7 +319,7 @@ gboolean pipeline_PipelineAsyncPlay (Pipeline* self) {
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd>Asynchronous state change to:playing\n");
+		fprintf (stdout, "Gstd: Asynchronous state change to:playing\n");
 	}
 	result = TRUE;
 	return result;
@@ -339,7 +339,7 @@ gboolean pipeline_PipelineAsyncPause (Pipeline* self) {
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd>Asynchronous state change to:pause\n");
+		fprintf (stdout, "Gstd: Asynchronous state change to:pause\n");
 	}
 	result = TRUE;
 	return result;
@@ -359,7 +359,7 @@ gboolean pipeline_PipelineAsyncNull (Pipeline* self) {
 	g_return_val_if_fail (self != NULL, FALSE);
 	gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd>Asynchronous state change to:null\n");
+		fprintf (stdout, "Gstd: Asynchronous state change to:null\n");
 	}
 	result = TRUE;
 	return result;
@@ -396,7 +396,7 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const char* element
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -407,7 +407,7 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const char* element
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -444,7 +444,7 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const char* element, co
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline\n", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline\n", element);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -455,7 +455,7 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const char* element, co
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -492,7 +492,7 @@ gboolean pipeline_ElementSetPropertyLong (Pipeline* self, const char* element, c
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -503,7 +503,7 @@ gboolean pipeline_ElementSetPropertyLong (Pipeline* self, const char* element, c
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -541,7 +541,7 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const char* element,
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -552,7 +552,7 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const char* element,
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -591,13 +591,13 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const char* element
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 	}
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = FALSE;
 		_gst_object_unref0 (e);
@@ -649,7 +649,7 @@ gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -660,7 +660,7 @@ gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -712,7 +712,7 @@ glong* pipeline_ElementGetPropertyLong (Pipeline* self, const char* element, con
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -723,7 +723,7 @@ glong* pipeline_ElementGetPropertyLong (Pipeline* self, const char* element, con
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -762,7 +762,7 @@ char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, co
 	e = (_tmp3_ = _gst_object_ref0 ((_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element), GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL)), _gst_object_unref0 (e), _tmp3_);
 	if (e == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s not found on pipeline", element);
+			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -774,7 +774,7 @@ char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, co
 	spec = (_tmp4_ = _g_param_spec_ref0 (g_object_class_find_property (G_OBJECT_GET_CLASS ((GObject*) e), property)), _g_param_spec_unref0 (spec), _tmp4_);
 	if (spec == NULL) {
 		if (self->priv->debug) {
-			fprintf (stderr, "Gstd>Element %s does not have the property %s\n", element, property);
+			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
 		result = NULL;
 		_gst_object_unref0 (e);
@@ -809,10 +809,11 @@ gint* pipeline_PipelineGetDuration (Pipeline* self) {
 		result = NULL;
 		return result;
 	}
-	idur = (gint) (duration / 1000000);
+	idur = (gint) (duration / GST_MSECOND);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd>Duration at server is %d\n", idur);
+		fprintf (stdout, "Gstd: Duration at server is %d\n", idur);
 	}
+	fprintf (stdout, "Gstd: Duration at server is %u:%02u:%02u.%03u\n", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND));
 	result = __int_dup0 (&idur);
 	return result;
 }
@@ -837,7 +838,7 @@ gint* pipeline_PipelineGetPosition (Pipeline* self) {
 	}
 	ipos = (gint) (position / 1000000);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd>Position at server is %d\n", ipos);
+		fprintf (stdout, "Gstd: Position at server is %d\n", ipos);
 	}
 	result = __int_dup0 (&ipos);
 	return result;
@@ -862,7 +863,7 @@ gboolean pipeline_PipelineSeek (Pipeline* self, gint ipos_ms) {
 	cur_pos_ns = (gint64) (ipos_ms * GST_MSECOND);
 	if (!gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, cur_type, cur_pos_ns, stp_type, stp_pos_ns)) {
 		if (self->priv->debug) {
-			fprintf (stdout, "Gstd>Media type not seekable\n");
+			fprintf (stdout, "Gstd: Media type not seekable\n");
 			result = FALSE;
 			return result;
 		}
@@ -896,7 +897,7 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint period_ms) {
 	seek_ns = cur_pos_ns + ((gint64) (period_ms * GST_MSECOND));
 	if (!gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, cur_type, seek_ns, stp_type, stp_pos_ns)) {
 		if (self->priv->debug) {
-			fprintf (stdout, "Gstd>Media type not seekable\n");
+			fprintf (stdout, "Gstd: Media type not seekable\n");
 			result = FALSE;
 			return result;
 		}
@@ -920,7 +921,7 @@ gboolean pipeline_PipelineSpeed (Pipeline* self, double new_rate) {
 	self->priv->rate = new_rate;
 	if (!gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, type, pos_ns, type, pos_ns)) {
 		if (self->priv->debug) {
-			fprintf (stdout, "Gstd>Speed could not be changed\n");
+			fprintf (stdout, "Gstd: Speed could not be changed\n");
 			result = FALSE;
 			return result;
 		}
@@ -1885,7 +1886,7 @@ static void pipeline_finalize (GObject* obj) {
 	self = PIPELINE (obj);
 	{
 		if (!pipeline_PipelineSetState (self, GST_STATE_NULL)) {
-			fprintf (stderr, "Gstd>Failed to destroy pipeline\n");
+			fprintf (stderr, "Gstd: Failed to destroy pipeline\n");
 		}
 	}
 	_gst_object_unref0 (self->priv->pipeline);

@@ -44,20 +44,19 @@ using Gst;
            /* Set pipeline state to initialized */
              initialized = true;
 
-         } catch (GLib.Error e)
-         {
-           stderr.printf ("Gstd>Error: %s\n", e.message);
-         }
+          this.debug = _debug;
 
-         this.debug = _debug;
-
-         if (_debug) {
-           if (this.PipelineIsInitialized ())
-             stdout.printf ("Gstd>Pipeline created: %s\n", description);
-           else
-             stderr.printf ("Pipeline could not be initialized\n");
-         }
-       }
+          if (_debug) {
+            if (this.PipelineIsInitialized ())
+              stdout.printf ("Gstd: Pipeline created, %s\n", description);
+            else
+              stderr.printf ("Gstd: Pipeline could not be initialized\n");
+          }
+        } catch (GLib.Error e)
+        {
+            stderr.printf ("Gstd: Error, %s\n", e.message);
+        }
+      }
 
     /**
      Destroy a instance of a Pipeline 
@@ -65,7 +64,7 @@ using Gst;
        ~Pipeline () {
          /* Destroy the pipeline */
          if (!PipelineSetState (State.NULL))
-           stderr.printf ("Gstd>Failed to destroy pipeline\n");
+           stderr.printf ("Gstd: Failed to destroy pipeline\n");
        }
 
        private bool bus_callback (Gst.Bus bus, Gst.Message message)
@@ -83,7 +82,7 @@ using Gst;
              Error (err.message);
 
              if (debug)
-               stderr.printf ("Gstd>Error on pipeline: %s\n", err.message);
+               stderr.printf ("Gstd: Error on pipeline, %s\n", err.message);
              break;
 
            case MessageType.EOS:
@@ -102,7 +101,7 @@ using Gst;
              message.parse_state_changed (out oldstate, out newstate,
                  out pending);
              if (debug)
-               stderr.printf ("Gstd>%s:Change state from %s to %s\n", src,
+               stderr.printf ("Gstd: %s,changes state from %s to %s\n", src,
                    oldstate.to_string (), newstate.to_string ());
 
              /*Sending StateChanged Signal */
@@ -129,7 +128,7 @@ using Gst;
              (Gst.ClockTime) 4000000000u);
          if (current != state) {
            if (debug)
-             stderr.printf ("Gstd>Element, failed to change state %s\n",
+             stderr.printf ("Gstd: Element, failed to change state %s\n",
                  state.to_string ());
            return false;
          }
@@ -190,7 +189,7 @@ using Gst;
        {
          pipeline.set_state (State.PLAYING);
          if (debug)
-           stdout.printf ("Gstd>Asynchronous state change to:playing\n");
+           stdout.printf ("Gstd: Asynchronous state change to:playing\n");
          return true;
        }
 
@@ -210,7 +209,7 @@ using Gst;
        {
          pipeline.set_state (State.PAUSED);
          if (debug)
-           stdout.printf ("Gstd>Asynchronous state change to:pause\n");
+           stdout.printf ("Gstd: Asynchronous state change to:pause\n");
          return true;
        }
 
@@ -232,7 +231,7 @@ using Gst;
        {
          pipeline.set_state (State.NULL);
          if (debug)
-           stdout.printf ("Gstd>Asynchronous state change to:null\n");
+           stdout.printf ("Gstd: Asynchronous state change to:null\n");
          return true;
        }
 
@@ -253,14 +252,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return false;
          }
@@ -286,18 +285,17 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline\n", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline\n", element);
            return false;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return false;
          }
-
          e.set (property, val, null);
 
          return true;
@@ -319,14 +317,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return false;
          }
@@ -353,14 +351,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return false;
          }
@@ -386,13 +384,13 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return false;
          }
@@ -418,14 +416,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return null;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return null;
          }
@@ -450,14 +448,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return null;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return null;
          }
@@ -482,14 +480,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd>Element %s not found on pipeline", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline", element);
            return null;
          }
 
          spec = e.get_class().find_property(property);
          if(spec == null){
            if(debug)
-               stderr.printf("Gstd>Element %s does not have the property %s\n",
+               stderr.printf("Gstd: Element %s does not have the property %s\n",
                element, property);
            return null;
          }
@@ -517,9 +515,15 @@ using Gst;
          if (duration == Gst.CLOCK_TIME_NONE)
            return null;
 
-         idur = (int) (duration / 1000000);
+         idur = (int) (duration / MSECOND);
          if (debug)
-           stdout.printf ("Gstd>Duration at server is %d\n", idur);
+           stdout.printf ("Gstd: Duration at server is %d\n", idur);
+
+         stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
+         (uint) (duration / (SECOND * 60 * 60)),
+         (uint) ((duration / (SECOND * 60)) % 60),
+         (uint) ((duration / SECOND) % 60),
+         (uint) (duration % SECOND));
 
          return idur;
        }
@@ -544,7 +548,7 @@ using Gst;
 
          ipos = (int) (position / 1000000);
          if (debug)
-           stdout.printf ("Gstd>Position at server is %d\n", ipos);
+           stdout.printf ("Gstd: Position at server is %d\n", ipos);
 
          return ipos;
        }
@@ -572,7 +576,7 @@ using Gst;
          if (!pipeline.seek (rate, format, flag, cur_type, cur_pos_ns, stp_type,
                  stp_pos_ns)) {
            if (debug) {
-             stdout.printf ("Gstd>Media type not seekable\n");
+             stdout.printf ("Gstd: Media type not seekable\n");
              return false;
            }
          }
@@ -608,7 +612,7 @@ using Gst;
          if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,
                  stp_pos_ns)) {
            if (debug) {
-             stdout.printf ("Gstd>Media type not seekable\n");
+             stdout.printf ("Gstd: Media type not seekable\n");
              return false;
            }
          }
@@ -636,7 +640,7 @@ using Gst;
          /*Changes the rate on the pipeline */
          if (!pipeline.seek (rate, format, flag, type, pos_ns, type, pos_ns)) {
            if (debug) {
-             stdout.printf ("Gstd>Speed could not be changed\n");
+             stdout.printf ("Gstd: Speed could not be changed\n");
              return false;
            }
          }
