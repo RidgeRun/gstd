@@ -25,14 +25,14 @@ public class GstdCli:GLib.Object
 
     {"path", 'p', 0, OptionArg.STRING, ref obj_path,
         "Pipeline path or path_id, for which command will be apply."
-        +"Usage:-p <path_id>", null},
+          + "Usage:-p <path_id>", null},
 
     {"enable_signals", 's', 0, OptionArg.INT, ref _signals,
         "Flag to enable the signals reception.Usage:-s <1>", null},
 
     {"debug", 'd', 0, OptionArg.INT, ref _debug,
-        "Flag to enable debug information on a pipeline,useful just for 'create'"
-        +" command.Usage:-d <1>",
+          "Flag to enable debug information on a pipeline,useful just for 'create'"
+          + " command.Usage:-d <1>",
         null},
 
     {"", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
@@ -58,7 +58,7 @@ public class GstdCli:GLib.Object
           + "pipeline to null state"},
     {"aplay", "play-async", "Sets the pipeline to play state, it does not "
           + "wait the change to be done"},
-    {"apause", "pause-async","Sets the pipeline to pause state, it does not "
+    {"apause", "pause-async", "Sets the pipeline to pause state, it does not "
           + "wait the change to be done"},
     {"anull", "null-async", "Sets the pipeline to null state, it does not wait "
           + "the change to be done"},
@@ -68,7 +68,7 @@ public class GstdCli:GLib.Object
         "Gets an element's property value of the pipeline"},
     {"get-duration", "get-duration", "Gets the pipeline duration time"},
     {"get-position", "get-position", "Gets the pipeline position"},
-    {"get-state", "get-state", "Get the state of an specific pipeline(-p option)"
+    {"get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
           + " or the active pipeline"},
     {"list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
           + "the existing pipelines"},
@@ -129,26 +129,33 @@ public class GstdCli:GLib.Object
   {
 
     if (description == null) {
-      stderr.printf ("Pipeline description between quotes(\"\") needed\n");
+      stderr.printf ("Error:\nDescription between quotes(\"\") needed\n");
       return false;
     }
 
-    string new_objpath = factory.Create (description, _debug);
+    try {
+      string new_objpath = factory.Create (description, _debug);
 
-    if (new_objpath == "") {
-      stderr.printf ("Failed to create pipeline\n");
-      return false;
+      if (new_objpath == "") {
+        stderr.printf ("Error:\nFailed to create pipeline\n");
+        return false;
+      }
+
+      /*Set and create the active pipeline
+         when interactive console is enabled */
+      if (cli_enable) {
+        active_pipe = new_objpath;
+        create_proxypipe (active_pipe);
+      }
+
+      stdout.printf ("Pipeline path created: %s\n", new_objpath);
+      stdout.printf ("Ok.\n");
+      return true;
     }
-
-    /*Set and create the active pipeline
-       when interactive console is enabled */
-    if (cli_enable) {
-      active_pipe = new_objpath;
-      create_proxypipe (active_pipe);
+    catch (Error e) {
+       stderr.printf ("Error:\nCreating pipeline:%s\n",e.message);
+       return false;
     }
-
-    stdout.printf ("Pipeline path created: %s\n", new_objpath);
-    return true;
   }
 
   private bool pipeline_destroy (string objpath)
@@ -158,10 +165,11 @@ public class GstdCli:GLib.Object
        function */
     bool ret = factory.Destroy (objpath);
     if (!ret) {
-      stderr.printf ("Failed to put the pipeline to null\n");
+      stderr.printf ("Error:\nFailed to put the pipeline to null\n");
       return false;
     }
     stdout.printf ("Pipeline with path:%s, destroyed\n", objpath);
+    stdout.printf ("Ok.\n");
     return true;
   }
 
@@ -170,15 +178,22 @@ public class GstdCli:GLib.Object
 
     bool ret;
 
-    if (sync)
-      ret = pipeline.PipelinePlay ();
-    else
-      ret = pipeline.PipelineAsyncPlay ();
-    if (!ret) {
-      stdout.printf ("Failed to put the pipeline to play\n");
+    try {
+      if (sync)
+        ret = pipeline.PipelinePlay ();
+      else
+        ret = pipeline.PipelineAsyncPlay ();
+      if (!ret) {
+        stdout.printf ("Error:\nFailed to put the pipeline to play\n");
+        return false;
+      }
+      stdout.printf ("Ok.\n");
+      return ret;
+    }
+    catch (Error e) {
+      stdout.printf ("Error:\n%s\n", e.message);
       return false;
     }
-    return ret;
   }
 
   private bool pipeline_pause (dynamic DBus.Object pipeline, bool sync)
@@ -186,16 +201,22 @@ public class GstdCli:GLib.Object
 
     bool ret;
 
-    if (sync)
-      ret = pipeline.PipelinePause ();
-    else
-      ret = pipeline.PipelineAsyncPause ();
-    if (!ret) {
-      stdout.printf ("Failed to put the pipeline to pause\n");
+    try {
+      if (sync)
+        ret = pipeline.PipelinePause ();
+      else
+        ret = pipeline.PipelineAsyncPause ();
+      if (!ret) {
+        stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
+        return false;
+      }
+      stdout.printf ("Ok.\n");
+      return ret;
+    }
+    catch (Error e) {
+      stdout.printf ("Error:\n%s\n", e.message);
       return false;
     }
-
-    return ret;
   }
 
   private bool pipeline_null (dynamic DBus.Object pipeline, bool sync)
@@ -203,15 +224,22 @@ public class GstdCli:GLib.Object
 
     bool ret;
 
-    if (sync)
-      ret = pipeline.PipelineNull ();
-    else
-      ret = pipeline.PipelineAsyncNull ();
-    if (!ret) {
-      stderr.printf ("Failed to put the pipeline to null\n");
+    try {
+      if (sync)
+        ret = pipeline.PipelineNull ();
+      else
+        ret = pipeline.PipelineAsyncNull ();
+      if (!ret) {
+        stderr.printf ("Error:\nFailed to put the pipeline to null\n");
+        return false;
+      }
+      stdout.printf ("Ok.\n");
+      return ret;
+    }
+    catch (Error e) {
+      stdout.printf ("Error:\n%s\n", e.message);
       return false;
     }
-    return ret;
   }
 
   private bool gstd_ping ()
@@ -223,11 +251,12 @@ public class GstdCli:GLib.Object
       ret = factory.Ping ();
     }
     catch (Error e) {
-      stderr.printf ("Failed to reach gstd!\n");
+      stderr.printf ("Error:\nFailed to reach gstd!\n");
       return ret;
     }
 
     stdout.printf ("pong\n");
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -239,7 +268,7 @@ public class GstdCli:GLib.Object
     bool ret = true;
 
     if (args[1] == null || args[2] == null || args[3] == null) {
-      stdout.printf ("Missing argument.Execute:'help get'\n");
+      stdout.printf ("Error:\nMissing argument.Execute:'help get'\n");
       return false;
     }
 
@@ -270,18 +299,19 @@ public class GstdCli:GLib.Object
         string string_v = pipeline.ElementGetPropertyString (element, property);
         stdout.printf ("The '%s' value on element '%s' is: %s\n",
             property, element, string_v);
-        if (string_v == "")
+        if (string_v == null)
           ret = false;
         break;
       default:
-        stderr.printf ("Datatype not supported: %s\n", args[3]);
+        stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
         return false;
     }
 
     if (!ret) {
-      stdout.printf ("Failed to get property\n");
+      stdout.printf ("Error:\nFailed to get property\n");
       return false;
     }
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -293,7 +323,7 @@ public class GstdCli:GLib.Object
 
     if (args[1] == null || args[2] == null || args[3] == null
         || args[4] == null) {
-      stdout.printf ("Missing argument.Execute:'help set'\n");
+      stdout.printf ("Error:\nMissing argument.Execute:'help set'\n");
       return false;
     }
 
@@ -303,37 +333,38 @@ public class GstdCli:GLib.Object
     switch (args[3].down ()) {
       case "boolean":
         bool boolean_v = args[4].down ().to_bool ();
-        stdout.printf ("Trying to set '%s' on element '%s' to the boolean: %s\n",
+        stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
             property, element, boolean_v ? "true" : "false");
         ret = pipeline.ElementSetPropertyBoolean (element, property, boolean_v);
         break;
       case "integer":
         int integer_v = args[4].to_int ();
-        stdout.printf ("Trying to set '%s' on element '%s' to the integer:%d\n",
+        stdout.printf ("Trying to set '%s' on element '%s' to the value:%d\n",
             property, element, integer_v);
         ret = pipeline.ElementSetPropertyInt (element, property, integer_v);
         break;
       case "long":
         long long_v = args[4].to_long ();
-        stdout.printf ("Trying to set '%s' on element '%s' to the long:%ld\n",
+        stdout.printf ("Trying to set '%s' on element '%s' to the value:%ld\n",
             property, element, long_v);
         ret = pipeline.ElementSetPropertyLong (element, property, long_v);
         break;
       case "string":
         string string_v = args[4];
-        stdout.printf ("Trying to set '%s' on element '%s' to the string:%s\n",
+        stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
             property, element, string_v);
         ret = pipeline.ElementSetPropertyString (element, property, string_v);
         break;
       default:
-        stderr.printf ("Datatype not supported: %s\n", args[3]);
+        stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
         return false;
     }
 
     if (!ret) {
-      stderr.printf ("Failed to set property\n");
+      stderr.printf ("Error:\nFailed to set property\n");
       return false;
     }
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -342,12 +373,13 @@ public class GstdCli:GLib.Object
 
     int time = pipeline.PipelineGetDuration ();
     if (time < 0) {
-      stderr.printf ("Failed to get pipeline duration\n");
+      stderr.printf ("Error:\nFailed to get pipeline duration\n");
       return false;
     }
 
     stdout.printf ("The duration on pipeline is %d, FORMAT need to be fix \n",
         time);
+    stdout.printf ("Ok.\n");
     return true;
   }
 
@@ -356,12 +388,13 @@ public class GstdCli:GLib.Object
 
     int pos = pipeline.PipelineGetPosition ();
     if (pos < 0) {
-      stderr.printf ("Failed to get position the pipeline to null\n");
+      stderr.printf ("Error:\nFailed to get position the pipeline to null\n");
       return false;
     }
 
     stdout.printf ("The position on pipeline is: %d, FORMAT need to be fix\n",
         pos);
+    stdout.printf ("Ok.\n");
     return true;
   }
 
@@ -370,11 +403,12 @@ public class GstdCli:GLib.Object
 
     string state = pipeline.PipelineGetState ();
     if (state == null) {
-      stderr.printf ("Failed to get the pipeline state\n");
+      stderr.printf ("Error:\nFailed to get the pipeline state\n");
       return false;
     }
 
     stdout.printf ("The pipeline state is: %s\n", state);
+    stdout.printf ("Ok.\n");
     return true;
   }
 
@@ -382,16 +416,17 @@ public class GstdCli:GLib.Object
   {
 
     if (args[1] == null) {
-      stdout.printf ("Missing argument.Execute:'help seek'\n");
+      stdout.printf ("Error:\nMissing argument.Execute:'help seek'\n");
       return false;
     }
 
     int pos_ms = args[1].to_int ();
     bool ret = pipeline.PipelineSeek (pos_ms);
     if (!ret) {
-      stderr.printf ("Seek fail: Media type not seekable\n");
+      stderr.printf ("Error:\nSeek fail: Media type not seekable\n");
       return false;
     }
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -399,16 +434,17 @@ public class GstdCli:GLib.Object
   {
 
     if (args[1] == null) {
-      stdout.printf ("Missing argument.Execute:'help skip'\n");
+      stdout.printf ("Error:\nMissing argument.Execute:'help skip'\n");
       return false;
     }
 
     int period_ms = args[1].to_int ();
     bool ret = pipeline.PipelineSkip (period_ms);
     if (!ret) {
-      stderr.printf ("Skip fail: Media type not seekable\n");
+      stderr.printf ("Error:\nSkip fail: Media type not seekable\n");
       return false;
     }
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -416,33 +452,41 @@ public class GstdCli:GLib.Object
   {
 
     if (args[1] == null) {
-      stdout.printf ("Missing argument.Execute:'help speed'\n");
+      stdout.printf ("Error:\nMissing argument.Execute:'help speed'\n");
       return false;
     }
 
     double rate = args[1].to_double ();
     bool ret = pipeline.PipelineSpeed (rate);
     if (!ret) {
-      stderr.printf ("Speed could not be set\n");
+      stderr.printf ("Error:\nSpeed could not be set\n");
       return false;
     }
+    stdout.printf ("Ok.\n");
     return ret;
   }
 
   private bool set_active (string path)
   {
+    string new_active;
+
     if (cli_enable) {
-      if(path[0] != '/') {
-        active_pipe = "/com/ridgerun/gstreamer/gstd/pipe" + path;
+      if (path[0] != '/') {
+        new_active = "/com/ridgerun/gstreamer/gstd/pipe" + path;
       } else {
-        active_pipe = path;
+        new_active = path;
       }
-      if (!create_proxypipe (active_pipe))
-        stderr.printf ("Error: Invalid path\n");
+      if (!create_proxypipe (new_active)) {
+        create_proxypipe (active_pipe);
+        stderr.printf ("Error:\nInvalid path\n");
+        return false;
+      }
+      active_pipe = new_active;
+      stdout.printf ("Ok.\n");
       return true;
     } else {
-      stderr.
-          printf ("This command is exclusive for interactive console mode\n");
+      stderr.printf ("Error:\nThis command is exclusive for" 
+          + " interactive console mode\n");
       return false;
     }
   }
@@ -452,13 +496,15 @@ public class GstdCli:GLib.Object
     if (cli_enable) {
       if (active_pipe != null) {
         stdout.printf ("The active pipeline path is: %s\n", active_pipe);
+        stdout.printf ("Ok.\n");
         return true;
       } else {
-        stderr.printf ("There is no active pipeline\n");
+        stderr.printf ("Error:\nThere is no active pipeline\n");
         return false;
       }
     } else {
-      stderr.printf ("Command used only on the interactive console mode\n");
+      stderr.printf ("Error:\nCommand used only on the interactive"
+          + " console mode\n");
       return false;
     }
   }
@@ -479,13 +525,14 @@ public class GstdCli:GLib.Object
     list = paths.split (",", -1);
 
     if (list[0] == null) {
-      stderr.printf ("There is no pipelines on factory!\n");
+      stderr.printf ("Error:\nThere is no pipelines on factory!\n");
       return false;
     }
     stdout.printf ("The actual pipelines are:\n");
     for (index = 0; index < list.length; index++) {
       stdout.printf ("  %i. %s\n", index + 1, list[index]);
     }
+    stdout.printf ("Ok.\n");
     return true;
   }
 
@@ -543,7 +590,8 @@ public class GstdCli:GLib.Object
       opt.parse (ref args);
       if (obj_path != null && obj_path[0] != '/')
         obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
-    } catch (GLib.OptionError e) {
+    }
+    catch (GLib.OptionError e) {
       stderr.printf ("OptionError failure: %s\n", e.message);
     }
     if (cli_enable && obj_path != null)
@@ -563,7 +611,7 @@ public class GstdCli:GLib.Object
           && args[0].down () != "list-pipes" && args[0].down () != "ping"
           && args[0].down () != "exit" && active_pipe == null) {
         if (cli_enable)
-          stderr.printf("There is no active pipeline." +
+          stderr.printf ("There is no active pipeline." +
               "See \"active\" or \"create\" command\n");
         else
           stderr.printf ("Pipeline path was not specified\n");
@@ -596,17 +644,15 @@ public class GstdCli:GLib.Object
         return pipeline_create (args[1]);
 
       case "destroy":
-        if(cli_enable){
-            bool ret = pipeline_destroy (active_pipe);
-            if(ret)
-            {
-                active_pipe = null;
-                return true;
-            }
-            else
-                return false;
-        }else
-            return pipeline_destroy (obj_path);
+        if (cli_enable) {
+          bool ret = pipeline_destroy (active_pipe);
+          if (ret) {
+            active_pipe = null;
+            return true;
+          } else
+            return false;
+        } else
+          return pipeline_destroy (obj_path);
 
       case "play":
         return pipeline_play (pipeline, true);
@@ -667,10 +713,12 @@ public class GstdCli:GLib.Object
 
       case "quit":
         cli_enable = false;
+        stdout.printf ("Ok.\n");
         return true;
 
       case "exit":
         cli_enable = false;
+        stdout.printf ("Ok.\n");
         return true;
 
       case "help":
@@ -717,7 +765,7 @@ public class GstdCli:GLib.Object
     string[] args;
 
     string home = GLib.Environment.get_variable ("HOME");
-    Readline.History.read (home + "/.gst-client_history");
+      Readline.History.read (home + "/.gst-client_history");
 
     while (!stdin.eof ())
     {

@@ -66,6 +66,7 @@ GType pipeline_get_type (void);
 enum  {
 	FACTORY_DUMMY_PROPERTY
 };
+#define FACTORY_num_pipes 20
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
 Pipeline* pipeline_new (const char* description, gboolean _debug);
@@ -102,7 +103,7 @@ Factory* factory_construct (GType object_type) {
 	Pipeline** _tmp0_;
 	self = (Factory*) g_object_new (object_type, NULL);
 	self->priv->next_id = 0;
-	self->priv->pipes = (_tmp0_ = g_new0 (Pipeline*, 20 + 1), self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL), self->priv->pipes_length1 = 20, self->priv->pipes_size = self->priv->pipes_length1, _tmp0_);
+	self->priv->pipes = (_tmp0_ = g_new0 (Pipeline*, FACTORY_num_pipes + 1), self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL), self->priv->pipes_length1 = FACTORY_num_pipes, self->priv->pipes_size = self->priv->pipes_length1, _tmp0_);
 	{
 		gint ids;
 		ids = 0;
@@ -115,7 +116,7 @@ Factory* factory_construct (GType object_type) {
 					ids++;
 				}
 				_tmp1_ = FALSE;
-				if (!(ids < 20)) {
+				if (!(ids < self->priv->pipes_length1)) {
 					break;
 				}
 				self->priv->pipes[ids] = (_tmp2_ = NULL, _g_object_unref0 (self->priv->pipes[ids]), _tmp2_);
@@ -135,6 +136,9 @@ char* factory_Create (Factory* self, const char* description, gboolean debug) {
 	char* result;
 	gint starting_id;
 	Pipeline* _tmp0_;
+	char* _tmp1_;
+	char* _tmp2_;
+	char* objectpath;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (description != NULL, NULL);
 	starting_id = self->priv->next_id;
@@ -142,25 +146,22 @@ char* factory_Create (Factory* self, const char* description, gboolean debug) {
 		if (!(self->priv->pipes[self->priv->next_id] != NULL)) {
 			break;
 		}
-		self->priv->next_id = (self->priv->next_id++) % 20;
+		self->priv->next_id = (self->priv->next_id + 1) % 20;
 		if (self->priv->next_id == starting_id) {
-			result = NULL;
+			result = g_strdup ("");
 			return result;
 		}
 	}
 	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description, debug), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
-	if (pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
-		char* _tmp1_;
-		char* _tmp2_;
-		char* objectpath;
-		objectpath = (_tmp2_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp1_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp1_), _tmp2_);
-		_vala_dbus_register_object (dbus_g_connection_get_connection (conn), objectpath, (GObject*) self->priv->pipes[self->priv->next_id]);
-		pipeline_PipelineSetPath (self->priv->pipes[self->priv->next_id], objectpath);
-		(self->priv->next_id++) % 20;
-		result = objectpath;
+	if (!pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
+		result = g_strdup ("");
 		return result;
 	}
-	result = NULL;
+	objectpath = (_tmp2_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp1_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp1_), _tmp2_);
+	_vala_dbus_register_object (dbus_g_connection_get_connection (conn), objectpath, (GObject*) self->priv->pipes[self->priv->next_id]);
+	pipeline_PipelineSetPath (self->priv->pipes[self->priv->next_id], objectpath);
+	self->priv->next_id = (self->priv->next_id + 1) % 20;
+	result = objectpath;
 	return result;
 }
 
@@ -180,7 +181,7 @@ gboolean factory_Destroy (Factory* self, const char* objectpath) {
 					index++;
 				}
 				_tmp0_ = FALSE;
-				if (!(index < 20)) {
+				if (!(index < self->priv->pipes_length1)) {
 					break;
 				}
 				if (self->priv->pipes[index] != NULL) {
@@ -213,7 +214,7 @@ char* factory_List (Factory* self) {
 	char* _tmp3_;
 	g_return_val_if_fail (self != NULL, NULL);
 	counter = 0;
-	pipelist = (_tmp0_ = g_new0 (char*, 20 + 1), pipelist_length1 = 20, pipelist_size = pipelist_length1, _tmp0_);
+	pipelist = (_tmp0_ = g_new0 (char*, FACTORY_num_pipes + 1), pipelist_length1 = FACTORY_num_pipes, pipelist_size = pipelist_length1, _tmp0_);
 	paths = g_strdup ("");
 	{
 		gint index;
@@ -226,7 +227,7 @@ char* factory_List (Factory* self) {
 					index++;
 				}
 				_tmp1_ = FALSE;
-				if (!(index < 20)) {
+				if (!(index < self->priv->pipes_length1)) {
 					break;
 				}
 				if (self->priv->pipes[index] != NULL) {

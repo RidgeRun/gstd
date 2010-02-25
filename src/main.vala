@@ -34,13 +34,13 @@ main (string[]args)
 
       loop.run ();
     } else {
-      stderr.printf ("Gstd>Failed to obtain primary ownership of " +
+      stderr.printf ("Gstd: Failed to obtain primary ownership of " +
           "the service\n");
-      stderr.printf ("Gstd>This usually means there is another instance of " +
+      stderr.printf ("Gstd: This usually means there is another instance of " +
           "gstd already running\n");
     }
   }
   catch (Error e) {
-    stderr.printf ("Gstd>Error: %s\n", e.message);
+    stderr.printf ("Gstd: Error: %s\n", e.message);
   }
 }

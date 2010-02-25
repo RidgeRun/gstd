@@ -33,7 +33,7 @@ using Gst;
            pipeline = parse_launch (description) as Element;
 
            /*Get and watch bus */
-           Gst.Bus bus = pipeline.get_bus ();
+             Gst.Bus bus = pipeline.get_bus ();
              bus.add_watch (bus_callback);
            /* The bus watch increases our ref count, so we need to unreference
             * ourselfs in order to provide properly release behavior of this
@@ -44,19 +44,21 @@ using Gst;
            /* Set pipeline state to initialized */
              initialized = true;
 
-          this.debug = _debug;
+             this.debug = _debug;
 
-          if (_debug) {
-            if (this.PipelineIsInitialized ())
-              stdout.printf ("Gstd: Pipeline created, %s\n", description);
-            else
-              stderr.printf ("Gstd: Pipeline could not be initialized\n");
-          }
-        } catch (GLib.Error e)
-        {
-            stderr.printf ("Gstd: Error, %s\n", e.message);
-        }
-      }
+           if (_debug)
+           {
+             if (this.PipelineIsInitialized ())
+               stdout.printf ("Gstd: Pipeline created, %s\n", description);
+             else
+               stderr.printf ("Gstd: Pipeline could not be initialized\n");
+           }
+         }
+         catch (GLib.Error e)
+         {
+           stderr.printf ("Gstd: Error constructing pipeline, %s\n", e.message);
+         }
+       }
 
     /**
      Destroy a instance of a Pipeline 
@@ -256,11 +258,11 @@ using Gst;
            return false;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return false;
          }
 
@@ -285,15 +287,16 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline\n", element);
+             stderr.printf ("Gstd: Element %s not found on pipeline\n",
+                 element);
            return false;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return false;
          }
          e.set (property, val, null);
@@ -321,11 +324,11 @@ using Gst;
            return false;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return false;
          }
 
@@ -355,11 +358,11 @@ using Gst;
            return false;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return false;
          }
 
@@ -387,11 +390,11 @@ using Gst;
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return false;
          }
 
@@ -405,7 +408,7 @@ using Gst;
      @param element, whose property value wants to be known
      @param property,property name
      */
-       public int? ElementGetPropertyInt (string element, string property)
+       public int ElementGetPropertyInt (string element, string property)
        {
          Element e;
          Gst.Pipeline pipe;
@@ -417,15 +420,15 @@ using Gst;
          if (e == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
-           return null;
+           return integer_v;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
-           return null;
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
+           return integer_v;
          }
 
          e.get (property, &integer_v, null);
@@ -437,7 +440,7 @@ using Gst;
      @param element, whose property value wants to be known
      @param property,property name
      */
-       public long? ElementGetPropertyLong (string element, string property)
+       public long ? ElementGetPropertyLong (string element, string property)
        {
          Element e;
          Gst.Pipeline pipe;
@@ -452,11 +455,11 @@ using Gst;
            return null;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return null;
          }
 
@@ -469,7 +472,8 @@ using Gst;
      @param element, whose property value wants to be known
      @param property,property name
      */
-       public string? ElementGetPropertyString (string element, string property)
+       public string ? ElementGetPropertyString (string element,
+           string property)
        {
          Element e;
          Gst.Pipeline pipe;
@@ -484,11 +488,11 @@ using Gst;
            return null;
          }
 
-         spec = e.get_class().find_property(property);
-         if(spec == null){
-           if(debug)
-               stderr.printf("Gstd: Element %s does not have the property %s\n",
-               element, property);
+         spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+                 element, property);
            return null;
          }
 
@@ -500,30 +504,30 @@ using Gst;
      Query duration to a pipeline on the server
      @return time in milliseconds or null if not available
     */
-       public int? PipelineGetDuration ()
+       public int PipelineGetDuration ()
        {
 
          Format format = Gst.Format.TIME;
          int64 duration = 0;
-         int idur = 0;
+         int idur = -1;
 
          /* Query duration */
          if (!pipeline.query_duration (ref format, out duration)) {
-           return null;
+           return idur;
          }
 
          if (duration == Gst.CLOCK_TIME_NONE)
-           return null;
+           return idur;
 
          idur = (int) (duration / MSECOND);
          if (debug)
            stdout.printf ("Gstd: Duration at server is %d\n", idur);
 
          stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
-         (uint) (duration / (SECOND * 60 * 60)),
-         (uint) ((duration / (SECOND * 60)) % 60),
-         (uint) ((duration / SECOND) % 60),
-         (uint) (duration % SECOND));
+             (uint) (duration / (SECOND * 60 * 60)),
+             (uint) ((duration / (SECOND * 60)) % 60),
+             (uint) ((duration / SECOND) % 60),
+             (uint) (duration % SECOND));
 
          return idur;
        }
@@ -532,7 +536,7 @@ using Gst;
      Query position to a pipeline on the server
      @return position in milliseconds or null if not available
     */
-       public int? PipelineGetPosition ()
+       public int PipelineGetPosition ()
        {
 
          Format format = Gst.Format.TIME;
@@ -540,11 +544,11 @@ using Gst;
          int ipos = 0;
 
          if (!pipeline.query_position (ref format, out position)) {
-           return null;
+           return -1;
          }
 
          if (position == Gst.CLOCK_TIME_NONE)
-           return null;
+           return -1;
 
          ipos = (int) (position / 1000000);
          if (debug)

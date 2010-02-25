@@ -7,6 +7,7 @@ using DBus;
      {
        private int next_id;
        private Pipeline[] pipes;
+       private const int num_pipes = 20;
 
     /**
      Create a new instance of a factory server to process D-Bus 
@@ -15,8 +16,8 @@ using DBus;
        public Factory ()
        {
          next_id = 0;
-         pipes = new Pipeline[20];
-         for (int ids = 0; ids < 20; ids++)
+         pipes = new Pipeline[num_pipes];
+         for (int ids = 0; ids < pipes.length; ids++)
          {
            pipes[ids] = null;
          }
@@ -34,22 +35,23 @@ using DBus;
          /* Create our pipeline */
          int starting_id = next_id;
          while (pipes[next_id] != null) {
-           next_id = next_id++ % 20;
+           next_id = (next_id + 1) % 20;
            if (next_id == starting_id) {
-             return null;
+             return "";
            }
          }
          pipes[next_id] = new Pipeline (description, debug);
 
-         if (pipes[next_id].PipelineIsInitialized ()) {
-           string objectpath =
-               "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-           conn.register_object (objectpath, pipes[next_id]);
-           pipes[next_id].PipelineSetPath (objectpath);
-           next_id++ % 20;
-           return objectpath;
+         if (!pipes[next_id].PipelineIsInitialized ()) {
+           return "";
          }
-         return null;
+         string objectpath =
+             "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
+         conn.register_object (objectpath, pipes[next_id]);
+         pipes[next_id].PipelineSetPath (objectpath);
+         next_id = (next_id + 1) % 20;
+         return objectpath;
+
        }
 
     /**
@@ -60,8 +62,8 @@ using DBus;
      */
        public bool Destroy (string objectpath)
        {
-         for (int index = 0; index < 20; index++) {
-           if (pipes[index]!=null){
+         for (int index = 0; index < pipes.length; index++) {
+           if (pipes[index] != null) {
              if (pipes[index].PipelineGetPath () == objectpath) {
                pipes[index] = null;
                return true;
@@ -80,10 +82,10 @@ using DBus;
        public string List ()
        {
          int counter = 0;
-         string[]pipelist = new string[20];
+         string[]pipelist = new string[num_pipes];
          string paths = "";
 
-         for (int index = 0; index < 20; index++) {
+         for (int index = 0; index < pipes.length; index++) {
            if (pipes[index] != null) {
              pipelist[counter] = pipes[index].PipelineGetPath ();
              counter++;

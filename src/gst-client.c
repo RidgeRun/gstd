@@ -191,35 +191,56 @@ static char* _dynamic_Create0 (DBusGProxy* self, const char* param1, gboolean pa
 static gboolean gstd_cli_pipeline_create (GstdCli* self, const char* description) {
 	gboolean result;
 	GError * _inner_error_;
-	char* new_objpath;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_inner_error_ = NULL;
 	if (description == NULL) {
-		fprintf (stderr, "Pipeline description between quotes(\"\") needed\n");
+		fprintf (stderr, "Error:\nDescription between quotes(\"\") needed\n");
 		result = FALSE;
 		return result;
 	}
-	new_objpath = _dynamic_Create0 (self->priv->factory, description, gstd_cli__debug, &_inner_error_);
+	{
+		char* new_objpath;
+		new_objpath = _dynamic_Create0 (self->priv->factory, description, gstd_cli__debug, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch0_g_error;
+			goto __finally0;
+		}
+		if (_vala_strcmp0 (new_objpath, "") == 0) {
+			fprintf (stderr, "Error:\nFailed to create pipeline\n");
+			result = FALSE;
+			_g_free0 (new_objpath);
+			return result;
+		}
+		if (self->priv->cli_enable) {
+			char* _tmp0_;
+			self->priv->active_pipe = (_tmp0_ = g_strdup (new_objpath), _g_free0 (self->priv->active_pipe), _tmp0_);
+			gstd_cli_create_proxypipe (self, self->priv->active_pipe);
+		}
+		fprintf (stdout, "Pipeline path created: %s\n", new_objpath);
+		fprintf (stdout, "Ok.\n");
+		result = TRUE;
+		_g_free0 (new_objpath);
+		return result;
+	}
+	goto __finally0;
+	__catch0_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stderr, "Error:\nCreating pipeline:%s\n", e->message);
+			result = FALSE;
+			_g_error_free0 (e);
+			return result;
+		}
+	}
+	__finally0:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
-	if (_vala_strcmp0 (new_objpath, "") == 0) {
-		fprintf (stderr, "Failed to create pipeline\n");
-		result = FALSE;
-		_g_free0 (new_objpath);
-		return result;
-	}
-	if (self->priv->cli_enable) {
-		char* _tmp0_;
-		self->priv->active_pipe = (_tmp0_ = g_strdup (new_objpath), _g_free0 (self->priv->active_pipe), _tmp0_);
-		gstd_cli_create_proxypipe (self, self->priv->active_pipe);
-	}
-	fprintf (stdout, "Pipeline path created: %s\n", new_objpath);
-	result = TRUE;
-	_g_free0 (new_objpath);
-	return result;
 }
 
 
@@ -247,11 +268,12 @@ static gboolean gstd_cli_pipeline_destroy (GstdCli* self, const char* objpath) {
 		return FALSE;
 	}
 	if (!ret) {
-		fprintf (stderr, "Failed to put the pipeline to null\n");
+		fprintf (stderr, "Error:\nFailed to put the pipeline to null\n");
 		result = FALSE;
 		return result;
 	}
 	fprintf (stdout, "Pipeline with path:%s, destroyed\n", objpath);
+	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	return result;
 }
@@ -284,32 +306,52 @@ static gboolean gstd_cli_pipeline_play (GstdCli* self, DBusGProxy* pipeline, gbo
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
-	if (sync) {
-		gboolean _tmp0_;
-		_tmp0_ = _dynamic_PipelinePlay2 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+	{
+		if (sync) {
+			gboolean _tmp0_;
+			_tmp0_ = _dynamic_PipelinePlay2 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch1_g_error;
+				goto __finally1;
+			}
+			ret = _tmp0_;
+		} else {
+			gboolean _tmp1_;
+			_tmp1_ = _dynamic_PipelineAsyncPlay3 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch1_g_error;
+				goto __finally1;
+			}
+			ret = _tmp1_;
 		}
-		ret = _tmp0_;
-	} else {
-		gboolean _tmp1_;
-		_tmp1_ = _dynamic_PipelineAsyncPlay3 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+		if (!ret) {
+			fprintf (stdout, "Error:\nFailed to put the pipeline to play\n");
+			result = FALSE;
+			return result;
 		}
-		ret = _tmp1_;
-	}
-	if (!ret) {
-		fprintf (stdout, "Failed to put the pipeline to play\n");
-		result = FALSE;
+		fprintf (stdout, "Ok.\n");
+		result = ret;
 		return result;
 	}
-	result = ret;
-	return result;
+	goto __finally1;
+	__catch1_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stdout, "Error:\n%s\n", e->message);
+			result = FALSE;
+			_g_error_free0 (e);
+			return result;
+		}
+	}
+	__finally1:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
 }
 
 
@@ -340,32 +382,52 @@ static gboolean gstd_cli_pipeline_pause (GstdCli* self, DBusGProxy* pipeline, gb
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
-	if (sync) {
-		gboolean _tmp0_;
-		_tmp0_ = _dynamic_PipelinePause4 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+	{
+		if (sync) {
+			gboolean _tmp0_;
+			_tmp0_ = _dynamic_PipelinePause4 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch2_g_error;
+				goto __finally2;
+			}
+			ret = _tmp0_;
+		} else {
+			gboolean _tmp1_;
+			_tmp1_ = _dynamic_PipelineAsyncPause5 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch2_g_error;
+				goto __finally2;
+			}
+			ret = _tmp1_;
 		}
-		ret = _tmp0_;
-	} else {
-		gboolean _tmp1_;
-		_tmp1_ = _dynamic_PipelineAsyncPause5 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+		if (!ret) {
+			fprintf (stdout, "Error:\nFailed to put the pipeline to pause\n");
+			result = FALSE;
+			return result;
 		}
-		ret = _tmp1_;
-	}
-	if (!ret) {
-		fprintf (stdout, "Failed to put the pipeline to pause\n");
-		result = FALSE;
+		fprintf (stdout, "Ok.\n");
+		result = ret;
 		return result;
 	}
-	result = ret;
-	return result;
+	goto __finally2;
+	__catch2_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stdout, "Error:\n%s\n", e->message);
+			result = FALSE;
+			_g_error_free0 (e);
+			return result;
+		}
+	}
+	__finally2:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
 }
 
 
@@ -396,32 +458,52 @@ static gboolean gstd_cli_pipeline_null (GstdCli* self, DBusGProxy* pipeline, gbo
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
-	if (sync) {
-		gboolean _tmp0_;
-		_tmp0_ = _dynamic_PipelineNull6 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+	{
+		if (sync) {
+			gboolean _tmp0_;
+			_tmp0_ = _dynamic_PipelineNull6 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch3_g_error;
+				goto __finally3;
+			}
+			ret = _tmp0_;
+		} else {
+			gboolean _tmp1_;
+			_tmp1_ = _dynamic_PipelineAsyncNull7 (pipeline, &_inner_error_);
+			if (_inner_error_ != NULL) {
+				goto __catch3_g_error;
+				goto __finally3;
+			}
+			ret = _tmp1_;
 		}
-		ret = _tmp0_;
-	} else {
-		gboolean _tmp1_;
-		_tmp1_ = _dynamic_PipelineAsyncNull7 (pipeline, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return FALSE;
+		if (!ret) {
+			fprintf (stderr, "Error:\nFailed to put the pipeline to null\n");
+			result = FALSE;
+			return result;
 		}
-		ret = _tmp1_;
-	}
-	if (!ret) {
-		fprintf (stderr, "Failed to put the pipeline to null\n");
-		result = FALSE;
+		fprintf (stdout, "Ok.\n");
+		result = ret;
 		return result;
 	}
-	result = ret;
-	return result;
+	goto __finally3;
+	__catch3_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stdout, "Error:\n%s\n", e->message);
+			result = FALSE;
+			_g_error_free0 (e);
+			return result;
+		}
+	}
+	__finally3:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
 }
 
 
@@ -446,31 +528,32 @@ static gboolean gstd_cli_gstd_ping (GstdCli* self) {
 		gboolean _tmp0_;
 		_tmp0_ = _dynamic_Ping8 (self->priv->factory, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch0_g_error;
-			goto __finally0;
+			goto __catch4_g_error;
+			goto __finally4;
 		}
 		ret = _tmp0_;
 	}
-	goto __finally0;
-	__catch0_g_error:
+	goto __finally4;
+	__catch4_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Failed to reach gstd!\n");
+			fprintf (stderr, "Error:\nFailed to reach gstd!\n");
 			result = ret;
 			_g_error_free0 (e);
 			return result;
 		}
 	}
-	__finally0:
+	__finally4:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
 	fprintf (stdout, "pong\n");
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	return result;
 }
@@ -545,7 +628,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 		_tmp0_ = args[3] == NULL;
 	}
 	if (_tmp0_) {
-		fprintf (stdout, "Missing argument.Execute:'help get'\n");
+		fprintf (stdout, "Error:\nMissing argument.Execute:'help get'\n");
 		result = FALSE;
 		return result;
 	}
@@ -618,26 +701,27 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 			return FALSE;
 		}
 		fprintf (stdout, "The '%s' value on element '%s' is: %s\n", property, element, string_v);
-		if (_vala_strcmp0 (string_v, "") == 0) {
+		if (string_v == NULL) {
 			ret = FALSE;
 		}
 		_g_free0 (string_v);
 		break;
 	} while (0); else
 	do {
-		fprintf (stderr, "Datatype not supported: %s\n", args[3]);
+		fprintf (stderr, "Error:\nDatatype not supported: %s\n", args[3]);
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
 		return result;
 	} while (0);
 	if (!ret) {
-		fprintf (stdout, "Failed to get property\n");
+		fprintf (stdout, "Error:\nFailed to get property\n");
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
 		return result;
 	}
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	_g_free0 (element);
 	_g_free0 (property);
@@ -734,7 +818,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		_tmp0_ = args[4] == NULL;
 	}
 	if (_tmp0_) {
-		fprintf (stdout, "Missing argument.Execute:'help set'\n");
+		fprintf (stdout, "Error:\nMissing argument.Execute:'help set'\n");
 		result = FALSE;
 		return result;
 	}
@@ -757,7 +841,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		} else {
 			_tmp5_ = "false";
 		}
-		fprintf (stdout, "Trying to set '%s' on element '%s' to the boolean: %s\n", property, element, _tmp5_);
+		fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%s\n", property, element, _tmp5_);
 		_tmp6_ = _dynamic_ElementSetPropertyBoolean13 (pipeline, element, property, boolean_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
@@ -773,7 +857,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		gint integer_v;
 		gboolean _tmp7_;
 		integer_v = atoi (args[4]);
-		fprintf (stdout, "Trying to set '%s' on element '%s' to the integer:%d\n", property, element, integer_v);
+		fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%d\n", property, element, integer_v);
 		_tmp7_ = _dynamic_ElementSetPropertyInt14 (pipeline, element, property, integer_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
@@ -789,7 +873,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		glong long_v;
 		gboolean _tmp8_;
 		long_v = atol (args[4]);
-		fprintf (stdout, "Trying to set '%s' on element '%s' to the long:%ld\n", property, element, long_v);
+		fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%ld\n", property, element, long_v);
 		_tmp8_ = _dynamic_ElementSetPropertyLong15 (pipeline, element, property, long_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (element);
@@ -805,7 +889,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		char* string_v;
 		gboolean _tmp9_;
 		string_v = g_strdup (args[4]);
-		fprintf (stdout, "Trying to set '%s' on element '%s' to the string:%s\n", property, element, string_v);
+		fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%s\n", property, element, string_v);
 		_tmp9_ = _dynamic_ElementSetPropertyString16 (pipeline, element, property, string_v, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (string_v);
@@ -820,19 +904,20 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		break;
 	} while (0); else
 	do {
-		fprintf (stderr, "Datatype not supported: %s\n", args[3]);
+		fprintf (stderr, "Error:\nDatatype not supported: %s\n", args[3]);
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
 		return result;
 	} while (0);
 	if (!ret) {
-		fprintf (stderr, "Failed to set property\n");
+		fprintf (stderr, "Error:\nFailed to set property\n");
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
 		return result;
 	}
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	_g_free0 (element);
 	_g_free0 (property);
@@ -864,11 +949,12 @@ static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipel
 		return FALSE;
 	}
 	if (time < 0) {
-		fprintf (stderr, "Failed to get pipeline duration\n");
+		fprintf (stderr, "Error:\nFailed to get pipeline duration\n");
 		result = FALSE;
 		return result;
 	}
 	fprintf (stdout, "The duration on pipeline is %d, FORMAT need to be fix \n", time);
+	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	return result;
 }
@@ -898,11 +984,12 @@ static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipel
 		return FALSE;
 	}
 	if (pos < 0) {
-		fprintf (stderr, "Failed to get position the pipeline to null\n");
+		fprintf (stderr, "Error:\nFailed to get position the pipeline to null\n");
 		result = FALSE;
 		return result;
 	}
 	fprintf (stdout, "The position on pipeline is: %d, FORMAT need to be fix\n", pos);
+	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	return result;
 }
@@ -932,12 +1019,13 @@ static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline
 		return FALSE;
 	}
 	if (state == NULL) {
-		fprintf (stderr, "Failed to get the pipeline state\n");
+		fprintf (stderr, "Error:\nFailed to get the pipeline state\n");
 		result = FALSE;
 		_g_free0 (state);
 		return result;
 	}
 	fprintf (stdout, "The pipeline state is: %s\n", state);
+	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	_g_free0 (state);
 	return result;
@@ -963,7 +1051,7 @@ static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, cha
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
 	if (args[1] == NULL) {
-		fprintf (stdout, "Missing argument.Execute:'help seek'\n");
+		fprintf (stdout, "Error:\nMissing argument.Execute:'help seek'\n");
 		result = FALSE;
 		return result;
 	}
@@ -975,10 +1063,11 @@ static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, cha
 		return FALSE;
 	}
 	if (!ret) {
-		fprintf (stderr, "Seek fail: Media type not seekable\n");
+		fprintf (stderr, "Error:\nSeek fail: Media type not seekable\n");
 		result = FALSE;
 		return result;
 	}
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	return result;
 }
@@ -1003,7 +1092,7 @@ static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, cha
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
 	if (args[1] == NULL) {
-		fprintf (stdout, "Missing argument.Execute:'help skip'\n");
+		fprintf (stdout, "Error:\nMissing argument.Execute:'help skip'\n");
 		result = FALSE;
 		return result;
 	}
@@ -1015,10 +1104,11 @@ static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, cha
 		return FALSE;
 	}
 	if (!ret) {
-		fprintf (stderr, "Skip fail: Media type not seekable\n");
+		fprintf (stderr, "Error:\nSkip fail: Media type not seekable\n");
 		result = FALSE;
 		return result;
 	}
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	return result;
 }
@@ -1043,7 +1133,7 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, ch
 	g_return_val_if_fail (pipeline != NULL, FALSE);
 	_inner_error_ = NULL;
 	if (args[1] == NULL) {
-		fprintf (stdout, "Missing argument.Execute:'help speed'\n");
+		fprintf (stdout, "Error:\nMissing argument.Execute:'help speed'\n");
 		result = FALSE;
 		return result;
 	}
@@ -1055,10 +1145,11 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, ch
 		return FALSE;
 	}
 	if (!ret) {
-		fprintf (stderr, "Speed could not be set\n");
+		fprintf (stderr, "Error:\nSpeed could not be set\n");
 		result = FALSE;
 		return result;
 	}
+	fprintf (stdout, "Ok.\n");
 	result = ret;
 	return result;
 }
@@ -1066,26 +1157,38 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, ch
 
 static gboolean gstd_cli_set_active (GstdCli* self, const char* path) {
 	gboolean result;
+	char* new_active;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (path != NULL, FALSE);
+	new_active = NULL;
 	if (self->priv->cli_enable) {
+		char* _tmp2_;
 		if (g_utf8_get_char (g_utf8_offset_to_pointer (path, 0)) != '/') {
 			char* _tmp0_;
-			self->priv->active_pipe = (_tmp0_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", path, NULL), _g_free0 (self->priv->active_pipe), _tmp0_);
+			new_active = (_tmp0_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", path, NULL), _g_free0 (new_active), _tmp0_);
 		} else {
 			char* _tmp1_;
-			self->priv->active_pipe = (_tmp1_ = g_strdup (path), _g_free0 (self->priv->active_pipe), _tmp1_);
+			new_active = (_tmp1_ = g_strdup (path), _g_free0 (new_active), _tmp1_);
 		}
-		if (!gstd_cli_create_proxypipe (self, self->priv->active_pipe)) {
-			fprintf (stderr, "Error: Invalid path\n");
+		if (!gstd_cli_create_proxypipe (self, new_active)) {
+			gstd_cli_create_proxypipe (self, self->priv->active_pipe);
+			fprintf (stderr, "Error:\nInvalid path\n");
+			result = FALSE;
+			_g_free0 (new_active);
+			return result;
 		}
+		self->priv->active_pipe = (_tmp2_ = g_strdup (new_active), _g_free0 (self->priv->active_pipe), _tmp2_);
+		fprintf (stdout, "Ok.\n");
 		result = TRUE;
+		_g_free0 (new_active);
 		return result;
 	} else {
-		fprintf (stderr, "This command is exclusive for interactive console mode\n");
+		fprintf (stderr, "%s", "Error:\nThis command is exclusive for" " interactive console mode\n");
 		result = FALSE;
+		_g_free0 (new_active);
 		return result;
 	}
+	_g_free0 (new_active);
 }
 
 
@@ -1095,15 +1198,16 @@ static gboolean gstd_cli_get_active (GstdCli* self) {
 	if (self->priv->cli_enable) {
 		if (self->priv->active_pipe != NULL) {
 			fprintf (stdout, "The active pipeline path is: %s\n", self->priv->active_pipe);
+			fprintf (stdout, "Ok.\n");
 			result = TRUE;
 			return result;
 		} else {
-			fprintf (stderr, "There is no active pipeline\n");
+			fprintf (stderr, "Error:\nThere is no active pipeline\n");
 			result = FALSE;
 			return result;
 		}
 	} else {
-		fprintf (stderr, "Command used only on the interactive console mode\n");
+		fprintf (stderr, "%s", "Error:\nCommand used only on the interactive" " console mode\n");
 		result = FALSE;
 		return result;
 	}
@@ -1165,7 +1269,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 	paths = (_tmp4_ = _tmp3_, _g_free0 (paths), _tmp4_);
 	list = (_tmp6_ = _tmp5_ = g_strsplit (paths, ",", -1), list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL), list_length1 = _vala_array_length (_tmp5_), list_size = list_length1, _tmp6_);
 	if (list[0] == NULL) {
-		fprintf (stderr, "There is no pipelines on factory!\n");
+		fprintf (stderr, "Error:\nThere is no pipelines on factory!\n");
 		result = FALSE;
 		list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
 		_g_free0 (paths);
@@ -1187,6 +1291,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 			fprintf (stdout, "  %i. %s\n", index + 1, list[index]);
 		}
 	}
+	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	list = (_vala_array_free (list, list_length1, (GDestroyNotify) g_free), NULL);
 	_g_free0 (paths);
@@ -1219,16 +1324,16 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 		gboolean ret;
 		ret = _dynamic_PipelineIsInitialized24 (self->priv->pipeline, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch1_g_error;
-			goto __finally1;
+			goto __catch5_g_error;
+			goto __finally5;
 		}
 		if (!ret) {
 			result = FALSE;
 			return result;
 		}
 	}
-	goto __finally1;
-	__catch1_g_error:
+	goto __finally5;
+	__catch5_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1239,7 +1344,7 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 			return result;
 		}
 	}
-	__finally1:
+	__finally5:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1270,9 +1375,9 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_OPTION_ERROR) {
-				goto __catch2_g_option_error;
+				goto __catch6_g_option_error;
 			}
-			goto __finally2;
+			goto __finally6;
 		}
 		if (gstd_cli_obj_path != NULL) {
 			_tmp2_ = g_utf8_get_char (g_utf8_offset_to_pointer (gstd_cli_obj_path, 0)) != '/';
@@ -1284,8 +1389,8 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 			gstd_cli_obj_path = (_tmp3_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", gstd_cli_obj_path, NULL), _g_free0 (gstd_cli_obj_path), _tmp3_);
 		}
 	}
-	goto __finally2;
-	__catch2_g_option_error:
+	goto __finally6;
+	__catch6_g_option_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1295,7 +1400,7 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 			_g_error_free0 (e);
 		}
 	}
-	__finally2:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		_g_option_context_free0 (opt);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1580,11 +1685,13 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label19) ? _tmp24__label19 : (_tmp24__label19 = g_quark_from_static_string ("quit"))))
 	do {
 		self->priv->cli_enable = FALSE;
+		fprintf (stdout, "Ok.\n");
 		result = TRUE;
 		return result;
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label20) ? _tmp24__label20 : (_tmp24__label20 = g_quark_from_static_string ("exit"))))
 	do {
 		self->priv->cli_enable = FALSE;
+		fprintf (stdout, "Ok.\n");
 		result = TRUE;
 		return result;
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label21) ? _tmp24__label21 : (_tmp24__label21 = g_quark_from_static_string ("help"))))
@@ -1762,20 +1869,20 @@ static gint gstd_cli_main (char** args, int args_length1) {
 		_tmp1_ = gstd_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch3_dbus_gerror;
+				goto __catch7_dbus_gerror;
 			}
-			goto __catch3_g_error;
-			goto __finally3;
+			goto __catch7_g_error;
+			goto __finally7;
 		}
 		cli = (_tmp2_ = _tmp1_, _g_object_unref0 (cli), _tmp2_);
 		gstd_cli_parse_options (cli, args, args_length1);
 		_tmp3_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch3_dbus_gerror;
+				goto __catch7_dbus_gerror;
 			}
-			goto __catch3_g_error;
-			goto __finally3;
+			goto __catch7_g_error;
+			goto __finally7;
 		}
 		if (!_tmp3_) {
 			result = -1;
@@ -1783,8 +1890,8 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	goto __finally3;
-	__catch3_dbus_gerror:
+	goto __finally7;
+	__catch7_dbus_gerror:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1797,8 +1904,8 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	goto __finally3;
-	__catch3_g_error:
+	goto __finally7;
+	__catch7_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1811,7 +1918,7 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	__finally3:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (cli);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1843,7 +1950,7 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
 	self->priv->pipeline = NULL;
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (21 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the" " active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active " "pipeline to null state"), _tmp0_[15] = g_strdup ("aplay"), _tmp0_[16] = g_strdup ("play-async"), _tmp0_[17] = g_strdup ("Sets the pipeline to play state, it does not " "wait the change to be done"), _tmp0_[18] = g_strdup ("apause"), _tmp0_[19] = g_strdup ("pause-async"), _tmp0_[20] = g_strdup ("Sets the pipeline to pause state, it does not " "wait the change to be done"), _tmp0_[21] = g_strdup ("anull"), _tmp0_[22] = g_strdup ("null-async"), _tmp0_[23] = g_strdup ("Sets the pipeline to null state, it does not wait " "the change to be done"), _tmp0_[24] = g_strdup ("set"), _tmp0_[25] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[26] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[27] = g_strdup ("get"), _tmp0_[28] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[29] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[30] = g_strdup ("get-duration"), _tmp0_[31] = g_strdup ("get-duration"), _tmp0_[32] = g_strdup ("Gets the pipeline duration time"), _tmp0_[33] = g_strdup ("get-position"), _tmp0_[34] = g_strdup ("get-position"), _tmp0_[35] = g_strdup ("Gets the pipeline position"), _tmp0_[36] = g_strdup ("get-state"), _tmp0_[37] = g_strdup ("get-state"), _tmp0_[38] = g_strdup ("Get the state of an specific pipeline(-p option)" " or the active pipeline"), _tmp0_[39] = g_strdup ("list-pipes"), _tmp0_[40] = g_strdup ("list-pipes"), _tmp0_[41] = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines"), _tmp0_[42] = g_strdup ("ping"), _tmp0_[43] = g_strdup ("ping"), _tmp0_[44] = g_strdup ("Shows if gstd is alive"), _tmp0_[45] = g_strdup ("active"), _tmp0_[46] = g_strdup ("active <path>"), _tmp0_[47] = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline"), _tmp0_[48] = g_strdup ("seek"), _tmp0_[49] = g_strdup ("seek <position[ms]>"), _tmp0_[50] = g_strdup ("Moves current playing position to a new" " one"), _tmp0_[51] = g_strdup ("skip"), _tmp0_[52] = g_strdup ("skip <period[ms]>"), _tmp0_[53] = g_strdup ("Skips a period, if period is positive: it" " moves foward, if negative: it moves backward"), _tmp0_[54] = g_strdup ("speed"), _tmp0_[55] = g_strdup ("speed <rate>"), _tmp0_[56] = g_strdup ("Changes playback rate:\n\t*rate>1.0: " "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t" "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables " "fast|slow-reverse playback "), _tmp0_[57] = g_strdup ("exit"), _tmp0_[58] = g_strdup ("exit"), _tmp0_[59] = g_strdup ("Exit active console"), _tmp0_[60] = g_strdup ("quit"), _tmp0_[61] = g_strdup ("quit"), _tmp0_[62] = g_strdup ("Quit active console"), _tmp0_);
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (21 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the" " active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active " "pipeline to null state"), _tmp0_[15] = g_strdup ("aplay"), _tmp0_[16] = g_strdup ("play-async"), _tmp0_[17] = g_strdup ("Sets the pipeline to play state, it does not " "wait the change to be done"), _tmp0_[18] = g_strdup ("apause"), _tmp0_[19] = g_strdup ("pause-async"), _tmp0_[20] = g_strdup ("Sets the pipeline to pause state, it does not " "wait the change to be done"), _tmp0_[21] = g_strdup ("anull"), _tmp0_[22] = g_strdup ("null-async"), _tmp0_[23] = g_strdup ("Sets the pipeline to null state, it does not wait " "the change to be done"), _tmp0_[24] = g_strdup ("set"), _tmp0_[25] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[26] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[27] = g_strdup ("get"), _tmp0_[28] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[29] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[30] = g_strdup ("get-duration"), _tmp0_[31] = g_strdup ("get-duration"), _tmp0_[32] = g_strdup ("Gets the pipeline duration time"), _tmp0_[33] = g_strdup ("get-position"), _tmp0_[34] = g_strdup ("get-position"), _tmp0_[35] = g_strdup ("Gets the pipeline position"), _tmp0_[36] = g_strdup ("get-state"), _tmp0_[37] = g_strdup ("get-state"), _tmp0_[38] = g_strdup ("Get the state of a specific pipeline(-p flag)" " or the active pipeline"), _tmp0_[39] = g_strdup ("list-pipes"), _tmp0_[40] = g_strdup ("list-pipes"), _tmp0_[41] = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines"), _tmp0_[42] = g_strdup ("ping"), _tmp0_[43] = g_strdup ("ping"), _tmp0_[44] = g_strdup ("Shows if gstd is alive"), _tmp0_[45] = g_strdup ("active"), _tmp0_[46] = g_strdup ("active <path>"), _tmp0_[47] = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline"), _tmp0_[48] = g_strdup ("seek"), _tmp0_[49] = g_strdup ("seek <position[ms]>"), _tmp0_[50] = g_strdup ("Moves current playing position to a new" " one"), _tmp0_[51] = g_strdup ("skip"), _tmp0_[52] = g_strdup ("skip <period[ms]>"), _tmp0_[53] = g_strdup ("Skips a period, if period is positive: it" " moves foward, if negative: it moves backward"), _tmp0_[54] = g_strdup ("speed"), _tmp0_[55] = g_strdup ("speed <rate>"), _tmp0_[56] = g_strdup ("Changes playback rate:\n\t*rate>1.0: " "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t" "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables " "fast|slow-reverse playback "), _tmp0_[57] = g_strdup ("exit"), _tmp0_[58] = g_strdup ("exit"), _tmp0_[59] = g_strdup ("Exit active console"), _tmp0_[60] = g_strdup ("quit"), _tmp0_[61] = g_strdup ("quit"), _tmp0_[62] = g_strdup ("Quit active console"), _tmp0_);
 	self->priv->cmds_length1 = 21;
 	self->priv->cmds_length2 = 3;
 }

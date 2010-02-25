@@ -1,0 +1,148 @@
+.TH "GStreamer" "1" "Feb 2010"
+.SH "NAME"
+gstd - D-Bus controlled daemon to build, run, and control GStreamer pipelines
+.SH "SYNOPSIS"
+\fBgstd\fR \fI[OPTION...]
+.SH "DESCRIPTION"
+.LP 
+\fIgstd\fP is a deamon that builds, runs, and controls \fIGStreamer\fP pipelines
+based on D-Bus messages.
+
+Multiple pipelines can be running simultaneously.  Each pipeline is given a
+unique identifier to allow client applications to specify which pipeline is
+being controlled.
+
+Any number of client applications can be interacting with \fIgstd\fP.  An example
+application is \fIgst-client\P.
+
+\fIgstd\fP is intended for production use as a means to separate the media streaming
+logic from the rest of the end-user application.  An example is using \fIgstd\fP with
+\fIgst-client\fP for automated testing of GStreamer elements.
+
+\fIgstd\fP, with \fIgst-client\fP, is similar to \fIgstd\-launch\fP.  However 
+\fIgstd\fP doesn't suffer from the control of existing pipeline limitations inherient to
+\fIgstd\-launch\fP.
+
+.
+.SH "OPTIONS"
+.l
+\fIgstd\fP accepts the following options:
+.TP 8
+.B  \-\-help
+Print help synopsis and available FLAGS
+
+.
+.SH "GSTREAMER OPTIONS"
+.l
+\fIgstd\fP also accepts the following options that are common
+to all GStreamer applications:
+.TP 8
+.B  \-\-gst\-version
+Prints the version string of the \fIGStreamer\fP core library.
+.TP 8
+.B  \-\-gst\-fatal\-warnings
+Causes \fIGStreamer\fP to abort if a warning message occurs. This is equivalent
+to setting the environment variable G_DEBUG to 'fatal_warnings' (see the
+section \fIenvironment variables\fR below for further information).
+.TP 8
+.B  \-\-gst\-debug=STRING
+A comma separated list of category_name:level pairs to specify debugging levels
+for each category. Level is in the range 0-5 where 0 will show no messages, and
+5 will show all messages. The wildcard * can be used to match category names.
+
+Use \-\-gst\-debug\-help to show category names
+
+Example:
+GST_CAT:5,GST_ELEMENT_*:3,oggdemux:5
+
+.TP 8
+.B  \-\-gst\-debug\-level=LEVEL
+Sets the threshold for printing debugging messages.  A higher level
+will print more messages.  The useful range is 0-5, with the default
+being 0.
+.TP 8
+.B  \-\-gst\-debug\-no\-color
+\fIGStreamer\fP normally prints debugging messages so that the
+messages are color-coded when printed to a terminal that handles
+ANSI escape sequences.  Using this option causes \fIGStreamer\fP
+to print messages without color. Setting the \fBGST_DEBUG_NO_COLOR\fR
+environment variable will achieve the same thing.
+.TP 8
+.B  \-\-gst\-debug\-disable
+Disables debugging.
+.TP 8
+.B  \-\-gst\-debug\-help
+Prints a list of available debug categories and their default debugging level.
+.TP 8
+.B  \-\-gst\-plugin\-spew
+\fIGStreamer\fP info flags to set
+Enable printout of errors while loading \fIGStreamer\fP plugins
+.TP 8
+.B  \-\-gst\-plugin\-path=PATH
+Add directories separated with ':' to the plugin search path
+.TP 8
+.B  \-\-gst\-plugin\-load=PLUGINS
+Preload plugins specified in a comma-separated list. Another way to specify
+plugins to preload is to use the environment variable GST_PLUGIN_PATH
+
+.SH "ENVIRONMENT VARIABLES"
+.TP
+\fBGST_DEBUG\fR
+Comma-separated list of debug categories and levels, e.g.
+GST_DEBUG=totem:4,typefind:5
+.TP
+\fBGST_DEBUG_NO_COLOR\fR
+When this environment variable is set, coloured debug output is disabled.
+.TP
+\fBGST_DEBUG_DUMP_DOT_DIR\fR
+When set to a filesystem path, store dot files of pipeline graphs there.
+.TP
+\fBGST_REGISTRY\fR
+Path of the plugin registry file. Default is
+~/.gstreamer-GST_MAJORMINOR/registry-CPU.xml where CPU is the machine/cpu type
+GStreamer was compiled for, e.g. 'i486', 'i686', 'x86-64', 'ppc', etc. (check
+the output of "uname -i" and "uname -m" for details).
+.TP
+\fBGST_REGISTRY_UPDATE\fR
+Set to "no" to force GStreamer to assume that no plugins have changed,
+been added or been removed. This will make GStreamer skip the initial check
+whether a rebuild of the registry cache is required or not. This may be useful
+in embedded environments where the installed plugins never change. Do not
+use this option in any other setup.
+.TP
+\fBGST_PLUGIN_PATH\fR
+Specifies a list of directories to scan for additional plugins.
+These take precedence over the system plugins.
+.TP
+\fBGST_PLUGIN_SYSTEM_PATH\fR
+Specifies a list of plugins that are always loaded by default.  If not set, 
+this defaults to the system-installed path, and the plugins installed in the
+user's home directory
+.TP
+\fBOIL_CPU_FLAGS\fR
+Useful liboil environment variable. Set OIL_CPU_FLAGS=0 when valgrind or
+other debugging tools trip over liboil's CPU detection (quite a few important
+GStreamer plugins like videotestsrc, audioconvert or audioresample use liboil).
+.TP
+\fBG_DEBUG\fR
+Useful GLib environment variable. Set G_DEBUG=fatal_warnings to make
+GStreamer programs abort when a critical warning such as an assertion failure
+occurs. This is useful if you want to find out which part of the code caused
+that warning to be triggered and under what circumstances. Simply set G_DEBUG
+as mentioned above and run the program in gdb (or let it core dump). Then get
+a stack trace in the usual way.
+.
+.SH FILES
+.TP 8
+~/.gstreamer-GST_MAJORMINOR/registry-*.xml
+The xml plugin database; can be deleted at any time, will be re-created
+automatically when it does not exist yet or plugins change.
+.
+.SH "SEE ALSO"
+.BR gst\-client (1),
+.BR gst\-launch (1),
+.BR gst\-feedback (1),
+.BR gst\-inspect (1),
+.BR gst\-typefind (1)
+.SH "AUTHOR"
+Maria Rodriguez and Diego Dompe at RidgeRun sponsored by Texas Instruments.

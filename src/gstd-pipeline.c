@@ -80,13 +80,12 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const char* element, co
 gboolean pipeline_ElementSetPropertyLong (Pipeline* self, const char* element, const char* property, glong val);
 gboolean pipeline_ElementSetPropertyString (Pipeline* self, const char* element, const char* property, const char* val);
 gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const char* element, const char* property);
-static gint* _int_dup (gint* self);
-gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const char* property);
+gint pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const char* property);
 static glong* _long_dup (glong* self);
 glong* pipeline_ElementGetPropertyLong (Pipeline* self, const char* element, const char* property);
 char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, const char* property);
-gint* pipeline_PipelineGetDuration (Pipeline* self);
-gint* pipeline_PipelineGetPosition (Pipeline* self);
+gint pipeline_PipelineGetDuration (Pipeline* self);
+gint pipeline_PipelineGetPosition (Pipeline* self);
 gboolean pipeline_PipelineSeek (Pipeline* self, gint ipos_ms);
 gboolean pipeline_PipelineSkip (Pipeline* self, gint period_ms);
 gboolean pipeline_PipelineSpeed (Pipeline* self, double new_rate);
@@ -173,7 +172,7 @@ Pipeline* pipeline_construct (GType object_type, const char* description, gboole
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		{
-			fprintf (stderr, "Gstd: Error, %s\n", e->message);
+			fprintf (stderr, "Gstd: Error constructing pipeline, %s\n", e->message);
 			_g_error_free0 (e);
 		}
 	}
@@ -614,21 +613,8 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const char* element
 }
 
 
-static gint* _int_dup (gint* self) {
-	gint* dup;
-	dup = g_new0 (gint, 1);
-	memcpy (dup, self, sizeof (gint));
-	return dup;
-}
-
-
-static gpointer __int_dup0 (gpointer self) {
-	return self ? _int_dup (self) : NULL;
-}
-
-
-gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const char* property) {
-	gint* result;
+gint pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const char* property) {
+	gint result;
 	GstElement* e;
 	GstPipeline* pipe;
 	GParamSpec* spec;
@@ -638,9 +624,9 @@ gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const
 	GstElement* _tmp3_;
 	GstObject* _tmp2_;
 	GParamSpec* _tmp4_;
-	g_return_val_if_fail (self != NULL, NULL);
-	g_return_val_if_fail (element != NULL, NULL);
-	g_return_val_if_fail (property != NULL, NULL);
+	g_return_val_if_fail (self != NULL, 0);
+	g_return_val_if_fail (element != NULL, 0);
+	g_return_val_if_fail (property != NULL, 0);
 	e = NULL;
 	pipe = NULL;
 	spec = NULL;
@@ -651,7 +637,7 @@ gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const
 		if (self->priv->debug) {
 			fprintf (stderr, "Gstd: Element %s not found on pipeline", element);
 		}
-		result = NULL;
+		result = integer_v;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
 		_g_param_spec_unref0 (spec);
@@ -662,14 +648,14 @@ gint* pipeline_ElementGetPropertyInt (Pipeline* self, const char* element, const
 		if (self->priv->debug) {
 			fprintf (stderr, "Gstd: Element %s does not have the property %s\n", element, property);
 		}
-		result = NULL;
+		result = integer_v;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
 		_g_param_spec_unref0 (spec);
 		return result;
 	}
 	g_object_get ((GObject*) e, property, &integer_v, NULL, NULL);
-	result = __int_dup0 (&integer_v);
+	result = integer_v;
 	_gst_object_unref0 (e);
 	_gst_object_unref0 (pipe);
 	_g_param_spec_unref0 (spec);
@@ -792,21 +778,21 @@ char* pipeline_ElementGetPropertyString (Pipeline* self, const char* element, co
 }
 
 
-gint* pipeline_PipelineGetDuration (Pipeline* self) {
-	gint* result;
+gint pipeline_PipelineGetDuration (Pipeline* self) {
+	gint result;
 	GstFormat format;
 	gint64 duration;
 	gint idur;
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (self != NULL, 0);
 	format = GST_FORMAT_TIME;
 	duration = (gint64) 0;
-	idur = 0;
+	idur = -1;
 	if (!gst_element_query_duration (self->priv->pipeline, &format, &duration)) {
-		result = NULL;
+		result = idur;
 		return result;
 	}
 	if (duration == GST_CLOCK_TIME_NONE) {
-		result = NULL;
+		result = idur;
 		return result;
 	}
 	idur = (gint) (duration / GST_MSECOND);
@@ -814,33 +800,33 @@ gint* pipeline_PipelineGetDuration (Pipeline* self) {
 		fprintf (stdout, "Gstd: Duration at server is %d\n", idur);
 	}
 	fprintf (stdout, "Gstd: Duration at server is %u:%02u:%02u.%03u\n", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND));
-	result = __int_dup0 (&idur);
+	result = idur;
 	return result;
 }
 
 
-gint* pipeline_PipelineGetPosition (Pipeline* self) {
-	gint* result;
+gint pipeline_PipelineGetPosition (Pipeline* self) {
+	gint result;
 	GstFormat format;
 	gint64 position;
 	gint ipos;
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (self != NULL, 0);
 	format = GST_FORMAT_TIME;
 	position = (gint64) 0;
 	ipos = 0;
 	if (!gst_element_query_position (self->priv->pipeline, &format, &position)) {
-		result = NULL;
+		result = -1;
 		return result;
 	}
 	if (position == GST_CLOCK_TIME_NONE) {
-		result = NULL;
+		result = -1;
 		return result;
 	}
 	ipos = (gint) (position / 1000000);
 	if (self->priv->debug) {
 		fprintf (stdout, "Gstd: Position at server is %d\n", ipos);
 	}
-	result = __int_dup0 (&ipos);
+	result = ipos;
 	return result;
 }
 
@@ -1482,7 +1468,7 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, D
 	const char* _tmp32_;
 	char* property = NULL;
 	const char* _tmp33_;
-	gint* result;
+	gint result;
 	DBusMessage* reply;
 	dbus_int32_t _tmp34_;
 	error = NULL;
@@ -1503,7 +1489,6 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, D
 	_g_free0 (property);
 	_tmp34_ = result;
 	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp34_);
-	_g_free0 (result);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1595,7 +1580,7 @@ static DBusHandlerResult _dbus_pipeline_ElementGetPropertyString (Pipeline* self
 static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	gint* result;
+	gint result;
 	DBusMessage* reply;
 	dbus_int32_t _tmp41_;
 	error = NULL;
@@ -1608,7 +1593,6 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 	dbus_message_iter_init_append (reply, &iter);
 	_tmp41_ = result;
 	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp41_);
-	_g_free0 (result);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -1622,7 +1606,7 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetDuration (Pipeline* self, DBu
 static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBusConnection* connection, DBusMessage* message) {
 	DBusMessageIter iter;
 	GError* error;
-	gint* result;
+	gint result;
 	DBusMessage* reply;
 	dbus_int32_t _tmp42_;
 	error = NULL;
@@ -1635,7 +1619,6 @@ static DBusHandlerResult _dbus_pipeline_PipelineGetPosition (Pipeline* self, DBu
 	dbus_message_iter_init_append (reply, &iter);
 	_tmp42_ = result;
 	dbus_message_iter_append_basic (&iter, DBUS_TYPE_INT32, &_tmp42_);
-	_g_free0 (result);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
