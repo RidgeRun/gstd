@@ -21,7 +21,7 @@
          </arg>
     </method>
     <method name="Destroy">
-        <arg type="i" name ="id" direction = "in" />
+        <arg type="s" name ="path" direction = "in" />
         <arg type="b" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
