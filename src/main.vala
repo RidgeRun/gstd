@@ -1,3 +1,13 @@
+/*
+ * gstd/src/main.vala
+ *
+ * Main function for GStreamer daemon - framework for controlling audio and video streaming using D-Bus messages
+ *
+ * Copyright (c) 2010, RidgeRun
+ * All rights reserved.
+ *
+ * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
+*/
 using Gst;
 
 /*Global Variable*/

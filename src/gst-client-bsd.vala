@@ -1,13 +1,34 @@
 /*
- * gstd/src/gst-client.vala
+ * gstd/src/gst-client-bsd.vala
  *
- * Command line utility for sending D-Bus messages to GStreamer daemon with interactive support.
+ * Command line utility for sending D-Bus messages to GStreamer daemon.
+ *
+ * BSD License
  *
  * Copyright (c) 2010, RidgeRun
  * All rights reserved.
  *
- * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
-*/
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided 
+ * that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *    following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice, this list of conditions and 
+ *    the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of the <ORGANIZATION> nor the names of its contributors may be used to endorse or 
+ *    promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR 
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 using GLib;
 
@@ -790,47 +811,6 @@ public class GstdCli:GLib.Object
   }
 
   /*
-   *Interactive Console management
-   */
-  public bool cli () throws DBus.Error, GLib.Error
-  {
-
-    string[] args;
-
-    string home = GLib.Environment.get_variable ("HOME");
-      Readline.History.read (home + "/.gst-client_history");
-
-    while (!stdin.eof ())
-    {
-
-      /*Get the command from the stdin */
-      var cmd_line = Readline.readline ("gst-client$ ");
-
-      if (cmd_line != null)
-      {
-        /*Saving command on history */
-        Readline.History.add (cmd_line);
-
-        /*Removes leading and trailing whitespace */
-        cmd_line.strip ();
-
-        /*Splits string into an array */
-        args = cmd_line.split (" ", -1);
-
-        /*Execute the command */
-        if (args[0] != null && cmd_line[0] != '#')
-          parse_cmd (args);
-
-        /*Exit from cli */
-        if (!cli_enable)
-          break;
-      }
-    }
-    Readline.History.write (home + "/.gst-client_history");
-    return true;
-  }
-
-  /*
    * Parse entry arguments
    * If there are no arguments,enable interactive console.
    */
@@ -842,10 +822,9 @@ public class GstdCli:GLib.Object
       return parse_cmd (args);
     } else
     {
-      /*Execute interactive console */
-      cli_enable = true;
-      return cli ();
+      stderr.printf("No parameters found\n");
     }
+  return false;
   }
 
   static int main (string[]args)

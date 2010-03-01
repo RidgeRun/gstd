@@ -33,9 +33,11 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT)
+bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT) \
+	gst-client-bsd$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in gst-client.c \
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	gst-client-bsd.c gst-client.c gst_client_bsd_vala.stamp \
 	gst_client_vala.stamp gstd-factory.c gstd-pipeline.c \
 	gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -53,6 +55,11 @@ gst_client_OBJECTS = $(am_gst_client_OBJECTS)
 gst_client_DEPENDENCIES =
 gst_client_LINK = $(CCLD) $(gst_client_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am_gst_client_bsd_OBJECTS = gst_client_bsd-gst-client-bsd.$(OBJEXT)
+gst_client_bsd_OBJECTS = $(am_gst_client_bsd_OBJECTS)
+gst_client_bsd_DEPENDENCIES =
+gst_client_bsd_LINK = $(CCLD) $(gst_client_bsd_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
 	gstd-gstd-pipeline.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
@@ -86,8 +93,10 @@ am__v_VALAC_0 = @echo "  VALAC " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(gst_client_SOURCES) $(gstd_SOURCES)
-DIST_SOURCES = $(gst_client_SOURCES) $(gstd_SOURCES)
+SOURCES = $(gst_client_SOURCES) $(gst_client_bsd_SOURCES) \
+	$(gstd_SOURCES)
+DIST_SOURCES = $(gst_client_SOURCES) $(gst_client_bsd_SOURCES) \
+	$(gstd_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -212,6 +221,10 @@ gst_client_SOURCES = gst-client.vala
 gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1 --pkg readline -X -lreadline
 gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_LDADD = @DBUS_GLIB_LIBS@ -lreadline -lncurses
+gst_client_bsd_SOURCES = gst-client-bsd.vala
+gst_client_bsd_VALAFLAGS = --pkg posix --pkg dbus-glib-1
+gst_client_bsd_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
+gst_client_bsd_LDADD = @DBUS_GLIB_LIBS@
 interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
  com.ridgerun.gstreamer.gstd.PipelineInterface.xml
 
@@ -292,6 +305,9 @@ clean-binPROGRAMS:
 gst-client$(EXEEXT): $(gst_client_OBJECTS) $(gst_client_DEPENDENCIES) 
 	@rm -f gst-client$(EXEEXT)
 	$(AM_V_CCLD)$(gst_client_LINK) $(gst_client_OBJECTS) $(gst_client_LDADD) $(LIBS)
+gst-client-bsd$(EXEEXT): $(gst_client_bsd_OBJECTS) $(gst_client_bsd_DEPENDENCIES) 
+	@rm -f gst-client-bsd$(EXEEXT)
+	$(AM_V_CCLD)$(gst_client_bsd_LINK) $(gst_client_bsd_OBJECTS) $(gst_client_bsd_LDADD) $(LIBS)
 gstd$(EXEEXT): $(gstd_OBJECTS) $(gstd_DEPENDENCIES) 
 	@rm -f gstd$(EXEEXT)
 	$(AM_V_CCLD)$(gstd_LINK) $(gstd_OBJECTS) $(gstd_LDADD) $(LIBS)
@@ -303,6 +319,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client-gst-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client_bsd-gst-client-bsd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-factory.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-pipeline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
@@ -338,6 +355,22 @@ gst_client-gst-client.obj: gst-client.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gst-client.c' object='gst_client-gst-client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_CFLAGS) $(CFLAGS) -c -o gst_client-gst-client.obj `if test -f 'gst-client.c'; then $(CYGPATH_W) 'gst-client.c'; else $(CYGPATH_W) '$(srcdir)/gst-client.c'; fi`
+
+gst_client_bsd-gst-client-bsd.o: gst-client-bsd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_bsd_CFLAGS) $(CFLAGS) -MT gst_client_bsd-gst-client-bsd.o -MD -MP -MF $(DEPDIR)/gst_client_bsd-gst-client-bsd.Tpo -c -o gst_client_bsd-gst-client-bsd.o `test -f 'gst-client-bsd.c' || echo '$(srcdir)/'`gst-client-bsd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gst_client_bsd-gst-client-bsd.Tpo $(DEPDIR)/gst_client_bsd-gst-client-bsd.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gst-client-bsd.c' object='gst_client_bsd-gst-client-bsd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_bsd_CFLAGS) $(CFLAGS) -c -o gst_client_bsd-gst-client-bsd.o `test -f 'gst-client-bsd.c' || echo '$(srcdir)/'`gst-client-bsd.c
+
+gst_client_bsd-gst-client-bsd.obj: gst-client-bsd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_bsd_CFLAGS) $(CFLAGS) -MT gst_client_bsd-gst-client-bsd.obj -MD -MP -MF $(DEPDIR)/gst_client_bsd-gst-client-bsd.Tpo -c -o gst_client_bsd-gst-client-bsd.obj `if test -f 'gst-client-bsd.c'; then $(CYGPATH_W) 'gst-client-bsd.c'; else $(CYGPATH_W) '$(srcdir)/gst-client-bsd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gst_client_bsd-gst-client-bsd.Tpo $(DEPDIR)/gst_client_bsd-gst-client-bsd.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gst-client-bsd.c' object='gst_client_bsd-gst-client-bsd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gst_client_bsd_CFLAGS) $(CFLAGS) -c -o gst_client_bsd-gst-client-bsd.obj `if test -f 'gst-client-bsd.c'; then $(CYGPATH_W) 'gst-client-bsd.c'; else $(CYGPATH_W) '$(srcdir)/gst-client-bsd.c'; fi`
 
 gstd-main.o: main.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-main.o -MD -MP -MF $(DEPDIR)/gstd-main.Tpo -c -o gstd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
@@ -411,6 +444,14 @@ $(srcdir)/gst-client.c: $(srcdir)/gst_client_vala.stamp
 	fi
 gst_client_vala.stamp: $(gst_client_SOURCES)
 	$(AM_V_VALAC)$(VALAC) $(gst_client_VALAFLAGS) $(VALAFLAGS) -C $(gst_client_SOURCES)
+	$(AM_V_at)touch $@
+$(srcdir)/gst-client-bsd.c: $(srcdir)/gst_client_bsd_vala.stamp
+	@if test -f $@; then :; else \
+	  rm -f $(srcdir)/gst_client_bsd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gst_client_bsd_vala.stamp; \
+	fi
+gst_client_bsd_vala.stamp: $(gst_client_bsd_SOURCES)
+	$(AM_V_VALAC)$(VALAC) $(gst_client_bsd_VALAFLAGS) $(VALAFLAGS) -C $(gst_client_bsd_SOURCES)
 	$(AM_V_at)touch $@
 install-interfaceDATA: $(interface_DATA)
 	@$(NORMAL_INSTALL)
@@ -547,7 +588,9 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-rm -f gst-client-bsd.c
 	-rm -f gst-client.c
+	-rm -f gst_client_bsd_vala.stamp
 	-rm -f gst_client_vala.stamp
 	-rm -f gstd-factory.c
 	-rm -f gstd-pipeline.c
