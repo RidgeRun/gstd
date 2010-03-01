@@ -797,9 +797,8 @@ gint pipeline_PipelineGetDuration (Pipeline* self) {
 	}
 	idur = (gint) (duration / GST_MSECOND);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd: Duration at server is %d\n", idur);
+		fprintf (stdout, "Gstd: Duration at server is %u:%02u:%02u.%03u\n", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND));
 	}
-	fprintf (stdout, "Gstd: Duration at server is %u:%02u:%02u.%03u\n", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND));
 	result = idur;
 	return result;
 }
@@ -824,7 +823,7 @@ gint pipeline_PipelineGetPosition (Pipeline* self) {
 	}
 	ipos = (gint) (position / 1000000);
 	if (self->priv->debug) {
-		fprintf (stdout, "Gstd: Position at server is %d\n", ipos);
+		fprintf (stdout, "Gstd: Position at server is %u:%02u:%02u.%03u\n", (guint) (position / ((GST_SECOND * 60) * 60)), (guint) ((position / (GST_SECOND * 60)) % 60), (guint) ((position / GST_SECOND) % 60), (guint) (position % GST_SECOND));
 	}
 	result = ipos;
 	return result;
@@ -1868,8 +1867,10 @@ static void pipeline_finalize (GObject* obj) {
 	Pipeline * self;
 	self = PIPELINE (obj);
 	{
-		if (!pipeline_PipelineSetState (self, GST_STATE_NULL)) {
-			fprintf (stderr, "Gstd: Failed to destroy pipeline\n");
+		if (pipeline_PipelineIsInitialized (self)) {
+			if (!pipeline_PipelineSetState (self, GST_STATE_NULL)) {
+				fprintf (stderr, "Gstd: Failed to destroy pipeline\n");
+			}
 		}
 	}
 	_gst_object_unref0 (self->priv->pipeline);

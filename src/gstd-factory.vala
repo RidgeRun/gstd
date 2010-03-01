@@ -43,6 +43,7 @@ using DBus;
          pipes[next_id] = new Pipeline (description, debug);
 
          if (!pipes[next_id].PipelineIsInitialized ()) {
+           pipes [next_id] = null;
            return "";
          }
          string objectpath =
@@ -51,7 +52,6 @@ using DBus;
          pipes[next_id].PipelineSetPath (objectpath);
          next_id = (next_id + 1) % 20;
          return objectpath;
-
        }
 
     /**
@@ -82,7 +82,7 @@ using DBus;
        public string List ()
        {
          int counter = 0;
-         string[]pipelist = new string[num_pipes];
+         string[] pipelist = new string[num_pipes];
          string paths = "";
 
          for (int index = 0; index < pipes.length; index++) {

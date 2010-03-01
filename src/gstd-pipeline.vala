@@ -65,8 +65,10 @@ using Gst;
      */
        ~Pipeline () {
          /* Destroy the pipeline */
-         if (!PipelineSetState (State.NULL))
-           stderr.printf ("Gstd: Failed to destroy pipeline\n");
+         if(this.PipelineIsInitialized()){
+           if (!PipelineSetState (State.NULL))
+             stderr.printf ("Gstd: Failed to destroy pipeline\n");
+         }
        }
 
        private bool bus_callback (Gst.Bus bus, Gst.Message message)
@@ -520,15 +522,13 @@ using Gst;
            return idur;
 
          idur = (int) (duration / MSECOND);
-         if (debug)
-           stdout.printf ("Gstd: Duration at server is %d\n", idur);
-
-         stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
+         if (debug) {
+           stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
              (uint) (duration / (SECOND * 60 * 60)),
              (uint) ((duration / (SECOND * 60)) % 60),
              (uint) ((duration / SECOND) % 60),
              (uint) (duration % SECOND));
-
+        }
          return idur;
        }
 
@@ -551,9 +551,13 @@ using Gst;
            return -1;
 
          ipos = (int) (position / 1000000);
-         if (debug)
-           stdout.printf ("Gstd: Position at server is %d\n", ipos);
-
+         if (debug) {
+             stdout.printf ("Gstd: Position at server is %u:%02u:%02u.%03u\n",
+             (uint) (position / (SECOND * 60 * 60)),
+             (uint) ((position / (SECOND * 60)) % 60),
+             (uint) ((position / SECOND) % 60),
+             (uint) (position % SECOND));
+         }
          return ipos;
        }
 

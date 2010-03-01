@@ -136,8 +136,8 @@ char* factory_Create (Factory* self, const char* description, gboolean debug) {
 	char* result;
 	gint starting_id;
 	Pipeline* _tmp0_;
-	char* _tmp1_;
 	char* _tmp2_;
+	char* _tmp3_;
 	char* objectpath;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (description != NULL, NULL);
@@ -154,10 +154,12 @@ char* factory_Create (Factory* self, const char* description, gboolean debug) {
 	}
 	self->priv->pipes[self->priv->next_id] = (_tmp0_ = pipeline_new (description, debug), _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp0_);
 	if (!pipeline_PipelineIsInitialized (self->priv->pipes[self->priv->next_id])) {
+		Pipeline* _tmp1_;
+		self->priv->pipes[self->priv->next_id] = (_tmp1_ = NULL, _g_object_unref0 (self->priv->pipes[self->priv->next_id]), _tmp1_);
 		result = g_strdup ("");
 		return result;
 	}
-	objectpath = (_tmp2_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp1_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp1_), _tmp2_);
+	objectpath = (_tmp3_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", _tmp2_ = g_strdup_printf ("%i", self->priv->next_id), NULL), _g_free0 (_tmp2_), _tmp3_);
 	_vala_dbus_register_object (dbus_g_connection_get_connection (conn), objectpath, (GObject*) self->priv->pipes[self->priv->next_id]);
 	pipeline_PipelineSetPath (self->priv->pipes[self->priv->next_id], objectpath);
 	self->priv->next_id = (self->priv->next_id + 1) % 20;

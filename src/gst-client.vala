@@ -256,7 +256,6 @@ public class GstdCli:GLib.Object
     }
 
     stdout.printf ("pong\n");
-    stdout.printf ("Ok.\n");
     return ret;
   }
 
@@ -308,7 +307,7 @@ public class GstdCli:GLib.Object
     }
 
     if (!ret) {
-      stdout.printf ("Error:\nFailed to get property\n");
+      stdout.printf ("Error:\nFailed to get property:%s\n",property);
       return false;
     }
     stdout.printf ("Ok.\n");
@@ -361,7 +360,7 @@ public class GstdCli:GLib.Object
     }
 
     if (!ret) {
-      stderr.printf ("Error:\nFailed to set property\n");
+      stderr.printf ("Error:\nFailed to set property:%s\n", property);
       return false;
     }
     stdout.printf ("Ok.\n");
@@ -377,8 +376,11 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    stdout.printf ("The duration on pipeline is %d, FORMAT need to be fix \n",
-        time);
+    stdout.printf ("The duration on the pipeline is %u:%02u:%02u.%03u\n",
+             (uint) (time / (1000 * 60 * 60)),
+             (uint) ((time / (1000 * 60)) % 60),
+             (uint) ((time / 1000) % 60),
+             (uint) (time % 1000));
     stdout.printf ("Ok.\n");
     return true;
   }
@@ -392,8 +394,11 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    stdout.printf ("The position on pipeline is: %d, FORMAT need to be fix\n",
-        pos);
+    stdout.printf ("The position on the pipeline is %u:%02u:%02u.%03u\n",
+             (uint) (pos / (1000 * 60 * 60)),
+             (uint) ((pos / (1000 * 60)) % 60),
+             (uint) ((pos / 1000) % 60),
+             (uint) (pos % 1000));
     stdout.printf ("Ok.\n");
     return true;
   }
@@ -713,12 +718,10 @@ public class GstdCli:GLib.Object
 
       case "quit":
         cli_enable = false;
-        stdout.printf ("Ok.\n");
         return true;
 
       case "exit":
         cli_enable = false;
-        stdout.printf ("Ok.\n");
         return true;
 
       case "help":

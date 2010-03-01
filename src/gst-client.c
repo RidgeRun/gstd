@@ -553,7 +553,6 @@ static gboolean gstd_cli_gstd_ping (GstdCli* self) {
 		return FALSE;
 	}
 	fprintf (stdout, "pong\n");
-	fprintf (stdout, "Ok.\n");
 	result = ret;
 	return result;
 }
@@ -715,7 +714,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 		return result;
 	} while (0);
 	if (!ret) {
-		fprintf (stdout, "Error:\nFailed to get property\n");
+		fprintf (stdout, "Error:\nFailed to get property:%s\n", property);
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
@@ -911,7 +910,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 		return result;
 	} while (0);
 	if (!ret) {
-		fprintf (stderr, "Error:\nFailed to set property\n");
+		fprintf (stderr, "Error:\nFailed to set property:%s\n", property);
 		result = FALSE;
 		_g_free0 (element);
 		_g_free0 (property);
@@ -953,7 +952,7 @@ static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipel
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, "The duration on pipeline is %d, FORMAT need to be fix \n", time);
+	fprintf (stdout, "The duration on the pipeline is %u:%02u:%02u.%03u\n", (guint) (time / ((1000 * 60) * 60)), (guint) ((time / (1000 * 60)) % 60), (guint) ((time / 1000) % 60), (guint) (time % 1000));
 	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	return result;
@@ -988,7 +987,7 @@ static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipel
 		result = FALSE;
 		return result;
 	}
-	fprintf (stdout, "The position on pipeline is: %d, FORMAT need to be fix\n", pos);
+	fprintf (stdout, "The position on the pipeline is %u:%02u:%02u.%03u\n", (guint) (pos / ((1000 * 60) * 60)), (guint) ((pos / (1000 * 60)) % 60), (guint) ((pos / 1000) % 60), (guint) (pos % 1000));
 	fprintf (stdout, "Ok.\n");
 	result = TRUE;
 	return result;
@@ -1685,13 +1684,11 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label19) ? _tmp24__label19 : (_tmp24__label19 = g_quark_from_static_string ("quit"))))
 	do {
 		self->priv->cli_enable = FALSE;
-		fprintf (stdout, "Ok.\n");
 		result = TRUE;
 		return result;
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label20) ? _tmp24__label20 : (_tmp24__label20 = g_quark_from_static_string ("exit"))))
 	do {
 		self->priv->cli_enable = FALSE;
-		fprintf (stdout, "Ok.\n");
 		result = TRUE;
 		return result;
 	} while (0); else if (_tmp24_ == ((0 != _tmp24__label21) ? _tmp24__label21 : (_tmp24__label21 = g_quark_from_static_string ("help"))))
