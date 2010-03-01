@@ -68,6 +68,7 @@ public class GstdCli:GLib.Object
         "Gets an element's property value of the pipeline"},
     {"get-duration", "get-duration", "Gets the pipeline duration time"},
     {"get-position", "get-position", "Gets the pipeline position"},
+    {"sh", "sh \"<shell command with optional parameters>\"", "Execute a shell command using interactive console"},
     {"get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
           + " or the active pipeline"},
     {"list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
@@ -541,6 +542,17 @@ public class GstdCli:GLib.Object
     return true;
   }
 
+  private bool shell (string command)
+  {
+    try {
+      GLib.Process.spawn_command_line_sync(command);
+      return true;
+    } catch (GLib.SpawnError e){
+      stderr.printf("Fail to execute command:%s", e.message);
+    }
+    return false;
+  }
+
   /*
    *Create a proxy-object of the pipeline
    */
@@ -614,7 +626,7 @@ public class GstdCli:GLib.Object
       if (args[0].down () != "create" && args[0].down () != "help"
           && args[0].down () != "active" && args[0].down () != "quit"
           && args[0].down () != "list-pipes" && args[0].down () != "ping"
-          && args[0].down () != "exit" && active_pipe == null) {
+          && args[0].down () != "exit" && args[0].down () != "sh" && active_pipe == null) {
         if (cli_enable)
           stderr.printf ("There is no active pipeline." +
               "See \"active\" or \"create\" command\n");
@@ -691,6 +703,13 @@ public class GstdCli:GLib.Object
 
       case "get-state":
         return pipeline_get_state (pipeline);
+
+      case "sh":
+       string[]command;
+       /*Join command and split it using '\"'
+         character as reference */
+       command = string.joinv (" ", args).split ("\"", -1);
+       return shell (command[1]);
 
       case "seek":
         return pipeline_seek (pipeline, args);

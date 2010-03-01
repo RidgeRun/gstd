@@ -115,6 +115,7 @@ static gboolean gstd_cli_set_active (GstdCli* self, const char* path);
 static gboolean gstd_cli_get_active (GstdCli* self);
 static char* _dynamic_List23 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_list (GstdCli* self);
+static gboolean gstd_cli_shell (GstdCli* self, const char* command);
 static gboolean _dynamic_PipelineIsInitialized24 (DBusGProxy* self, GError** error);
 void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1);
 static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
@@ -1298,6 +1299,45 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 }
 
 
+static gboolean gstd_cli_shell (GstdCli* self, const char* command) {
+	gboolean result;
+	GError * _inner_error_;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (command != NULL, FALSE);
+	_inner_error_ = NULL;
+	{
+		g_spawn_command_line_sync (command, NULL, NULL, NULL, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == G_SPAWN_ERROR) {
+				goto __catch5_g_spawn_error;
+			}
+			goto __finally5;
+		}
+		result = TRUE;
+		return result;
+	}
+	goto __finally5;
+	__catch5_g_spawn_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		{
+			fprintf (stderr, "Fail to execute command:%s", e->message);
+			_g_error_free0 (e);
+		}
+	}
+	__finally5:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	result = FALSE;
+	return result;
+}
+
+
 static gboolean _dynamic_PipelineIsInitialized24 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
@@ -1323,16 +1363,16 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 		gboolean ret;
 		ret = _dynamic_PipelineIsInitialized24 (self->priv->pipeline, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch5_g_error;
-			goto __finally5;
+			goto __catch6_g_error;
+			goto __finally6;
 		}
 		if (!ret) {
 			result = FALSE;
 			return result;
 		}
 	}
-	goto __finally5;
-	__catch5_g_error:
+	goto __finally6;
+	__catch6_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1343,7 +1383,7 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const char* object_path) {
 			return result;
 		}
 	}
-	__finally5:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1374,9 +1414,9 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 		g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_OPTION_ERROR) {
-				goto __catch6_g_option_error;
+				goto __catch7_g_option_error;
 			}
-			goto __finally6;
+			goto __finally7;
 		}
 		if (gstd_cli_obj_path != NULL) {
 			_tmp2_ = g_utf8_get_char (g_utf8_offset_to_pointer (gstd_cli_obj_path, 0)) != '/';
@@ -1388,8 +1428,8 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 			gstd_cli_obj_path = (_tmp3_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", gstd_cli_obj_path, NULL), _g_free0 (gstd_cli_obj_path), _tmp3_);
 		}
 	}
-	goto __finally6;
-	__catch6_g_option_error:
+	goto __finally7;
+	__catch7_g_option_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1399,7 +1439,7 @@ void gstd_cli_parse_options (GstdCli* self, char** args, int args_length1) {
 			_g_error_free0 (e);
 		}
 	}
-	__finally6:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		_g_option_context_free0 (opt);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1457,30 +1497,33 @@ void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCa
 
 gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GError** error) {
 	gboolean result;
-	GQuark _tmp24_;
-	char* _tmp23_;
-	static GQuark _tmp24__label0 = 0;
-	static GQuark _tmp24__label1 = 0;
-	static GQuark _tmp24__label2 = 0;
-	static GQuark _tmp24__label3 = 0;
-	static GQuark _tmp24__label4 = 0;
-	static GQuark _tmp24__label5 = 0;
-	static GQuark _tmp24__label6 = 0;
-	static GQuark _tmp24__label7 = 0;
-	static GQuark _tmp24__label8 = 0;
-	static GQuark _tmp24__label9 = 0;
-	static GQuark _tmp24__label10 = 0;
-	static GQuark _tmp24__label11 = 0;
-	static GQuark _tmp24__label12 = 0;
-	static GQuark _tmp24__label13 = 0;
-	static GQuark _tmp24__label14 = 0;
-	static GQuark _tmp24__label15 = 0;
-	static GQuark _tmp24__label16 = 0;
-	static GQuark _tmp24__label17 = 0;
-	static GQuark _tmp24__label18 = 0;
-	static GQuark _tmp24__label19 = 0;
-	static GQuark _tmp24__label20 = 0;
-	static GQuark _tmp24__label21 = 0;
+	GQuark _tmp29_;
+	char* _tmp28_;
+	static GQuark _tmp29__label0 = 0;
+	static GQuark _tmp29__label1 = 0;
+	static GQuark _tmp29__label2 = 0;
+	static GQuark _tmp29__label3 = 0;
+	static GQuark _tmp29__label4 = 0;
+	static GQuark _tmp29__label5 = 0;
+	static GQuark _tmp29__label6 = 0;
+	static GQuark _tmp29__label7 = 0;
+	static GQuark _tmp29__label8 = 0;
+	static GQuark _tmp29__label9 = 0;
+	static GQuark _tmp29__label10 = 0;
+	static GQuark _tmp29__label11 = 0;
+	static GQuark _tmp29__label12 = 0;
+	static GQuark _tmp29__label13 = 0;
+	static GQuark _tmp29__label14 = 0;
+	static GQuark _tmp29__label15 = 0;
+	static GQuark _tmp29__label16 = 0;
+	static GQuark _tmp29__label17 = 0;
+	static GQuark _tmp29__label18 = 0;
+	static GQuark _tmp29__label19 = 0;
+	static GQuark _tmp29__label20 = 0;
+	static GQuark _tmp29__label21 = 0;
+	static GQuark _tmp29__label22 = 0;
+	static GQuark _tmp29__label23 = 0;
+	static GQuark _tmp29__label24 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (!gstd_cli_create_proxypipe (self, gstd_cli_obj_path)) {
 		gboolean _tmp0_ = FALSE;
@@ -1490,47 +1533,55 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 		gboolean _tmp4_ = FALSE;
 		gboolean _tmp5_ = FALSE;
 		gboolean _tmp6_ = FALSE;
-		char* _tmp7_;
-		gboolean _tmp8_;
-		if ((_tmp8_ = _vala_strcmp0 (_tmp7_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp7_), _tmp8_)) {
-			char* _tmp9_;
-			_tmp6_ = _vala_strcmp0 (_tmp9_ = g_utf8_strdown (args[0], -1), "help") != 0;
-			_g_free0 (_tmp9_);
+		gboolean _tmp7_ = FALSE;
+		char* _tmp8_;
+		gboolean _tmp9_;
+		if ((_tmp9_ = _vala_strcmp0 (_tmp8_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp8_), _tmp9_)) {
+			char* _tmp10_;
+			_tmp7_ = _vala_strcmp0 (_tmp10_ = g_utf8_strdown (args[0], -1), "help") != 0;
+			_g_free0 (_tmp10_);
+		} else {
+			_tmp7_ = FALSE;
+		}
+		if (_tmp7_) {
+			char* _tmp11_;
+			_tmp6_ = _vala_strcmp0 (_tmp11_ = g_utf8_strdown (args[0], -1), "active") != 0;
+			_g_free0 (_tmp11_);
 		} else {
 			_tmp6_ = FALSE;
 		}
 		if (_tmp6_) {
-			char* _tmp10_;
-			_tmp5_ = _vala_strcmp0 (_tmp10_ = g_utf8_strdown (args[0], -1), "active") != 0;
-			_g_free0 (_tmp10_);
+			char* _tmp12_;
+			_tmp5_ = _vala_strcmp0 (_tmp12_ = g_utf8_strdown (args[0], -1), "quit") != 0;
+			_g_free0 (_tmp12_);
 		} else {
 			_tmp5_ = FALSE;
 		}
 		if (_tmp5_) {
-			char* _tmp11_;
-			_tmp4_ = _vala_strcmp0 (_tmp11_ = g_utf8_strdown (args[0], -1), "quit") != 0;
-			_g_free0 (_tmp11_);
+			char* _tmp13_;
+			_tmp4_ = _vala_strcmp0 (_tmp13_ = g_utf8_strdown (args[0], -1), "list-pipes") != 0;
+			_g_free0 (_tmp13_);
 		} else {
 			_tmp4_ = FALSE;
 		}
 		if (_tmp4_) {
-			char* _tmp12_;
-			_tmp3_ = _vala_strcmp0 (_tmp12_ = g_utf8_strdown (args[0], -1), "list-pipes") != 0;
-			_g_free0 (_tmp12_);
+			char* _tmp14_;
+			_tmp3_ = _vala_strcmp0 (_tmp14_ = g_utf8_strdown (args[0], -1), "ping") != 0;
+			_g_free0 (_tmp14_);
 		} else {
 			_tmp3_ = FALSE;
 		}
 		if (_tmp3_) {
-			char* _tmp13_;
-			_tmp2_ = _vala_strcmp0 (_tmp13_ = g_utf8_strdown (args[0], -1), "ping") != 0;
-			_g_free0 (_tmp13_);
+			char* _tmp15_;
+			_tmp2_ = _vala_strcmp0 (_tmp15_ = g_utf8_strdown (args[0], -1), "exit") != 0;
+			_g_free0 (_tmp15_);
 		} else {
 			_tmp2_ = FALSE;
 		}
 		if (_tmp2_) {
-			char* _tmp14_;
-			_tmp1_ = _vala_strcmp0 (_tmp14_ = g_utf8_strdown (args[0], -1), "exit") != 0;
-			_g_free0 (_tmp14_);
+			char* _tmp16_;
+			_tmp1_ = _vala_strcmp0 (_tmp16_ = g_utf8_strdown (args[0], -1), "sh") != 0;
+			_g_free0 (_tmp16_);
 		} else {
 			_tmp1_ = FALSE;
 		}
@@ -1550,18 +1601,18 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 		}
 	} else {
 		if (gstd_cli__signals) {
-			gboolean _tmp15_ = FALSE;
-			char* _tmp16_;
-			gboolean _tmp17_;
+			gboolean _tmp17_ = FALSE;
+			char* _tmp18_;
+			gboolean _tmp19_;
 			fprintf (stdout, "Signals need to be fixed! \n");
-			if ((_tmp17_ = _vala_strcmp0 (_tmp16_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp16_), _tmp17_)) {
-				char* _tmp18_;
-				_tmp15_ = _vala_strcmp0 (_tmp18_ = g_utf8_strdown (args[0], -1), "help") != 0;
-				_g_free0 (_tmp18_);
+			if ((_tmp19_ = _vala_strcmp0 (_tmp18_ = g_utf8_strdown (args[0], -1), "create") != 0, _g_free0 (_tmp18_), _tmp19_)) {
+				char* _tmp20_;
+				_tmp17_ = _vala_strcmp0 (_tmp20_ = g_utf8_strdown (args[0], -1), "help") != 0;
+				_g_free0 (_tmp20_);
 			} else {
-				_tmp15_ = FALSE;
+				_tmp17_ = FALSE;
 			}
-			if (_tmp15_) {
+			if (_tmp17_) {
 				fprintf (stdout, "Signals, activated\n");
 				_dynamic_Error1_connect (self->priv->pipeline, "Error", (GCallback) _gstd_cli_Error_cb_dynamic_Error0_, self);
 				_dynamic_Eos3_connect (self->priv->pipeline, "Eos", (GCallback) _gstd_cli_Eos_cb_dynamic_Eos2_, self);
@@ -1569,35 +1620,35 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			}
 		}
 	}
-	_tmp23_ = g_utf8_strdown (args[0], -1);
-	_tmp24_ = (NULL == _tmp23_) ? 0 : g_quark_from_string (_tmp23_);
-	g_free (_tmp23_);
-	if (_tmp24_ == ((0 != _tmp24__label0) ? _tmp24__label0 : (_tmp24__label0 = g_quark_from_static_string ("create"))))
+	_tmp28_ = g_utf8_strdown (args[0], -1);
+	_tmp29_ = (NULL == _tmp28_) ? 0 : g_quark_from_string (_tmp28_);
+	g_free (_tmp28_);
+	if (_tmp29_ == ((0 != _tmp29__label0) ? _tmp29__label0 : (_tmp29__label0 = g_quark_from_static_string ("create"))))
 	do {
 		if (self->priv->cli_enable) {
 			gint description_size;
 			gint description_length1;
 			char** description;
-			char** _tmp21_;
-			char** _tmp20_;
-			char* _tmp19_;
+			char** _tmp23_;
+			char** _tmp22_;
+			char* _tmp21_;
 			description = (description_length1 = 0, NULL);
-			description = (_tmp21_ = _tmp20_ = g_strsplit (_tmp19_ = g_strjoinv (" ", args), "\"", -1), description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL), description_length1 = _vala_array_length (_tmp20_), description_size = description_length1, _tmp21_);
-			_g_free0 (_tmp19_);
+			description = (_tmp23_ = _tmp22_ = g_strsplit (_tmp21_ = g_strjoinv (" ", args), "\"", -1), description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL), description_length1 = _vala_array_length (_tmp22_), description_size = description_length1, _tmp23_);
+			_g_free0 (_tmp21_);
 			result = gstd_cli_pipeline_create (self, description[1]);
 			description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL);
 			return result;
 		}
 		result = gstd_cli_pipeline_create (self, args[1]);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label1) ? _tmp24__label1 : (_tmp24__label1 = g_quark_from_static_string ("destroy"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label1) ? _tmp29__label1 : (_tmp29__label1 = g_quark_from_static_string ("destroy"))))
 	do {
 		if (self->priv->cli_enable) {
 			gboolean ret;
 			ret = gstd_cli_pipeline_destroy (self, self->priv->active_pipe);
 			if (ret) {
-				char* _tmp22_;
-				self->priv->active_pipe = (_tmp22_ = NULL, _g_free0 (self->priv->active_pipe), _tmp22_);
+				char* _tmp24_;
+				self->priv->active_pipe = (_tmp24_ = NULL, _g_free0 (self->priv->active_pipe), _tmp24_);
 				result = TRUE;
 				return result;
 			} else {
@@ -1608,71 +1659,85 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			result = gstd_cli_pipeline_destroy (self, gstd_cli_obj_path);
 			return result;
 		}
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label2) ? _tmp24__label2 : (_tmp24__label2 = g_quark_from_static_string ("play"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label2) ? _tmp29__label2 : (_tmp29__label2 = g_quark_from_static_string ("play"))))
 	do {
 		result = gstd_cli_pipeline_play (self, self->priv->pipeline, TRUE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label3) ? _tmp24__label3 : (_tmp24__label3 = g_quark_from_static_string ("pause"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label3) ? _tmp29__label3 : (_tmp29__label3 = g_quark_from_static_string ("pause"))))
 	do {
 		result = gstd_cli_pipeline_pause (self, self->priv->pipeline, TRUE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label4) ? _tmp24__label4 : (_tmp24__label4 = g_quark_from_static_string ("null"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label4) ? _tmp29__label4 : (_tmp29__label4 = g_quark_from_static_string ("null"))))
 	do {
 		result = gstd_cli_pipeline_null (self, self->priv->pipeline, TRUE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label5) ? _tmp24__label5 : (_tmp24__label5 = g_quark_from_static_string ("aplay"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label5) ? _tmp29__label5 : (_tmp29__label5 = g_quark_from_static_string ("aplay"))))
 	do {
 		result = gstd_cli_pipeline_play (self, self->priv->pipeline, FALSE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label6) ? _tmp24__label6 : (_tmp24__label6 = g_quark_from_static_string ("apause"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label6) ? _tmp29__label6 : (_tmp29__label6 = g_quark_from_static_string ("apause"))))
 	do {
 		result = gstd_cli_pipeline_pause (self, self->priv->pipeline, FALSE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label7) ? _tmp24__label7 : (_tmp24__label7 = g_quark_from_static_string ("anull"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label7) ? _tmp29__label7 : (_tmp29__label7 = g_quark_from_static_string ("anull"))))
 	do {
 		result = gstd_cli_pipeline_null (self, self->priv->pipeline, FALSE);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label8) ? _tmp24__label8 : (_tmp24__label8 = g_quark_from_static_string ("set"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label8) ? _tmp29__label8 : (_tmp29__label8 = g_quark_from_static_string ("set"))))
 	do {
 		result = gstd_cli_pipeline_set_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label9) ? _tmp24__label9 : (_tmp24__label9 = g_quark_from_static_string ("get"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label9) ? _tmp29__label9 : (_tmp29__label9 = g_quark_from_static_string ("get"))))
 	do {
 		result = gstd_cli_pipeline_get_property (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label10) ? _tmp24__label10 : (_tmp24__label10 = g_quark_from_static_string ("get-duration"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label10) ? _tmp29__label10 : (_tmp29__label10 = g_quark_from_static_string ("get-duration"))))
 	do {
 		result = gstd_cli_pipeline_get_duration (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label11) ? _tmp24__label11 : (_tmp24__label11 = g_quark_from_static_string ("get-position"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label11) ? _tmp29__label11 : (_tmp29__label11 = g_quark_from_static_string ("get-position"))))
 	do {
 		result = gstd_cli_pipeline_get_position (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label12) ? _tmp24__label12 : (_tmp24__label12 = g_quark_from_static_string ("get-state"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label12) ? _tmp29__label12 : (_tmp29__label12 = g_quark_from_static_string ("get-state"))))
 	do {
 		result = gstd_cli_pipeline_get_state (self, self->priv->pipeline);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label13) ? _tmp24__label13 : (_tmp24__label13 = g_quark_from_static_string ("seek"))))
+	} while (0); else if (((_tmp29_ == ((0 != _tmp29__label13) ? _tmp29__label13 : (_tmp29__label13 = g_quark_from_static_string ("sh")))) || (_tmp29_ == ((0 != _tmp29__label14) ? _tmp29__label14 : (_tmp29__label14 = g_quark_from_static_string ("!"))))) || (_tmp29_ == ((0 != _tmp29__label15) ? _tmp29__label15 : (_tmp29__label15 = g_quark_from_static_string ("shell")))))
+	do {
+		gint command_size;
+		gint command_length1;
+		char** command;
+		char** _tmp27_;
+		char** _tmp26_;
+		char* _tmp25_;
+		command = (command_length1 = 0, NULL);
+		command = (_tmp27_ = _tmp26_ = g_strsplit (_tmp25_ = g_strjoinv (" ", args), "\"", -1), command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL), command_length1 = _vala_array_length (_tmp26_), command_size = command_length1, _tmp27_);
+		_g_free0 (_tmp25_);
+		result = gstd_cli_shell (self, command[1]);
+		command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
+		return result;
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label16) ? _tmp29__label16 : (_tmp29__label16 = g_quark_from_static_string ("seek"))))
 	do {
 		result = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label14) ? _tmp24__label14 : (_tmp24__label14 = g_quark_from_static_string ("skip"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label17) ? _tmp29__label17 : (_tmp29__label17 = g_quark_from_static_string ("skip"))))
 	do {
 		result = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label15) ? _tmp24__label15 : (_tmp24__label15 = g_quark_from_static_string ("speed"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label18) ? _tmp29__label18 : (_tmp29__label18 = g_quark_from_static_string ("speed"))))
 	do {
 		result = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label16) ? _tmp24__label16 : (_tmp24__label16 = g_quark_from_static_string ("list-pipes"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label19) ? _tmp29__label19 : (_tmp29__label19 = g_quark_from_static_string ("list-pipes"))))
 	do {
 		result = gstd_cli_pipeline_list (self);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label17) ? _tmp24__label17 : (_tmp24__label17 = g_quark_from_static_string ("ping"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label20) ? _tmp29__label20 : (_tmp29__label20 = g_quark_from_static_string ("ping"))))
 	do {
 		result = gstd_cli_gstd_ping (self);
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label18) ? _tmp24__label18 : (_tmp24__label18 = g_quark_from_static_string ("active"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label21) ? _tmp29__label21 : (_tmp29__label21 = g_quark_from_static_string ("active"))))
 	do {
 		if (args[1] == NULL) {
 			result = gstd_cli_get_active (self);
@@ -1681,17 +1746,17 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, char** args, int args_length1, GErro
 			result = gstd_cli_set_active (self, args[1]);
 			return result;
 		}
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label19) ? _tmp24__label19 : (_tmp24__label19 = g_quark_from_static_string ("quit"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label22) ? _tmp29__label22 : (_tmp29__label22 = g_quark_from_static_string ("quit"))))
 	do {
 		self->priv->cli_enable = FALSE;
 		result = TRUE;
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label20) ? _tmp24__label20 : (_tmp24__label20 = g_quark_from_static_string ("exit"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label23) ? _tmp29__label23 : (_tmp29__label23 = g_quark_from_static_string ("exit"))))
 	do {
 		self->priv->cli_enable = FALSE;
 		result = TRUE;
 		return result;
-	} while (0); else if (_tmp24_ == ((0 != _tmp24__label21) ? _tmp24__label21 : (_tmp24__label21 = g_quark_from_static_string ("help"))))
+	} while (0); else if (_tmp29_ == ((0 != _tmp29__label24) ? _tmp29__label24 : (_tmp29__label24 = g_quark_from_static_string ("help"))))
 	do {
 		gint id;
 		id = 0;
@@ -1866,20 +1931,20 @@ static gint gstd_cli_main (char** args, int args_length1) {
 		_tmp1_ = gstd_cli_new (&_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch7_dbus_gerror;
+				goto __catch8_dbus_gerror;
 			}
-			goto __catch7_g_error;
-			goto __finally7;
+			goto __catch8_g_error;
+			goto __finally8;
 		}
 		cli = (_tmp2_ = _tmp1_, _g_object_unref0 (cli), _tmp2_);
 		gstd_cli_parse_options (cli, args, args_length1);
 		_tmp3_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == DBUS_GERROR) {
-				goto __catch7_dbus_gerror;
+				goto __catch8_dbus_gerror;
 			}
-			goto __catch7_g_error;
-			goto __finally7;
+			goto __catch8_g_error;
+			goto __finally8;
 		}
 		if (!_tmp3_) {
 			result = -1;
@@ -1887,8 +1952,8 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	goto __finally7;
-	__catch7_dbus_gerror:
+	goto __finally8;
+	__catch8_dbus_gerror:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1901,8 +1966,8 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	goto __finally7;
-	__catch7_g_error:
+	goto __finally8;
+	__catch8_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1915,7 +1980,7 @@ static gint gstd_cli_main (char** args, int args_length1) {
 			return result;
 		}
 	}
-	__finally7:
+	__finally8:
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (cli);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1947,8 +2012,8 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
 	self->priv->pipeline = NULL;
-	self->priv->cmds = (_tmp0_ = g_new0 (char*, (21 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the" " active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active " "pipeline to null state"), _tmp0_[15] = g_strdup ("aplay"), _tmp0_[16] = g_strdup ("play-async"), _tmp0_[17] = g_strdup ("Sets the pipeline to play state, it does not " "wait the change to be done"), _tmp0_[18] = g_strdup ("apause"), _tmp0_[19] = g_strdup ("pause-async"), _tmp0_[20] = g_strdup ("Sets the pipeline to pause state, it does not " "wait the change to be done"), _tmp0_[21] = g_strdup ("anull"), _tmp0_[22] = g_strdup ("null-async"), _tmp0_[23] = g_strdup ("Sets the pipeline to null state, it does not wait " "the change to be done"), _tmp0_[24] = g_strdup ("set"), _tmp0_[25] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[26] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[27] = g_strdup ("get"), _tmp0_[28] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[29] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[30] = g_strdup ("get-duration"), _tmp0_[31] = g_strdup ("get-duration"), _tmp0_[32] = g_strdup ("Gets the pipeline duration time"), _tmp0_[33] = g_strdup ("get-position"), _tmp0_[34] = g_strdup ("get-position"), _tmp0_[35] = g_strdup ("Gets the pipeline position"), _tmp0_[36] = g_strdup ("get-state"), _tmp0_[37] = g_strdup ("get-state"), _tmp0_[38] = g_strdup ("Get the state of a specific pipeline(-p flag)" " or the active pipeline"), _tmp0_[39] = g_strdup ("list-pipes"), _tmp0_[40] = g_strdup ("list-pipes"), _tmp0_[41] = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines"), _tmp0_[42] = g_strdup ("ping"), _tmp0_[43] = g_strdup ("ping"), _tmp0_[44] = g_strdup ("Shows if gstd is alive"), _tmp0_[45] = g_strdup ("active"), _tmp0_[46] = g_strdup ("active <path>"), _tmp0_[47] = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline"), _tmp0_[48] = g_strdup ("seek"), _tmp0_[49] = g_strdup ("seek <position[ms]>"), _tmp0_[50] = g_strdup ("Moves current playing position to a new" " one"), _tmp0_[51] = g_strdup ("skip"), _tmp0_[52] = g_strdup ("skip <period[ms]>"), _tmp0_[53] = g_strdup ("Skips a period, if period is positive: it" " moves foward, if negative: it moves backward"), _tmp0_[54] = g_strdup ("speed"), _tmp0_[55] = g_strdup ("speed <rate>"), _tmp0_[56] = g_strdup ("Changes playback rate:\n\t*rate>1.0: " "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t" "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables " "fast|slow-reverse playback "), _tmp0_[57] = g_strdup ("exit"), _tmp0_[58] = g_strdup ("exit"), _tmp0_[59] = g_strdup ("Exit active console"), _tmp0_[60] = g_strdup ("quit"), _tmp0_[61] = g_strdup ("quit"), _tmp0_[62] = g_strdup ("Quit active console"), _tmp0_);
-	self->priv->cmds_length1 = 21;
+	self->priv->cmds = (_tmp0_ = g_new0 (char*, (22 * 3) + 1), _tmp0_[0] = g_strdup ("create"), _tmp0_[1] = g_strdup ("create <\"gst-launch like pipeline description in quotes\">"), _tmp0_[2] = g_strdup ("Creates a new pipeline and returns the dbus-path to access it"), _tmp0_[3] = g_strdup ("destroy"), _tmp0_[4] = g_strdup ("destroy"), _tmp0_[5] = g_strdup ("Destroys the pipeline specified by_path(-p) or the" " active pipeline"), _tmp0_[6] = g_strdup ("play"), _tmp0_[7] = g_strdup ("play"), _tmp0_[8] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to play state"), _tmp0_[9] = g_strdup ("pause"), _tmp0_[10] = g_strdup ("pause"), _tmp0_[11] = g_strdup ("Sets the pipeline specified by_path(-p) or the active " "pipeline to pause state"), _tmp0_[12] = g_strdup ("null"), _tmp0_[13] = g_strdup ("null"), _tmp0_[14] = g_strdup ("Sets the pipeline specified by_path(-p) or active " "pipeline to null state"), _tmp0_[15] = g_strdup ("aplay"), _tmp0_[16] = g_strdup ("play-async"), _tmp0_[17] = g_strdup ("Sets the pipeline to play state, it does not " "wait the change to be done"), _tmp0_[18] = g_strdup ("apause"), _tmp0_[19] = g_strdup ("pause-async"), _tmp0_[20] = g_strdup ("Sets the pipeline to pause state, it does not " "wait the change to be done"), _tmp0_[21] = g_strdup ("anull"), _tmp0_[22] = g_strdup ("null-async"), _tmp0_[23] = g_strdup ("Sets the pipeline to null state, it does not wait " "the change to be done"), _tmp0_[24] = g_strdup ("set"), _tmp0_[25] = g_strdup ("set <element_name> <property_name> <data-type> <value>"), _tmp0_[26] = g_strdup ("Sets an element's property value of the pipeline"), _tmp0_[27] = g_strdup ("get"), _tmp0_[28] = g_strdup ("get <element_name> <property_name> <data_type>"), _tmp0_[29] = g_strdup ("Gets an element's property value of the pipeline"), _tmp0_[30] = g_strdup ("get-duration"), _tmp0_[31] = g_strdup ("get-duration"), _tmp0_[32] = g_strdup ("Gets the pipeline duration time"), _tmp0_[33] = g_strdup ("get-position"), _tmp0_[34] = g_strdup ("get-position"), _tmp0_[35] = g_strdup ("Gets the pipeline position"), _tmp0_[36] = g_strdup ("sh"), _tmp0_[37] = g_strdup ("sh \"<shell command with optional parameters>\""), _tmp0_[38] = g_strdup ("Execute a shell command using interactive console"), _tmp0_[39] = g_strdup ("get-state"), _tmp0_[40] = g_strdup ("get-state"), _tmp0_[41] = g_strdup ("Get the state of a specific pipeline(-p flag)" " or the active pipeline"), _tmp0_[42] = g_strdup ("list-pipes"), _tmp0_[43] = g_strdup ("list-pipes"), _tmp0_[44] = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines"), _tmp0_[45] = g_strdup ("ping"), _tmp0_[46] = g_strdup ("ping"), _tmp0_[47] = g_strdup ("Shows if gstd is alive"), _tmp0_[48] = g_strdup ("active"), _tmp0_[49] = g_strdup ("active <path>"), _tmp0_[50] = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline"), _tmp0_[51] = g_strdup ("seek"), _tmp0_[52] = g_strdup ("seek <position[ms]>"), _tmp0_[53] = g_strdup ("Moves current playing position to a new" " one"), _tmp0_[54] = g_strdup ("skip"), _tmp0_[55] = g_strdup ("skip <period[ms]>"), _tmp0_[56] = g_strdup ("Skips a period, if period is positive: it" " moves foward, if negative: it moves backward"), _tmp0_[57] = g_strdup ("speed"), _tmp0_[58] = g_strdup ("speed <rate>"), _tmp0_[59] = g_strdup ("Changes playback rate:\n\t*rate>1.0: " "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t" "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables " "fast|slow-reverse playback "), _tmp0_[60] = g_strdup ("exit"), _tmp0_[61] = g_strdup ("exit"), _tmp0_[62] = g_strdup ("Exit active console"), _tmp0_[63] = g_strdup ("quit"), _tmp0_[64] = g_strdup ("quit"), _tmp0_[65] = g_strdup ("Quit active console"), _tmp0_);
+	self->priv->cmds_length1 = 22;
 	self->priv->cmds_length2 = 3;
 }
 
