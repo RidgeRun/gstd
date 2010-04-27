@@ -15,7 +15,6 @@ using DBus;
 
      public class Factory:GLib.Object
      {
-       private int next_id;
        private Pipeline[] pipes;
        private const int num_pipes = 20;
 
@@ -25,7 +24,6 @@ using DBus;
      */
        public Factory ()
        {
-         next_id = 0;
          pipes = new Pipeline[num_pipes];
          for (int ids = 0; ids < pipes.length; ids++)
          {
@@ -43,10 +41,10 @@ using DBus;
        public string ? Create (string description, bool debug)
        {
          /* Create our pipeline */
-         int starting_id = next_id;
+         int next_id = 0;
          while (pipes[next_id] != null) {
            next_id = (next_id + 1) % 20;
-           if (next_id == starting_id) {
+           if (next_id == 0) {
              return "";
            }
          }
@@ -60,7 +58,6 @@ using DBus;
              "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
          conn.register_object (objectpath, pipes[next_id]);
          pipes[next_id].PipelineSetPath (objectpath);
-         next_id = (next_id + 1) % 20;
          return objectpath;
        }
 
