@@ -14,25 +14,25 @@
     <!-- Method definitions -->
 
     <method name="Create">
-        <arg type="s" name ="description" direction = "in" />
-        <arg type="b" name ="debug" direction = "in" />
-        <arg type="s" direction="out" >
+        <arg type="s" name = "description" direction = "in" />
+        <arg type="b" name = "debug" direction = "in" />
+        <arg type="s" name = "path" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
     <method name="Destroy">
         <arg type="s" name ="path" direction = "in" />
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="List">
-        <arg type="s" direction="out" >
+        <arg type="s" name ="paths" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="Ping">
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
