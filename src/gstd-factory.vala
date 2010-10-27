@@ -86,19 +86,15 @@ using DBus;
      List the existing pipelines
      @return pipe_list with the corresponding paths
      */
-       public string List ()
+       public string[] List ()
        {
-         int counter = 0;
-         string[] pipelist = new string[num_pipes];
-         string paths = "";
+         string[] paths = {};
 
-         for (int index = 0; index < pipes.length; index++) {
+         for (int index = 0; index < pipes.length; ++index) {
            if (pipes[index] != null) {
-             pipelist[counter] = pipes[index].PipelineGetPath ();
-             counter++;
+             paths += pipes[index].PipelineGetPath ();
            }
          }
-         paths = string.joinv (",", pipelist);
          return paths;
 
        }

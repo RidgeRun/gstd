@@ -27,7 +27,7 @@
         </arg>
     </method>
     <method name="List">
-        <arg type="s" name ="paths" direction="out" >
+        <arg type="as" name ="paths" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>

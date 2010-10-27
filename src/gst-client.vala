@@ -528,26 +528,15 @@ public class GstdCli:GLib.Object
 
   private bool pipeline_list ()
   {
+    string[] paths = factory.List();
 
-    string[]list = new string[20];
-    string paths = "";
-    int index = 0;
-
-    for (index = 0; index < list.length; index++) {
-      list[index] = null;
-    }
-
-    paths = factory.List ();
-
-    list = paths.split (",", -1);
-
-    if (list[0] == null) {
+	if (paths.length == 0) {
       stderr.printf ("Error:\nThere is no pipelines on factory!\n");
       return false;
     }
     stdout.printf ("The actual pipelines are:\n");
-    for (index = 0; index < list.length; index++) {
-      stdout.printf ("  %i. %s\n", index + 1, list[index]);
+    for (int index = 0; index < paths.length; ++index) {
+      stdout.printf ("  %i. %s\n", index + 1, paths[index]);
     }
     stdout.printf ("Ok.\n");
     return true;
