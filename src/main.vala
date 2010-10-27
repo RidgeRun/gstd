@@ -25,7 +25,7 @@ main (string[]args)
   loop = new MainLoop (null, false);
 
   try {
-    conn = DBus.Bus.get (DBus.BusType.SYSTEM);
+    conn = DBus.Bus.get (DBus.BusType.STARTER);
 
     dynamic DBus.Object bus = conn.get_object ("org.freedesktop.DBus",
         "/org/freedesktop/DBus",
