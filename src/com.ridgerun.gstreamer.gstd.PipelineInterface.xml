@@ -97,7 +97,6 @@
         </arg>
     </method>
     <method name="ElementGetPropertyString">
-        <arg type="i" name ="id" direction = "in" />
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="s" direction = "out" >
