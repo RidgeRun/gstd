@@ -187,20 +187,18 @@ public class GstdCli:GLib.Object
 
   private bool pipeline_play (dynamic DBus.Object pipeline, bool sync)
   {
-
-    bool ret;
-
     try {
-      if (sync)
-        ret = pipeline.PipelinePlay ();
+      if (sync) {
+        bool ret = pipeline.PipelinePlay ();
+        if (!ret) {
+          stdout.printf ("Error:\nFailed to put the pipeline to play\n");
+          return false;
+        }
+	  }
       else
-        ret = pipeline.PipelineAsyncPlay ();
-      if (!ret) {
-        stdout.printf ("Error:\nFailed to put the pipeline to play\n");
-        return false;
-      }
+        pipeline.PipelineAsyncPlay ();
       stdout.printf ("Ok.\n");
-      return ret;
+      return true;
     }
     catch (Error e) {
       stdout.printf ("Error:\n%s\n", e.message);
@@ -210,20 +208,18 @@ public class GstdCli:GLib.Object
 
   private bool pipeline_pause (dynamic DBus.Object pipeline, bool sync)
   {
-
-    bool ret;
-
     try {
-      if (sync)
-        ret = pipeline.PipelinePause ();
+      if (sync) {
+        bool ret = pipeline.PipelinePause ();
+        if (!ret) {
+          stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
+          return false;
+        }
+	  }
       else
-        ret = pipeline.PipelineAsyncPause ();
-      if (!ret) {
-        stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
-        return false;
-      }
+        pipeline.PipelineAsyncPause ();
       stdout.printf ("Ok.\n");
-      return ret;
+      return true;
     }
     catch (Error e) {
       stdout.printf ("Error:\n%s\n", e.message);
@@ -233,20 +229,18 @@ public class GstdCli:GLib.Object
 
   private bool pipeline_null (dynamic DBus.Object pipeline, bool sync)
   {
-
-    bool ret;
-
     try {
-      if (sync)
-        ret = pipeline.PipelineNull ();
+      if (sync) {
+        bool ret = pipeline.PipelineNull ();
+        if (!ret) {
+          stderr.printf ("Error:\nFailed to put the pipeline to null\n");
+          return false;
+        }
+	  }
       else
-        ret = pipeline.PipelineAsyncNull ();
-      if (!ret) {
-        stderr.printf ("Error:\nFailed to put the pipeline to null\n");
-        return false;
-      }
+        pipeline.PipelineAsyncNull ();
       stdout.printf ("Ok.\n");
-      return ret;
+      return true;
     }
     catch (Error e) {
       stdout.printf ("Error:\n%s\n", e.message);

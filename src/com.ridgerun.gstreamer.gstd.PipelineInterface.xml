@@ -29,19 +29,13 @@
         </arg>
     </method>
     <method name="PipelineAsyncPlay">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
     </method>
     <method name="PipelineAsyncPause">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
     </method>
     <method name="PipelineAsyncNull">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
