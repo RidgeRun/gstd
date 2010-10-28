@@ -504,22 +504,20 @@ using Gst;
      Query duration to a pipeline on the server
      @return time in milliseconds or null if not available
     */
-       public int PipelineGetDuration ()
+       public int64 PipelineGetDuration ()
        {
 
          Format format = Gst.Format.TIME;
          int64 duration = 0;
-         int idur = -1;
 
          /* Query duration */
          if (!pipeline.query_duration (ref format, out duration)) {
-           return idur;
+           return -1;
          }
 
          if (duration == Gst.CLOCK_TIME_NONE)
-           return idur;
+           return -1;
 
-         idur = (int) (duration / MSECOND);
          if (debug) {
            stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
              (uint) (duration / (SECOND * 60 * 60)),
@@ -527,19 +525,18 @@ using Gst;
              (uint) ((duration / SECOND) % 60),
              (uint) (duration % SECOND));
         }
-         return idur;
+         return duration;
        }
 
     /**
      Query position to a pipeline on the server
      @return position in milliseconds or null if not available
     */
-       public int PipelineGetPosition ()
+       public int64 PipelineGetPosition ()
        {
 
          Format format = Gst.Format.TIME;
          int64 position = 0;
-         int ipos = 0;
 
          if (!pipeline.query_position (ref format, out position)) {
            return -1;
@@ -548,7 +545,6 @@ using Gst;
          if (position == Gst.CLOCK_TIME_NONE)
            return -1;
 
-         ipos = (int) (position / 1000000);
          if (debug) {
              stdout.printf ("Gstd: Position at server is %u:%02u:%02u.%03u\n",
              (uint) (position / (SECOND * 60 * 60)),
@@ -556,7 +552,7 @@ using Gst;
              (uint) ((position / SECOND) % 60),
              (uint) (position % SECOND));
          }
-         return ipos;
+         return position;
        }
 
     /**
@@ -564,23 +560,10 @@ using Gst;
      Data in the pipeline is flushed.
      @param ipos_ms, absolute position in milliseconds
     */
-       public bool PipelineSeek (int ipos_ms)
+       public bool PipelineSeek (int64 ipos_ns)
        {
-
-         Gst.Format format = Gst.Format.TIME;
-         Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-         Gst.SeekType cur_type = Gst.SeekType.SET;
-         Gst.SeekType stp_type = Gst.SeekType.NONE;
-         int64 stp_pos_ns = CLOCK_TIME_NONE;
-         int64 cur_pos_ns = 0;
-
-         /*Converts the current position, which
-            is in milliseconds to nanoseconds */
-         cur_pos_ns = (int64) (ipos_ms * MSECOND);
-
          /*Set the current position */
-         if (!pipeline.seek (rate, format, flag, cur_type, cur_pos_ns, stp_type,
-                 stp_pos_ns)) {
+         if (!pipeline.seek (rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE)) {
            if (debug) {
              stdout.printf ("Gstd: Media type not seekable\n");
              return false;
@@ -594,7 +577,7 @@ using Gst;
      Data in the pipeline is flushed.
      @param ipos_ms, absolute position in milliseconds
     */
-       public void PipelineAsyncSeek (int ipos_ms)
+       public void PipelineAsyncSeek (int64 ipos_ms)
        {
 		   PipelineSeek(ipos_ms);
 	   }
@@ -605,7 +588,7 @@ using Gst;
      Data in the pipeline is flushed.
      @param period_ms, relative time in milliseconds
     */
-       public bool PipelineSkip (int period_ms)
+       public bool PipelineSkip (int64 period_ns)
        {
 
          Gst.Format format = Gst.Format.TIME;
@@ -622,7 +605,7 @@ using Gst;
          }
 
          /*Sets the new position relative to the current one */
-         seek_ns = cur_pos_ns + (int64) (period_ms * MSECOND);
+         seek_ns = cur_pos_ns + period_ns;
 
          /*Set the current position */
          if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,

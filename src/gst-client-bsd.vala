@@ -127,7 +127,7 @@ public class GstdCli:GLib.Object
   {
 
     /*Getting a Gstd Factory proxy object */
-    conn = DBus.Bus.get (DBus.BusType.SESSION);
+    conn = DBus.Bus.get (DBus.BusType.SYSTEM);
     factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
         "/com/ridgerun/gstreamer/gstd/factory",
         "com.ridgerun.gstreamer.gstd.FactoryInterface");
@@ -419,13 +419,13 @@ public class GstdCli:GLib.Object
   private bool pipeline_get_duration (dynamic DBus.Object pipeline)
   {
 
-    int time = pipeline.PipelineGetDuration ();
+    int64 time = pipeline.PipelineGetDuration ();
     if (time < 0) {
       stderr.printf ("Error:\nFailed to get pipeline duration\n");
       return false;
     }
-
-    stdout.printf ("The duration on the pipeline is %u:%02u:%02u.%03u\n",
+    time /= 1000000;
+    stdout.printf ("The duration on the pipeline is %u:%02u:%02u.%03u\n", 
              (uint) (time / (1000 * 60 * 60)),
              (uint) ((time / (1000 * 60)) % 60),
              (uint) ((time / 1000) % 60),
@@ -437,12 +437,12 @@ public class GstdCli:GLib.Object
   private bool pipeline_get_position (dynamic DBus.Object pipeline)
   {
 
-    int pos = pipeline.PipelineGetPosition ();
+    int64 pos = pipeline.PipelineGetPosition ();
     if (pos < 0) {
       stderr.printf ("Error:\nFailed to get position the pipeline to null\n");
       return false;
     }
-
+    pos /= 1000000;
     stdout.printf ("The position on the pipeline is %u:%02u:%02u.%03u\n",
              (uint) (pos / (1000 * 60 * 60)),
              (uint) ((pos / (1000 * 60)) % 60),
@@ -474,7 +474,8 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    int pos_ms = args[1].to_int ();
+    int64 pos_ms = args[1].to_int ();
+    pos_ms *= 1000000;
     bool ret = pipeline.PipelineSeek (pos_ms);
     if (!ret) {
       stderr.printf ("Error:\nSeek fail: Media type not seekable\n");
@@ -492,7 +493,8 @@ public class GstdCli:GLib.Object
       return false;
     }
 
-    int period_ms = args[1].to_int ();
+    int64 period_ms = args[1].to_int ();
+    period_ms *= 1000000;
     bool ret = pipeline.PipelineSkip (period_ms);
     if (!ret) {
       stderr.printf ("Error:\nSkip fail: Media type not seekable\n");

@@ -102,12 +102,12 @@
         </arg>        
     </method>
     <method name="PipelineGetDuration">
-        <arg type="i" name ="success" direction="out" >
+        <arg type="x" name ="duration" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineGetPosition">
-        <arg type="i" name ="success" direction="out" >
+        <arg type="x" name ="position" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
@@ -118,20 +118,20 @@
         </arg>
     </method>
     <method name="PipelineSkip">
-        <arg type="i" name ="period_ms" direction = "in" />
+        <arg type="x" name ="period_ns" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineSeek">
-        <arg type="i" name ="ipos_ms" direction = "in" />
+        <arg type="x" name ="ipos_ns" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineAsyncSeek">
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-        <arg type="i" name ="ipos_ms" direction = "in" />
+        <arg type="x" name ="ipos_ns" direction = "in" />
     </method>
     <method name="PipelineGetState">
         <arg type="s" name ="state" direction = "out" >
