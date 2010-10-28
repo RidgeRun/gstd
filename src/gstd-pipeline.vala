@@ -482,7 +482,7 @@ using Gst;
        public bool ElementGetPropertyString (string element,
            string property, out string val)
        {
-         val = null;
+         val = "";
 
          Gst.Pipeline pipe = pipeline as Gst.Pipeline;
          Element e = pipe.get_child_by_name (element) as Element;
