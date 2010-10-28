@@ -129,7 +129,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineSeekAsync">
+    <method name="PipelineAsyncSeek">
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <arg type="i" name ="ipos_ms" direction = "in" />
     </method>

@@ -594,7 +594,7 @@ using Gst;
      Data in the pipeline is flushed.
      @param ipos_ms, absolute position in milliseconds
     */
-       public void PipelineSeekAsync (int ipos_ms)
+       public void PipelineAsyncSeek (int ipos_ms)
        {
 		   PipelineSeek(ipos_ms);
 	   }
