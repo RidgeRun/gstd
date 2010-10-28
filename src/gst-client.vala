@@ -312,17 +312,17 @@ public class GstdCli:GLib.Object
         stdout.printf ("The '%s' value on element '%s' is: %d\n",
             property, element, integer_v);
         break;
-      case "long":
-        long long_v;
-		pipeline.ElementGetPropertyLong (element, property, out long_v, out success);
+      case "int64":
+        int64 int64_v;
+		pipeline.ElementGetPropertyInt64 (element, property, out int64_v, out success);
 		if (!success)
 		{
 			stdout.printf("Failed to get property value");
 			ret = false;
 			break;
 		}
-        stdout.printf ("The '%s' value on element '%s' is: %ld\n",
-            property, element, long_v);
+        stdout.printf ("The '%s' value on element '%s' is: %lld\n",
+            property, element, int64_v);
         break;
       case "string":
         string string_v;
@@ -377,11 +377,11 @@ public class GstdCli:GLib.Object
             property, element, integer_v);
         ret = pipeline.ElementSetPropertyInt (element, property, integer_v);
         break;
-      case "long":
-        long long_v = args[4].to_long ();
-        stdout.printf ("Trying to set '%s' on element '%s' to the value:%ld\n",
-            property, element, long_v);
-        ret = pipeline.ElementSetPropertyLong (element, property, long_v);
+      case "int64":
+        int64 int64_v = args[4].to_int64 ();
+        stdout.printf ("Trying to set '%s' on element '%s' to the value:%lld\n",
+            property, element, int64_v);
+        ret = pipeline.ElementSetPropertyInt64 (element, property, int64_v);
         break;
       case "string":
         string string_v = args[4];

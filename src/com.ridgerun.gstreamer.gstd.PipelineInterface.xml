@@ -59,10 +59,10 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
-    <method name="ElementSetPropertyLong">
+    <method name="ElementSetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="t" name ="val" direction = "in" />
+        <arg type="x" name ="val" direction = "in" />
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
@@ -91,10 +91,10 @@
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>
     </method>
-    <method name="ElementGetPropertyLong">
+    <method name="ElementGetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="t" name = "val" direction = "out" />
+        <arg type="x" name = "val" direction = "out" />
         <arg type = "b" name = "success" direction = "out" >
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        

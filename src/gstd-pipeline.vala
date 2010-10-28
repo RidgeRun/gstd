@@ -322,8 +322,8 @@ using Gst;
      @param element, whose property needs to be set
      @param property,property name
      @param val, long property value     */
-       public bool ElementSetPropertyLong (string element,
-           string property, long val)
+       public bool ElementSetPropertyInt64 (string element,
+           string property, int64 val)
        {
          Element e;
          Gst.Pipeline pipe;
@@ -346,7 +346,6 @@ using Gst;
          }
 
          e.set (property, val, null);
-
          return true;
        }
 
@@ -449,7 +448,7 @@ using Gst;
      @param property,property name
      @param val value of the property
      */
-       public bool ElementGetPropertyLong (string element, string property, out long val)
+       public bool ElementGetPropertyInt64 (string element, string property, out int64 val)
        {
          val = 0;
 		   
