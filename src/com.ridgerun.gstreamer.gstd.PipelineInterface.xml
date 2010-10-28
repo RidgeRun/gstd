@@ -29,13 +29,13 @@
         </arg>
     </method>
     <method name="PipelineAsyncPlay">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="PipelineAsyncPause">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="PipelineAsyncNull">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value=""/>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -128,6 +128,10 @@
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+    </method>
+    <method name="PipelineSeekAsync">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <arg type="i" name ="ipos_ms" direction = "in" />
     </method>
     <method name="PipelineGetState">
         <arg type="s" name ="state" direction = "out" >

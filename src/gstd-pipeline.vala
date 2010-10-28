@@ -590,6 +590,16 @@ using Gst;
        }
 
     /**
+     Seeks a specific time position.
+     Data in the pipeline is flushed.
+     @param ipos_ms, absolute position in milliseconds
+    */
+       public void PipelineSeekAsync (int ipos_ms)
+       {
+		   PipelineSeek(ipos_ms);
+	   }
+
+    /**
      Skips time, it moves position forward and backwards from
      the current position.
      Data in the pipeline is flushed.
