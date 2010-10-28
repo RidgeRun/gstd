@@ -306,35 +306,57 @@ public class GstdCli:GLib.Object
 
     string element = args[1];
     string property = args[2];
-
+    bool success;
     switch (args[3].down ()) {
       case "boolean":
-        bool boolean_v = pipeline.ElementGetPropertyBoolean (element, property);
+        bool boolean_v;
+		pipeline.ElementGetPropertyBoolean (element, property, out boolean_v, out success);
+		if (!success)
+		{
+			stdout.printf("Failed to get property value");
+			ret = false;
+			break;
+		}
         stdout.printf ("The '%s' value on element '%s' is: %s\n",
             property, element, boolean_v ? "true" : "false");
         break;
       case "integer":
-        int integer_v = pipeline.ElementGetPropertyInt (element, property);
+        int integer_v;
+		pipeline.ElementGetPropertyInt (element, property, out integer_v, out success);
+		if (!success)
+		{
+			stdout.printf("Failed to get property value");
+			ret = false;
+			break;
+		}
         stdout.printf ("The '%s' value on element '%s' is: %d\n",
             property, element, integer_v);
-        if (integer_v == -1)
-          ret = false;
         break;
       case "long":
-        long long_v = pipeline.ElementGetPropertyLong (element, property);
+        long long_v;
+		pipeline.ElementGetPropertyLong (element, property, out long_v, out success);
+		if (!success)
+		{
+			stdout.printf("Failed to get property value");
+			ret = false;
+			break;
+		}
         stdout.printf ("The '%s' value on element '%s' is: %ld\n",
             property, element, long_v);
-        if (long_v == -1)
-          ret = false;
         break;
       case "string":
-        string string_v = pipeline.ElementGetPropertyString (element, property);
+        string string_v;
+		pipeline.ElementGetPropertyString (element, property, out string_v, out success);
+		if (!success)
+		{
+			stdout.printf("Failed to get property value");
+			ret = false;
+			break;
+		}
         stdout.printf ("The '%s' value on element '%s' is: %s\n",
             property, element, string_v);
-        if (string_v == null)
-          ret = false;
         break;
-      default:
+	  default:
         stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
         return false;
     }

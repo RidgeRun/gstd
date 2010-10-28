@@ -389,21 +389,19 @@ using Gst;
      @param element, whose property value wants to be known
      @param property,property name
      */
-       public bool ElementGetPropertyBoolean (string element, string property)
+       public bool ElementGetPropertyBoolean (string element, string property, out bool val)
        {
-         Element e;
-         Gst.Pipeline pipe;
-         GLib.ParamSpec spec;
-         bool bool_v = false;
+		 val = false;
 
-         pipe = pipeline as Gst.Pipeline;
-         e = pipe.get_child_by_name (element) as Element;
+         Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+         Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
+		   return false;
          }
 
-         spec = e.get_class ().find_property (property);
+         GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s does not have the property %s\n",
@@ -411,106 +409,99 @@ using Gst;
            return false;
          }
 
-         e.get (property, &bool_v, null);
-
-         return bool_v;
+         e.get (property, &val, null);
+         return true;
        }
 
     /**
      Gets an element's int property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
+     @param val value of the property
      */
-       public int ElementGetPropertyInt (string element, string property)
+       public bool ElementGetPropertyInt (string element, string property, out int val)
        {
-         Element e;
-         Gst.Pipeline pipe;
-         GLib.ParamSpec spec;
-         int integer_v = -1;
+		 val = 0;
 
-         pipe = pipeline as Gst.Pipeline;
-         e = pipe.get_child_by_name (element) as Element;
+         Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+         Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
-           return integer_v;
+           return false;
          }
 
-         spec = e.get_class ().find_property (property);
+         GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s does not have the property %s\n",
                  element, property);
-           return integer_v;
+           return false;
          }
 
-         e.get (property, &integer_v, null);
-         return integer_v;
+         e.get (property, &val, null);
+         return true;
        }
 
     /**
      Gets an element's long property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
+     @param val value of the property
      */
-       public long ? ElementGetPropertyLong (string element, string property)
+       public bool ElementGetPropertyLong (string element, string property, out long val)
        {
-         Element e;
-         Gst.Pipeline pipe;
-         GLib.ParamSpec spec;
-         long long_v = -1;
-
-         pipe = pipeline as Gst.Pipeline;
-         e = pipe.get_child_by_name (element) as Element;
+         val = 0;
+		   
+         Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+         Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
-           return null;
+           return false;
          }
 
-         spec = e.get_class ().find_property (property);
+         GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s does not have the property %s\n",
                  element, property);
-           return null;
+           return false;
          }
 
-         e.get (property, &long_v, null);
-         return long_v;
+         e.get (property, &val, null);
+         return true;
        }
 
     /**
      Gets an element's string property value of a specific pipeline
      @param element, whose property value wants to be known
      @param property,property name
+     @param val value of the property
      */
-       public string ? ElementGetPropertyString (string element,
-           string property)
+       public bool ElementGetPropertyString (string element,
+           string property, out string val)
        {
-         Element e;
-         Gst.Pipeline pipe;
-         GLib.ParamSpec spec;
-         string string_v = "";
+         val = null;
 
-         pipe = pipeline as Gst.Pipeline;
-         e = pipe.get_child_by_name (element) as Element;
+         Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+         Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s not found on pipeline", element);
-           return null;
+           return false;
          }
 
-         spec = e.get_class ().find_property (property);
+         GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
              stderr.printf ("Gstd: Element %s does not have the property %s\n",
                  element, property);
-           return null;
+           return false;
          }
 
-         e.get (property, &string_v, null);
-         return string_v;
+         e.get (property, &val, null);
+         return true;
        }
 
     /**
