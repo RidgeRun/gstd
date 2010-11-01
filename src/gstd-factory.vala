@@ -31,7 +31,7 @@ using DBus;
            pipes[ids] = null;
          }
 
-         //aignal alive every second
+         //signal alive every second
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
            stdout.printf("Alive!\n");
