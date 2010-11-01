@@ -39,8 +39,18 @@ main (string[]args)
 
       /* Create our factory */
       var factory = new Factory (loop.get_context());
-
+      Watchdog wd = null;
+      
       conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
+
+      //monitor main loop with watchdog ?
+      bool watchdog = true; //TODO cmd line option
+      if (watchdog)
+      {
+        assert(Thread.supported());
+        wd = new Watchdog(5);
+        factory.Alive.connect(() => {wd.Ping();});
+      }
 
       loop.run ();
     } else {

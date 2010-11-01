@@ -34,7 +34,7 @@ using DBus;
          //signal alive every second
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
-           stdout.printf("Alive!\n");
+           //stdout.printf("Alive!\n");
            Alive();
            return true;
          });
