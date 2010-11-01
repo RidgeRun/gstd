@@ -11,24 +11,34 @@
 
 using DBus;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface")]
+[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface", signals = "Alive")]
 
      public class Factory:GLib.Object
      {
        private Pipeline[] pipes;
        private const int num_pipes = 20;
+	   private TimeoutSource timer = null;
 
     /**
      Create a new instance of a factory server to process D-Bus 
      factory messages
      */
-       public Factory ()
+       public Factory (GLib.MainContext ctx)
        {
          pipes = new Pipeline[num_pipes];
          for (int ids = 0; ids < pipes.length; ids++)
          {
            pipes[ids] = null;
          }
+
+         //aignal alive every second
+         timer = new TimeoutSource(1000);
+         timer.set_callback(() => {
+           stdout.printf("Alive!\n");
+           Alive();
+           return true;
+         });
+         timer.attach(ctx);
        }
 
     /**
@@ -109,4 +119,6 @@ using DBus;
          /*Gstd received the Ping method call */
          return true;
        }
+
+       public signal void Alive();
      }

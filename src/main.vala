@@ -38,7 +38,7 @@ main (string[]args)
     if (request_name_result == DBus.RequestNameReply.PRIMARY_OWNER) {
 
       /* Create our factory */
-      var factory = new Factory ();
+      var factory = new Factory (loop.get_context());
 
       conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
