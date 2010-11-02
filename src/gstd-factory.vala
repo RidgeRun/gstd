@@ -34,13 +34,13 @@ using DBus;
          //signal alive every second
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
-           //stdout.printf("Alive!\n");
+           //Posix.syslog(Posix.LOG_NOTICE, "Alive!");
            /*for (int index = 0; index < pipes.length; ++index)
            {
              if (pipes[index] != null && pipes[index].PipelineIsInitialized())
              {
                pipes[index].PipelineGetState();
-               stderr.printf("pipe%d is ok\n", index);
+               Posix.syslog(Posix.LOG_NOTICE, "pipe%d is ok", index);
              }
            }*/
            Alive();
@@ -96,7 +96,7 @@ using DBus;
            }
          }
 
-         stderr.printf ("Fail to destroy pipeline\n");
+         Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
          return false;
        }
 

@@ -60,14 +60,14 @@ using Gst;
            if (_debug)
            {
              if (this.PipelineIsInitialized ())
-               stdout.printf ("Gstd: Pipeline created, %s\n", description);
+               Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
              else
-               stderr.printf ("Gstd: Pipeline could not be initialized\n");
+               Posix.syslog (Posix.LOG_ERR, "Pipeline could not be initialized");
            }
          }
          catch (GLib.Error e)
          {
-           stderr.printf ("Gstd: Error constructing pipeline, %s\n", e.message);
+           Posix.syslog (Posix.LOG_ERR, "Error constructing pipeline, %s", e.message);
          }
        }
 
@@ -78,7 +78,7 @@ using Gst;
          /* Destroy the pipeline */
          if(this.PipelineIsInitialized()){
            if (!PipelineSetState (State.NULL))
-             stderr.printf ("Gstd: Failed to destroy pipeline\n");
+             Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
          }
        }
 
@@ -97,7 +97,7 @@ using Gst;
              Error (err.message);
 
              if (debug)
-               stderr.printf ("Gstd: Error on pipeline, %s\n", err.message);
+               Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
              break;
 
            case MessageType.EOS:
@@ -116,7 +116,7 @@ using Gst;
              message.parse_state_changed (out oldstate, out newstate,
                  out pending);
              if (debug)
-               stderr.printf ("Gstd: %s,changes state from %s to %s\n", src,
+               Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src,
                    oldstate.to_string (), newstate.to_string ());
 
              /*Sending StateChanged Signal */
@@ -143,7 +143,7 @@ using Gst;
              (Gst.ClockTime) 4000000000u);
          if (current != state) {
            if (debug)
-             stderr.printf ("Gstd: Element, failed to change state %s\n",
+             Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s",
                  state.to_string ());
            return false;
          }
@@ -204,7 +204,7 @@ using Gst;
        {
          pipeline.set_state (State.PLAYING);
          if (debug)
-           stdout.printf ("Gstd: Asynchronous state change to:playing\n");
+           Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to playing");
        }
 
     /**
@@ -223,7 +223,7 @@ using Gst;
        {
          pipeline.set_state (State.PAUSED);
          if (debug)
-           stdout.printf ("Gstd: Asynchronous state change to:pause\n");
+           Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to pause");
        }
 
     /**
@@ -244,7 +244,7 @@ using Gst;
        {
          pipeline.set_state (State.NULL);
          if (debug)
-           stdout.printf ("Gstd: Asynchronous state change to:null\n");
+           Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to null");
        }
 
     /**
@@ -264,14 +264,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -297,7 +297,7 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline",
                  element);
            return false;
          }
@@ -305,7 +305,7 @@ using Gst;
          spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Gstd: Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -330,14 +330,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -363,14 +363,14 @@ using Gst;
          e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -393,14 +393,14 @@ using Gst;
          Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 		   return false;
          }
 
          GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -423,14 +423,14 @@ using Gst;
          Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -453,14 +453,14 @@ using Gst;
          Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -484,14 +484,14 @@ using Gst;
          Element e = pipe.get_child_by_name (element) as Element;
          if (e == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s not found on pipeline", element);
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
            return false;
          }
 
          GLib.ParamSpec spec = e.get_class ().find_property (property);
          if (spec == null) {
            if (debug)
-             stderr.printf ("Gstd: Element %s does not have the property %s\n",
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
                  element, property);
            return false;
          }
@@ -519,7 +519,7 @@ using Gst;
            return -1;
 
          if (debug) {
-           stdout.printf ("Gstd: Duration at server is %u:%02u:%02u.%03u\n",
+           Posix.syslog (Posix.LOG_DEBUG, "Duration at server is %u:%02u:%02u.%03u",
              (uint) (duration / (SECOND * 60 * 60)),
              (uint) ((duration / (SECOND * 60)) % 60),
              (uint) ((duration / SECOND) % 60),
@@ -546,7 +546,7 @@ using Gst;
            return -1;
 
          if (debug) {
-             stdout.printf ("Gstd: Position at server is %u:%02u:%02u.%03u\n",
+             Posix.syslog (Posix.LOG_DEBUG, "Position at server is %u:%02u:%02u.%03u",
              (uint) (position / (SECOND * 60 * 60)),
              (uint) ((position / (SECOND * 60)) % 60),
              (uint) ((position / SECOND) % 60),
@@ -565,7 +565,7 @@ using Gst;
          /*Set the current position */
          if (!pipeline.seek (rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE)) {
            if (debug) {
-             stdout.printf ("Gstd: Media type not seekable\n");
+             Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
              return false;
            }
          }
@@ -611,7 +611,7 @@ using Gst;
          if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,
                  stp_pos_ns)) {
            if (debug) {
-             stdout.printf ("Gstd: Media type not seekable\n");
+             Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
              return false;
            }
          }
@@ -639,7 +639,7 @@ using Gst;
          /*Changes the rate on the pipeline */
          if (!pipeline.seek (rate, format, flag, type, pos_ns, type, pos_ns)) {
            if (debug) {
-             stdout.printf ("Gstd: Speed could not be changed\n");
+             Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
              return false;
            }
          }

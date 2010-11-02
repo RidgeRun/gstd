@@ -27,29 +27,28 @@ public class Watchdog :
 
         //create a new thread for teh watch dog itself
         _thread = Thread.create(() => {
-            stdout.printf("watchdog thread!\n");
+            Posix.syslog(Posix.LOG_NOTICE, "watchdog thread!");
             _loop.run();
-            stdout.printf("watchdog terminated!\n");
+            Posix.syslog(Posix.LOG_NOTICE, "watchdog terminated!");
             return null;
          }, true);
     }
 
     ~Watchdog()
     {
-        //stderr.printf("dtor\n");
         _loop.quit(); //TODO thread-safe?
         _thread.join();
     }
 
     public void Ping()
     {
-        //stderr.printf("Ping\n");
+        //Posix.syslog(Posix.LOG_DEBUG, "Ping");
         AtomicInt.set(ref _counter, _counterMax);
     }
 
     private void Check()
     {
-        //stderr.printf("Check\n");
+        Posix.syslog(Posix.LOG_DEBUG, "Check (%d)", AtomicInt.get(ref _counter));
         if (AtomicInt.dec_and_test(ref _counter))
         {
             Suicide();
@@ -58,7 +57,7 @@ public class Watchdog :
 
     private void Suicide()
     {
-        stderr.printf("Suicide\n");
+        Posix.syslog(Posix.LOG_ERR, "Suicide");
         Posix.kill(Posix.getpid(), Posix.SIGKILL); //TODO abort(); ?
     }
 }

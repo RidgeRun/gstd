@@ -18,6 +18,9 @@ public void
 main (string[]args)
 {
 
+  Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
+  Posix.syslog(Posix.LOG_ERR, "started");
+    
   /* Initializing GStreamer */
   Gst.init (ref args);
 
@@ -54,13 +57,12 @@ main (string[]args)
 
       loop.run ();
     } else {
-      stderr.printf ("Gstd: Failed to obtain primary ownership of " +
-          "the service\n");
-      stderr.printf ("Gstd: This usually means there is another instance of " +
-          "gstd already running\n");
+      Posix.syslog (Posix.LOG_ERR, "Failed to obtain primary ownership of " +
+          "the service. This usually means there is another instance of " +
+          "gstd already running");
     }
   }
   catch (Error e) {
-    stderr.printf ("Gstd: Error: %s\n", e.message);
+    Posix.syslog (Posix.LOG_ERR, "Error: %s", e.message);
   }
 }
