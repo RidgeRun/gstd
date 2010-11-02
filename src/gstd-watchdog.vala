@@ -59,6 +59,6 @@ public class Watchdog :
     private void Suicide()
     {
         stderr.printf("Suicide\n");
-        Posix.kill(Posix.getpid(), 9); //TODO abort(); ?
+        Posix.kill(Posix.getpid(), Posix.SIGKILL); //TODO abort(); ?
     }
 }
