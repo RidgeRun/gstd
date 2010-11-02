@@ -35,6 +35,14 @@ using DBus;
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
            //stdout.printf("Alive!\n");
+           /*for (int index = 0; index < pipes.length; ++index)
+           {
+             if (pipes[index] != null && pipes[index].PipelineIsInitialized())
+             {
+               pipes[index].PipelineGetState();
+               stderr.printf("pipe%d is ok\n", index);
+             }
+           }*/
            Alive();
            return true;
          });
