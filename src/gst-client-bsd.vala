@@ -84,11 +84,15 @@ public class GstdCli:GLib.Object
           + " active pipeline"},
     {"play", "play", "Sets the pipeline specified by_path(-p) or the active "
           + "pipeline to play state"},
+    {"ready", "ready", "Sets the pipeline specified by_path(-p) or the active "
+          + "pipeline to ready state"},
     {"pause", "pause", "Sets the pipeline specified by_path(-p) or the active "
           + "pipeline to pause state"},
     {"null", "null", "Sets the pipeline specified by_path(-p) or active "
           + "pipeline to null state"},
     {"aplay", "play-async", "Sets the pipeline to play state, it does not "
+          + "wait the change to be done"},
+    {"aready", "ready-async", "Sets the pipeline to ready state, it does not "
           + "wait the change to be done"},
     {"apause", "pause-async", "Sets the pipeline to pause state, it does not "
           + "wait the change to be done"},
@@ -218,6 +222,27 @@ public class GstdCli:GLib.Object
 	  }
       else
         pipeline.PipelineAsyncPlay ();
+      stdout.printf ("Ok.\n");
+      return true;
+    }
+    catch (Error e) {
+      stdout.printf ("Error:\n%s\n", e.message);
+      return false;
+    }
+  }
+
+  private bool pipeline_ready (dynamic DBus.Object pipeline, bool sync)
+  {
+    try {
+      if (sync) {
+        bool ret = pipeline.PipelineReady ();
+        if (!ret) {
+          stdout.printf ("Error:\nFailed to put the pipeline to ready\n");
+          return false;
+        }
+	  }
+      else
+        pipeline.PipelineAsyncReady ();
       stdout.printf ("Ok.\n");
       return true;
     }
@@ -713,6 +738,9 @@ public class GstdCli:GLib.Object
       case "play":
         return pipeline_play (pipeline, true);
 
+      case "ready":
+        return pipeline_ready (pipeline, true);
+
       case "pause":
         return pipeline_pause (pipeline, true);
 
@@ -721,6 +749,9 @@ public class GstdCli:GLib.Object
 
       case "aplay":
         return pipeline_play (pipeline, false);
+
+      case "aready":
+        return pipeline_ready (pipeline, false);
 
       case "apause":
         return pipeline_pause (pipeline, false);
