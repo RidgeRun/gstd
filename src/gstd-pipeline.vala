@@ -208,6 +208,25 @@ using Gst;
        }
 
     /**
+     Sets a pipeline to ready state. Returns when the pipeline has
+     already reached that state.
+    */
+       public bool PipelineReady ()
+       {
+         return PipelineSetState (State.READY);
+       }
+
+    /**
+     Sets a pipeline to ready state. Returns immediately
+    */
+       public void PipelineAsyncReady ()
+       {
+         pipeline.set_state (State.READY);
+         if (debug)
+           Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to ready");
+       }
+
+    /**
      Sets a pipeline to paused state. Returns when the pipeline has
      already reached that state.
     */

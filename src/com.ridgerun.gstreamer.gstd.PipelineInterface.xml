@@ -23,12 +23,20 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineReady">
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
     <method name="PipelineNull">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineAsyncPlay">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="PipelineAsyncReady">
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="PipelineAsyncPause">
