@@ -28,11 +28,14 @@ public class GstdCli:GLib.Object
   static bool _debug = false;
   [CCode (array_length = false, array_null_terminated = true)]
   static string[] _remaining_args;
+  static bool useSystemBus = false;
 
     /**
     * Application command line options
     */
   const OptionEntry[] options = {
+    {"system", '\0', 0, OptionArg.NONE, ref useSystemBus,
+        "Use system bus", null},
 
     {"path", 'p', 0, OptionArg.STRING, ref obj_path,
         "Pipeline path or path_id, for which command will be apply."
@@ -110,7 +113,7 @@ public class GstdCli:GLib.Object
   {
 
     /*Getting a Gstd Factory proxy object */
-    conn = DBus.Bus.get (DBus.BusType.SESSION);
+    conn = DBus.Bus.get ((useSystemBus) ? DBus.BusType.SYSTEM : DBus.BusType.SESSION);
     factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
         "/com/ridgerun/gstreamer/gstd/factory",
         "com.ridgerun.gstreamer.gstd.FactoryInterface");
