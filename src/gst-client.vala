@@ -109,8 +109,9 @@ public class GstdCli:GLib.Object
   /*
    * Constructor
    */
-  public GstdCli () throws DBus.Error, GLib.Error
+  public GstdCli (string[] args) throws DBus.Error, GLib.Error
   {
+    parse_options(args);
 
     /*Getting a Gstd Factory proxy object */
     conn = DBus.Bus.get ((useSystemBus) ? DBus.BusType.SYSTEM : DBus.BusType.SESSION);
@@ -636,7 +637,7 @@ public class GstdCli:GLib.Object
    *                 if there is no remaining args interactive
    *                 console is enable.
    */
-  public void parse_options (string[]args)
+  public void parse_options (string[] args)
   {
 
     /*Clean up global reference variables */
@@ -892,15 +893,9 @@ public class GstdCli:GLib.Object
 
   static int main (string[]args)
   {
-    GstdCli cli;
-
     try {
       obj_path = null;
-      cli = new GstdCli ();
-
-      /*Parse entry options or flags and
-         fill the reference variables */
-      cli.parse_options (args);
+      GstdCli cli = new GstdCli (args);
 
       /*Parse commands */
       if (!cli.parse (_remaining_args))
