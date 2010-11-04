@@ -110,7 +110,7 @@ public class GstdCli:GLib.Object
   {
 
     /*Getting a Gstd Factory proxy object */
-    conn = DBus.Bus.get (DBus.BusType.SYSTEM);
+    conn = DBus.Bus.get (DBus.BusType.SESSION);
     factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
         "/com/ridgerun/gstreamer/gstd/factory",
         "com.ridgerun.gstreamer.gstd.FactoryInterface");
