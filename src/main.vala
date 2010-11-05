@@ -16,9 +16,11 @@ public DBus.Connection conn = null;
 
 private bool useSystemBus = false;
 private bool useSessionBus = false;
+private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
   {"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
   {"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
+  {"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
   {null}
 };
 
@@ -38,7 +40,7 @@ public int main (string[] args)
       Posix.syslog(Posix.LOG_ERR, "OptionError failure: %s", e.message);
       return 1;
     }
-    
+
     if (useSystemBus && useSessionBus) {
       Posix.syslog(Posix.LOG_ERR, "you have to choose: system or session bus");
       return 1;
@@ -73,19 +75,20 @@ public int main (string[] args)
 
     /* Create our factory */
     var factory = new Factory (loop.get_context());
-    Watchdog wd = null;
-      
+
     conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
     //monitor main loop with watchdog ?
-    bool watchdog = false; //TODO cmd line option
-    if (watchdog) {
-      assert(Thread.supported());
-      wd = new Watchdog(5);
+    if (enableWatchdog) {
+      Watchdog wd = new Watchdog(5);
       factory.Alive.connect(() => {wd.Ping();});
+
+      loop.run ();
+    }
+    else {
+      loop.run ();
     }
 
-    loop.run ();
     return 0;
   }
   catch (Error e) {
