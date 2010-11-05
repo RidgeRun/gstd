@@ -74,7 +74,7 @@ public int main (string[] args)
     }
 
     /* Create our factory */
-    var factory = new Factory (loop.get_context());
+    var factory = new Factory ();
 
     conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 

@@ -23,7 +23,7 @@ using DBus;
      Create a new instance of a factory server to process D-Bus 
      factory messages
      */
-       public Factory (GLib.MainContext ctx)
+       public Factory ()
        {
          pipes = new Pipeline[num_pipes];
          for (int ids = 0; ids < pipes.length; ids++)
@@ -35,18 +35,19 @@ using DBus;
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
            //Posix.syslog(Posix.LOG_NOTICE, "Alive!");
-           /*for (int index = 0; index < pipes.length; ++index)
+           /* TODO for (int index = 0; index < pipes.length; ++index)
            {
              if (pipes[index] != null && pipes[index].PipelineIsInitialized())
              {
-               pipes[index].PipelineGetState();
+               Event evt = new Event.custom(EventType.CUSTOM_DOWNSTREAM, null);
+               pipes[index].send_event(evt);
                Posix.syslog(Posix.LOG_NOTICE, "pipe%d is ok", index);
              }
            }*/
            Alive();
            return true;
          });
-         timer.attach(ctx);
+         timer.attach(loop.get_context());
        }
 
     /**
