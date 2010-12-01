@@ -144,6 +144,15 @@
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        
     </method>
+    <method name="ElementGetPropertyBuffer">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="caps" direction = "out" />
+        <arg type="ay" name ="data" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
+    </method>
     <method name="PipelineGetDuration">
         <arg type="x" name ="duration" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>

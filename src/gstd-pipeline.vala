@@ -536,6 +536,46 @@ using Gst;
        }
 
     /**
+     Gets an element's buffer property value of a specific pipeline
+     @param element, whose property value wants to be known
+     @param property,property name
+     @param caps caps of buffer
+     @param data data
+     */
+       public bool ElementGetPropertyBuffer (string element,
+           string property, out string caps, out uint8[] data)
+       {
+         caps = "";
+         data = new uint8[0];
+
+         Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+         Element e = pipe.get_child_by_name (element) as Element;
+         if (e == null) {
+           if (debug)
+             Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+           return false;
+         }
+
+         GLib.ParamSpec spec = e.get_class ().find_property (property);
+         if (spec == null) {
+           if (debug)
+             Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+                 element, property);
+           return false;
+         }
+
+         Gst.Buffer buffer = null;
+         e.get (property, &buffer, null);
+
+         if (buffer != null) {
+           caps = (buffer.caps != null) ? buffer.caps.to_string() : "";
+           data = buffer.data;
+         }
+
+         return true;
+       }
+
+    /**
      Query duration to a pipeline on the server
      @return time in milliseconds or null if not available
     */
