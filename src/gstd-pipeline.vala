@@ -23,6 +23,7 @@ using Gst;
        private bool initialized = false;
        private string path = "";
        private double rate = 1.0;
+       private uint _counter = 0;
 
        public signal void Eos ();
        public signal void StateChanged (string old_state, string new_state,
@@ -84,6 +85,7 @@ using Gst;
 
        private bool bus_callback (Gst.Bus bus, Gst.Message message)
        {
+         Posix.syslog (Posix.LOG_DEBUG, "received message %s", message.type.to_string());
          switch (message.type) {
            case MessageType.ERROR:
 
@@ -121,6 +123,20 @@ using Gst;
 
              /*Sending StateChanged Signal */
              StateChanged (oldstate.to_string (), newstate.to_string (), src);
+             break;
+
+           case MessageType.INFO:
+             Posix.syslog (Posix.LOG_DEBUG, "received info message");
+             if (message.src == pipeline)
+             {
+               uint counter = 0;
+               unowned Gst.Structure st = message.get_structure();
+               if (st != null && st.get_name() == "keepalive" && st.get_uint("counter", out counter))
+               {
+                 _counter = counter;
+                 Posix.syslog (Posix.LOG_DEBUG, "received keep alive %u", _counter);
+               }
+             }
              break;
 
            default:
@@ -665,4 +681,20 @@ using Gst;
          return true;
        }
 
+       public void SendNewCounterEvent(uint counter) {
+         Posix.syslog (Posix.LOG_DEBUG, "Send keep alive event ...");
+         Gst.Structure st = new Gst.Structure("keepalive", "counter", typeof(uint), counter, null);
+         Gst.Event evt = new Gst.Event.sink_message(new Gst.Message.custom (Gst.MessageType.INFO, pipeline, st));
+         //evt.type = Gst.EventType.CUSTOM_DOWNSTREAM;
+         bool success = pipeline.send_event(evt);
+         Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
+       }
+
+       public uint GetCounter() {
+         return _counter;
+       }
+
+       public void SetCounter(uint c) {
+         _counter = c;
+       }       
      }

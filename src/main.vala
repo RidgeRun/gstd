@@ -80,7 +80,7 @@ public int main (string[] args)
 
     //monitor main loop with watchdog ?
     if (enableWatchdog) {
-      Watchdog wd = new Watchdog(5);
+      Watchdog wd = new Watchdog(1000);
       factory.Alive.connect(() => {wd.Ping();});
 
       loop.run ();

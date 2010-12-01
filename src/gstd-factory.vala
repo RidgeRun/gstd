@@ -17,7 +17,9 @@ using DBus;
      {
        private Pipeline[] pipes;
        private const int num_pipes = 20;
-	   private TimeoutSource timer = null;
+       private TimeoutSource timer = null;
+       private uint _txCounter = 0;
+       private uint _rxCounter = 0;
 
     /**
      Create a new instance of a factory server to process D-Bus 
@@ -34,17 +36,7 @@ using DBus;
          //signal alive every second
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
-           //Posix.syslog(Posix.LOG_NOTICE, "Alive!");
-           /* TODO for (int index = 0; index < pipes.length; ++index)
-           {
-             if (pipes[index] != null && pipes[index].PipelineIsInitialized())
-             {
-               Event evt = new Event.custom(EventType.CUSTOM_DOWNSTREAM, null);
-               pipes[index].send_event(evt);
-               Posix.syslog(Posix.LOG_NOTICE, "pipe%d is ok", index);
-             }
-           }*/
-           Alive();
+           CheckAlive();
            return true;
          });
          timer.attach(loop.get_context());
@@ -127,6 +119,53 @@ using DBus;
        {
          /*Gstd received the Ping method call */
          return true;
+       }
+
+       private void CheckAlive ()
+       {
+         //increment counter
+         ++_txCounter;
+
+         //push event into each pipe
+         uint nrOfPipes = 0;
+         for (int index = 0; index < pipes.length; ++index) {
+           if (pipes[index] == null)
+             continue;
+           if (!pipes[index].PipelineIsInitialized())
+             continue;
+
+           if (pipes[index].GetCounter() == 0) {
+             pipes[index].SetCounter(_txCounter);
+           }
+           else {
+             pipes[index].SendNewCounterEvent(_txCounter);
+           }
+           ++nrOfPipes;
+         }
+
+         //no pipe, no cry
+         if (nrOfPipes == 0) {
+           Alive();
+           return;
+         }
+
+         //find smallest counter
+         uint minCounter = _txCounter;
+         for (int index = 0; index < pipes.length; ++index) {
+           if (pipes[index] == null)
+             continue;
+           if (!pipes[index].PipelineIsInitialized())
+             continue;
+           uint counter = pipes[index].GetCounter();
+           if (counter < minCounter)
+               minCounter = counter;
+         }
+
+         if (_rxCounter != minCounter)
+         {
+           _rxCounter = minCounter;
+           Alive();
+         }
        }
 
        public signal void Alive();
