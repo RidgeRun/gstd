@@ -96,7 +96,7 @@ using Gst;
 
          Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
          var pipe = pipeline as Gst.Pipeline;
-         assert(pipe);
+         assert(pipe != null);
 
          var sink = pipe.get_child_by_name("videosink") as Element;
          if (sink == null)
@@ -106,7 +106,7 @@ using Gst;
          if (overlay == null)
            return BusSyncReply.PASS;
 
-         Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %ull", windowId);
+         Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %lu", windowId);
          overlay.set_xwindow_id(windowId);
 
          return BusSyncReply.PASS;
