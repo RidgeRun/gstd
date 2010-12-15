@@ -24,6 +24,7 @@ using Gst;
        private string path = "";
        private double rate = 1.0;
        private uint _counter = 0;
+       private ulong windowId = 0;
 
        public signal void Eos ();
        public signal void StateChanged (string old_state, string new_state,
@@ -46,6 +47,7 @@ using Gst;
 
            /*Get and watch bus */
              Gst.Bus bus = pipeline.get_bus ();
+             bus.set_sync_handler(bus_sync_callback);
              bus.add_watch (bus_callback);
            /* The bus watch increases our ref count, so we need to unreference
             * ourselfs in order to provide properly release behavior of this
@@ -81,6 +83,33 @@ using Gst;
            if (!PipelineSetState (State.NULL))
              Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
          }
+       }
+
+       private BusSyncReply bus_sync_callback (Gst.Bus bus, Gst.Message message)
+       {
+         if (windowId == 0)
+           return BusSyncReply.PASS;
+
+         unowned Structure? st = message.get_structure();
+         if (!(st != null && st.has_name("prepare-xwindow-id")))
+           return BusSyncReply.PASS;
+
+         Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
+         var pipe = pipeline as Gst.Pipeline;
+         assert(pipe);
+
+         var sink = pipe.get_child_by_name("videosink") as Element;
+         if (sink == null)
+           return BusSyncReply.PASS;
+
+         var overlay = sink as Gst.XOverlay;
+         if (overlay == null)
+           return BusSyncReply.PASS;
+
+         Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %ull", windowId);
+         overlay.set_xwindow_id(windowId);
+
+         return BusSyncReply.PASS;
        }
 
        private bool bus_callback (Gst.Bus bus, Gst.Message message)
@@ -728,6 +757,11 @@ using Gst;
          //evt.type = Gst.EventType.CUSTOM_DOWNSTREAM;
          bool success = pipeline.send_event(evt);
          Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
+       }
+
+       public void SetWindowId(ulong winId)
+       {
+          windowId = winId;
        }
 
        public uint GetCounter() {
