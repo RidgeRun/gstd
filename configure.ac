@@ -34,6 +34,18 @@ dnl make GSTREAMER_CFLAGS and GSTREAMER_LIBS available
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
 
+dnl Now we're ready to ask for gstreamer-interfaces
+PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , HAVE_GSTREAMER_INTERFACES=yes, HAVE_GSTREAMER_INTERFACES=no)
+
+dnl Give error and exit if we don't have gstreamer
+if test "x$HAVE_GSTREAMER_INTERFACES" = "xno"; then
+  AC_MSG_ERROR([you need gstreamer-interfaces development packages installed !])
+fi
+
+dnl make GSTREAMER_INTERFACES_CFLAGS and GSTREAMER_INTERFACES_LIBS available
+AC_SUBST(GSTREAMER_INTERFACES_CFLAGS)
+AC_SUBST(GSTREAMER_INTERFACES_LIBS)
+
 dnl Now we're ready to ask for dbus-glib
 PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1 >= 0.80 , HAVE_DBUS_GLIB=yes, HAVE_DBUS_GLIB=no)
 

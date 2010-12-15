@@ -3,9 +3,9 @@ ACLOCAL_AMFLAGS = -I m4
 bin_PROGRAMS = gstd gst-client gst-client-bsd
 
 gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala
-gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
-gstd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
-gstd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
+gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1
+gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS@
+gstd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
 
 gst_client_SOURCES = gst-client.vala
 gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1 --pkg readline -X -lreadline
