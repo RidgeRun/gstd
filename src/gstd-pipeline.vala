@@ -759,9 +759,9 @@ using Gst;
          Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
        }
 
-       public void SetWindowId(ulong winId)
+       public void SetWindowId(uint64 winId) //use uint64, because dbus-binding can't map type "ulong"
        {
-          windowId = winId;
+          windowId = (ulong)(winId);
        }
 
        public uint GetCounter() {
