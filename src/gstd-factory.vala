@@ -131,7 +131,7 @@ public class Factory : GLib.Object
 	/*private void CheckAlive ()
 	   {
 	   //increment counter
-	 ++_txCounter;
+	   ++_txCounter;
 
 	   //push event into each pipe
 	   uint nrOfPipes = 0;
@@ -147,7 +147,7 @@ public class Factory : GLib.Object
 	    else {
 	      pipes[index].SendNewCounterEvent(_txCounter);
 	    }
-	 ++nrOfPipes;
+	   ++nrOfPipes;
 	   }
 
 	   //no pipe, no cry

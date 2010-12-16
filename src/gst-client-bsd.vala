@@ -140,7 +140,7 @@ public class GstdCli : GLib.Object
 	}
 
 	/**
-	 *Callback functions for the receiving signals
+	   *Callback functions for the receiving signals
 	 */
 
 	public void Error_cb ()
@@ -664,7 +664,7 @@ public class GstdCli : GLib.Object
 	}
 
 	/*
-	 *Create a proxy-object of the pipeline
+	   *Create a proxy-object of the pipeline
 	 */
 	public bool create_proxypipe (string ? object_path)
 	{
@@ -688,14 +688,14 @@ public class GstdCli : GLib.Object
 	}
 
 	/*
-	 *Parse entry-options or flags:
-	 *_signals:  flag to enable signals reception,
+	   *Parse entry-options or flags:
+	   *_signals:  flag to enable signals reception,
 	 *           useful when executing interactive console.
-	 *_debug:    flag to enable debug information
+	 ****_debug:    flag to enable debug information
 	 *           when creating a pipeline.
-	 *obj_path:  option to specified the pipeline
+	 ****obj_path:  option to specified the pipeline
 	 *           when executing a single command.
-	 *_remaining_args: command to be executed remains here,
+	 ****_remaining_args: command to be executed remains here,
 	 *                 if there is no remaining args interactive
 	 *                 console is enable.
 	 */

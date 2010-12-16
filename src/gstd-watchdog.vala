@@ -1,17 +1,17 @@
 /*using GLib;
 
-public class Watchdog :
+   public class Watchdog :
     Object
-{
-  private unowned Thread _thread;
-  private int _counterMax;
-  private int _counterMin;
-  private int _counter;
-  private MainContext _ctx;
-  private MainLoop _loop;
-  private TimeoutSource _timer;
+   {
+   private unowned Thread _thread;
+   private int _counterMax;
+   private int _counterMin;
+   private int _counter;
+   private MainContext _ctx;
+   private MainLoop _loop;
+   private TimeoutSource _timer;
 
-  public Watchdog (uint timeoutInSec) throws ThreadError {
+   public Watchdog (uint timeoutInSec) throws ThreadError {
     _counter = _counterMin = _counterMax = (int) (timeoutInSec);
 
     //create a new event loop for the thread
@@ -35,19 +35,19 @@ public class Watchdog :
       return null;
     }, true);
     _thread.set_priority (ThreadPriority.URGENT);
-  }
+   }
 
-  ~Watchdog() {
+   ~Watchdog() {
     _loop.quit(); //TODO thread-safe?
     _thread.join();
-  }
+   }
 
-  public void Ping() {
+   public void Ping() {
     //Posix.syslog(Posix.LOG_DEBUG, "Ping");
     AtomicInt.set (ref _counter, _counterMax + 1);
-  }
+   }
 
-  private void Check() {
+   private void Check() {
     AtomicInt.dec_and_test (ref _counter);
     int c = AtomicInt.get (ref _counter);
     if (c < _counterMin) {
@@ -58,13 +58,12 @@ public class Watchdog :
     if (c <= 0) {
       Suicide();
     }
-  }
+   }
 
-  private void Suicide() {
+   private void Suicide() {
     Posix.syslog (Posix.LOG_ERR, "Suicide");
     Posix.kill (Posix.getpid(), Posix.SIGINT); //TODO abort(); ?
     Posix.sleep(1);
     Posix.kill (Posix.getpid(), Posix.SIGKILL); //TODO abort(); ?
-  }
-}*/
-
+   }
+   }*/
