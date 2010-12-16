@@ -1,4 +1,4 @@
-using GLib;
+/*using GLib;
 
 public class Watchdog :
     Object
@@ -66,4 +66,5 @@ public class Watchdog :
     Posix.sleep(1);
     Posix.kill (Posix.getpid(), Posix.SIGKILL); //TODO abort(); ?
   }
-}
+}*/
+

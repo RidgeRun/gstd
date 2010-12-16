@@ -17,9 +17,9 @@ using DBus;
      {
        private Pipeline[] pipes;
        private const int num_pipes = 20;
-       private TimeoutSource timer = null;
+       /*private TimeoutSource timer = null;
        private uint _txCounter = 0;
-       private uint _rxCounter = 0;
+       private uint _rxCounter = 0;*/
 
     /**
      Create a new instance of a factory server to process D-Bus 
@@ -33,13 +33,13 @@ using DBus;
            pipes[ids] = null;
          }
 
-         //signal alive every second
+         /*//signal alive every second
          timer = new TimeoutSource(1000);
          timer.set_callback(() => {
            CheckAlive();
            return true;
          });
-         timer.attach(loop.get_context());
+         timer.attach(loop.get_context());*/
        }
 
     /**
@@ -121,7 +121,7 @@ using DBus;
          return true;
        }
 
-       private void CheckAlive ()
+       /*private void CheckAlive ()
        {
          //increment counter
          ++_txCounter;
@@ -166,7 +166,7 @@ using DBus;
            _rxCounter = minCounter;
            Alive();
          }
-       }
+       }*/
 
-       public signal void Alive();
+       //public signal void Alive();
      }

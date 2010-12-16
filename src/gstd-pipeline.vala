@@ -23,7 +23,7 @@ using Gst;
        private bool initialized = false;
        private string path = "";
        private double rate = 1.0;
-       private uint _counter = 0;
+       //private uint _counter = 0;
        private ulong windowId = 0;
 
        public signal void Eos ();
@@ -154,7 +154,7 @@ using Gst;
              StateChanged (oldstate.to_string (), newstate.to_string (), src);
              break;
 
-           case MessageType.INFO:
+           /*case MessageType.INFO:
              Posix.syslog (Posix.LOG_DEBUG, "received info message");
              if (message.src == pipeline)
              {
@@ -166,7 +166,7 @@ using Gst;
                  Posix.syslog (Posix.LOG_DEBUG, "received keep alive %u", _counter);
                }
              }
-             break;
+             break;*/
 
            default:
              break;
@@ -750,25 +750,25 @@ using Gst;
          return true;
        }
 
-       public void SendNewCounterEvent(uint counter) {
+       /*public void SendNewCounterEvent(uint counter) {
          Posix.syslog (Posix.LOG_DEBUG, "Send keep alive event ...");
          Gst.Structure st = new Gst.Structure("keepalive", "counter", typeof(uint), counter, null);
          Gst.Event evt = new Gst.Event.sink_message(new Gst.Message.custom (Gst.MessageType.INFO, pipeline, st));
          //evt.type = Gst.EventType.CUSTOM_DOWNSTREAM;
          bool success = pipeline.send_event(evt);
          Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
-       }
+       }*/
 
        public void SetWindowId(uint64 winId) //use uint64, because dbus-binding can't map type "ulong"
        {
           windowId = (ulong)(winId);
        }
 
-       public uint GetCounter() {
+       /*public uint GetCounter() {
          return _counter;
        }
 
        public void SetCounter(uint c) {
          _counter = c;
-       }       
+       } */      
      }

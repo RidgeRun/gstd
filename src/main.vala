@@ -16,11 +16,11 @@ public DBus.Connection conn = null;
 
 private bool useSystemBus = false;
 private bool useSessionBus = false;
-private bool enableWatchdog = false;
+//private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
   {"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
   {"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
-  {"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
+  //{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
   {null}
 };
 
@@ -79,15 +79,15 @@ public int main (string[] args)
     conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
     //monitor main loop with watchdog ?
-    if (enableWatchdog) {
+    /*if (enableWatchdog) {
       Watchdog wd = new Watchdog(1000);
       factory.Alive.connect(() => {wd.Ping();});
 
       loop.run ();
     }
-    else {
+    else {*/
       loop.run ();
-    }
+    //}
 
     return 0;
   }
