@@ -769,6 +769,11 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
+	public void PipelineSendEos ()
+	{
+		pipeline.send_event(new Event.eos());
+	}
+
 	/*public void SendNewCounterEvent(uint counter) {
 	   Posix.syslog (Posix.LOG_DEBUG, "Send keep alive event ...");
 	   Gst.Structure st = new Gst.Structure("keepalive", "counter", typeof(uint), counter, null);

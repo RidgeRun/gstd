@@ -190,6 +190,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineSendEos"/>
     <method name="SetWindowId">
         <arg type="t" name="winId" direction="in"/>
     </method>
