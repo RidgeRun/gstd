@@ -11,8 +11,8 @@
 
 using Gst;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EOS",
-       signals = "StateChanged", signals = "Error")]
+[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EoS",
+       signals = "StateChanged", signals = "Error", signals = "QoS")]
 
 public class Pipeline : GLib.Object
 {
@@ -25,9 +25,20 @@ public class Pipeline : GLib.Object
 	//private uint _counter = 0;
 	private ulong windowId = 0;
 
-	public signal void Eos ();
+	public signal void EoS ();
 	public signal void StateChanged (string old_state, string new_state, string src);
 	public signal void Error (string err_message);
+	public signal void QoS (bool live, 
+	                        uint64 running_time,
+	                        uint64 stream_time,
+	                        uint64 timestamp,
+	                        uint64 duration,
+	                        int64 jitter,
+	                        double proportion,
+	                        int quality,
+	                        int format,
+	                        uint64 processed,
+	                        uint64 dropped);
 
 	/**
 	   Create a new instance of a Pipeline
@@ -134,7 +145,7 @@ public class Pipeline : GLib.Object
 			case MessageType.EOS:
 
 				/*Sending Eos Signal */
-				Eos ();
+				EoS ();
 				break;
 
 			case MessageType.STATE_CHANGED:
@@ -167,6 +178,29 @@ public class Pipeline : GLib.Object
 			    }
 			   }
 			   break;*/
+
+			case MessageType.QOS:
+				bool live;
+		                uint64 running_time;
+		                uint64 stream_time;
+		                uint64 timestamp;
+		                uint64 duration;
+		                int64 jitter;
+		                double proportion;
+		                int quality;
+		                int format;
+		                uint64 processed;
+		                uint64 dropped;
+
+				//plase note, if this doesn't compile, you need to apply gstreamer-0.10.vapi.patch
+				message.parse_qos(out live, out running_time, out stream_time, out timestamp, out duration);
+				message.parse_qos_values(out jitter, out proportion, out quality);
+				Format fmt;
+				message.parse_qos_stats(out fmt, out processed, out dropped);
+				format = fmt;
+
+				QoS(live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
+				break;
 
 			default:
 				break;
@@ -769,7 +803,7 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	public void PipelineSendEos ()
+	public void PipelineSendEoS ()
 	{
 		pipeline.send_event(new Event.eos());
 	}
