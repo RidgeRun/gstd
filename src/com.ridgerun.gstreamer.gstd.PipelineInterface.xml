@@ -48,6 +48,12 @@
 
     <!-- Method definitions -->
 
+    <method name="PipelineSetId">
+        <arg type="t" name ="id" direction="in"/>
+    </method>
+    <method name="PipelineGetId">
+        <arg type="t" name ="id" direction="out"/>
+    </method>
     <method name="PipelinePlay">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
@@ -197,16 +203,20 @@
 
     <!-- Signals definitions -->
     <signal name="EoS">
+        <arg type="t" name="pipe_id"/>
     </signal>
     <signal name="Error">
+        <arg type="t" name="pipe_id"/>
         <arg type="s" name="err_message"/>
     </signal>
     <signal name="StateChanged">
+        <arg type="t" name="pipe_id"/>
         <arg type="s" name="old_state"/>
         <arg type="s" name="new_state"/>
         <arg type="s" name="src"/>
     </signal>
     <signal name="QoS">
+        <arg type="t" name="pipe_id"/>
         <arg type="b" name="live"/>
         <arg type="t" name="running_time"/>
         <arg type="t" name="stream_time"/>

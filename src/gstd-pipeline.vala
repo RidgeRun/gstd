@@ -18,6 +18,7 @@ public class Pipeline : GLib.Object
 {
 	/* Private data */
 	private Gst.Element pipeline;
+	private uint64 id = 0;
 	private bool debug = false;
 	private bool initialized = false;
 	private string path = "";
@@ -25,10 +26,11 @@ public class Pipeline : GLib.Object
 	//private uint _counter = 0;
 	private ulong windowId = 0;
 
-	public signal void EoS ();
-	public signal void StateChanged (string old_state, string new_state, string src);
-	public signal void Error (string err_message);
-	public signal void QoS (bool live, 
+	public signal void EoS (uint64 pipe_id);
+	public signal void StateChanged (uint64 pipe_id, string old_state, string new_state, string src);
+	public signal void Error (uint64 pipe_id, string err_message);
+	public signal void QoS (uint64 pipe_id,
+                                bool live, 
 	                        uint64 running_time,
 	                        uint64 stream_time,
 	                        uint64 timestamp,
@@ -136,7 +138,7 @@ public class Pipeline : GLib.Object
 				message.parse_error (out err, out dbg);
 
 				/*Sending Error Signal */
-				Error (err.message);
+				Error (PipelineGetId(), err.message);
 
 				if (debug)
 					Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
@@ -145,7 +147,7 @@ public class Pipeline : GLib.Object
 			case MessageType.EOS:
 
 				/*Sending Eos Signal */
-				EoS ();
+				EoS (PipelineGetId());
 				break;
 
 			case MessageType.STATE_CHANGED:
@@ -162,7 +164,7 @@ public class Pipeline : GLib.Object
 					              oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
-				StateChanged (oldstate.to_string (), newstate.to_string (), src);
+				StateChanged (PipelineGetId(), oldstate.to_string (), newstate.to_string (), src);
 				break;
 
 			/*case MessageType.INFO:
@@ -199,7 +201,7 @@ public class Pipeline : GLib.Object
 				message.parse_qos_stats(out fmt, out processed, out dropped);
 				format = fmt;
 
-				QoS(live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
+				QoS(PipelineGetId(), live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
 
 			default:
@@ -235,6 +237,22 @@ public class Pipeline : GLib.Object
 	public bool PipelineIsInitialized ()
 	{
 		return this.initialized;
+	}
+
+	/**
+           Gets the id of the pipe.
+          */
+	public uint64 PipelineGetId()
+	{
+		return this.id;
+	}
+
+	/**
+           Sets the id of the pipe.
+          */
+	public void PipelineSetId(uint64 id)
+	{
+		this.id = id;
 	}
 
 	/**
