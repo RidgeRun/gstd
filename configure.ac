@@ -9,7 +9,7 @@ AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES(gstd-1.0.pc:gstd-1.0.pc.in)
 AC_CONFIG_FILES(com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in)
 
-AM_PROG_VALAC([0.7.6])
+AM_PROG_VALAC([0.11])
 
 dnl Check for pkgconfig first
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
@@ -34,6 +34,18 @@ dnl make GSTREAMER_CFLAGS and GSTREAMER_LIBS available
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
 
+dnl Now we're ready to ask for gstreamer-interfaces
+PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , HAVE_GSTREAMER_INTERFACES=yes, HAVE_GSTREAMER_INTERFACES=no)
+
+dnl Give error and exit if we don't have gstreamer
+if test "x$HAVE_GSTREAMER_INTERFACES" = "xno"; then
+  AC_MSG_ERROR([you need gstreamer-interfaces development packages installed !])
+fi
+
+dnl make GSTREAMER_INTERFACES_CFLAGS and GSTREAMER_INTERFACES_LIBS available
+AC_SUBST(GSTREAMER_INTERFACES_CFLAGS)
+AC_SUBST(GSTREAMER_INTERFACES_LIBS)
+
 dnl Now we're ready to ask for dbus-glib
 PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1 >= 0.80 , HAVE_DBUS_GLIB=yes, HAVE_DBUS_GLIB=no)
 
@@ -53,6 +65,18 @@ AC_SUBST(DBUS_GLIB_LIBS)
 
 #GETTEXT_PACKAGE= gst-client
 #AC_SUBST(GETTEXT_PACKAGE)
+
+if test -z "$VAPIDIR"; then
+  VAPIDIR=/usr/share/vala/vapi
+fi
+AC_ARG_VAR([VAPIDIR], [path for the vala bindings])
+AC_ARG_WITH(vapidir,
+  [AS_HELP_STRING([--with-vapidir=<path>],
+    [Set the path for the vapidir])],
+  [AC_MSG_NOTICE([Setting the vapidir "$withval"])
+   AC_SUBST([VAPIDIR],[$withval])
+  ]
+)
 
 AC_OUTPUT
 
