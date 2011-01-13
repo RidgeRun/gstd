@@ -9,7 +9,7 @@ AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES(gstd-1.0.pc:gstd-1.0.pc.in)
 AC_CONFIG_FILES(com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in)
 
-AM_PROG_VALAC([0.7.6])
+AM_PROG_VALAC([0.11])
 
 dnl Check for pkgconfig first
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
@@ -65,6 +65,18 @@ AC_SUBST(DBUS_GLIB_LIBS)
 
 #GETTEXT_PACKAGE= gst-client
 #AC_SUBST(GETTEXT_PACKAGE)
+
+if test -z "$VAPIDIR"; then
+  VAPIDIR=/usr/share/vala/vapi
+fi
+AC_ARG_VAR([VAPIDIR], [path for the vala bindings])
+AC_ARG_WITH(vapidir,
+  [AS_HELP_STRING([--with-vapidir=<path>],
+    [Set the path for the vapidir])],
+  [AC_MSG_NOTICE([Setting the vapidir "$withval"])
+   AC_SUBST([VAPIDIR],[$withval])
+  ]
+)
 
 AC_OUTPUT
 
