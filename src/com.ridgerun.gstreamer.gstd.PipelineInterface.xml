@@ -4,8 +4,43 @@
 <!-- This file defines the D-Bus interface for a simple object.
      The interface name is "com.ridgerun.gstreamer.gstd.PipelineInterface".
      One known reference implementation is provided for it by the
-     "/com/ridgerun/gstreamer/gstd/pipe#" object found via a well-known name of
-     "com.ridgerun.gstreamer.gstd". -->
+     "/com/ridgerun/gstreamer/gstd/pipe#" object found via a well-known
+    name of  "com.ridgerun.gstreamer.gstd". -->
+
+<!-- BSD License
+
+    Copyright (c) 2010, RidgeRun
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+     - Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+     - Redistributions in binary form must reproduce the above
+       copyright notice, this list of conditions and the following
+       disclaimer in the documentation and/or other materials provided
+       with the distribution.
+
+     - Neither the name of RidgeRun LLC nor the names of its
+       contributors may be used to endorse or promote products derived
+       from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+    CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+    TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+    ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+    TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+    THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE. -->
 
 <node name="/com/ridgerun/gstreamer/gstd/PipelineInterface/v1_0">
 
@@ -13,41 +48,49 @@
 
     <!-- Method definitions -->
 
+    <method name="PipelineSetId">
+        <arg type="t" name ="id" direction="in"/>
+    </method>
+    <method name="PipelineGetId">
+        <arg type="t" name ="id" direction="out"/>
+    </method>
     <method name="PipelinePlay">
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelinePause">
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineReady">
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineNull">
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineAsyncPlay">
-        <arg type="b" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="PipelineAsyncReady">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="PipelineAsyncPause">
-        <arg type="b" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="PipelineAsyncNull">
-        <arg type="b" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="b" name ="val" direction = "in" />
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
@@ -55,15 +98,15 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="i" name ="val" direction = "in" />
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
-    <method name="ElementSetPropertyLong">
+    <method name="ElementSetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="t" name ="val" direction = "in" />
-        <arg type="b" direction="out" >
+        <arg type="x" name ="val" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
@@ -71,84 +114,121 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="s" name ="val" direction = "in" />
-        <arg type="b" direction="out" >
+        <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
     <method name="ElementGetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="b" direction = "out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        <arg type = "b" name = "val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>
     </method>
     <method name="ElementGetPropertyInt">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="i" direction = "out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        <arg type="i" name ="val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>
     </method>
-    <method name="ElementGetPropertyLong">
+    <method name="ElementGetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="t" direction = "out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <arg type="x" name = "val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
     </method>
     <method name="ElementGetPropertyString">
-        <arg type="i" name ="id" direction = "in" />
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
-        <arg type="s" direction = "out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
+        <arg type="s" name ="val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
+    </method>
+    <method name="ElementGetPropertyBuffer">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="caps" direction = "out" />
+        <arg type="ay" name ="data" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
     </method>
     <method name="PipelineGetDuration">
-        <arg type="i" direction="out" >
+        <arg type="x" name ="duration" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineGetPosition">
-        <arg type="i" direction="out" >
+        <arg type="x" name ="position" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineSpeed">
         <arg type="d" name ="newrate" direction = "in" />
-        <arg type="b" direction = "out" >
+        <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineSkip">
-        <arg type="i" name ="period_ms" direction = "in" />
-        <arg type="b" direction = "out" >
+        <arg type="x" name ="period_ns" direction = "in" />
+        <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineSeek">
-        <arg type="i" name ="ipos_ms" direction = "in" />
-        <arg type="b" direction = "out" >
+        <arg type="x" name ="ipos_ns" direction = "in" />
+        <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineAsyncSeek">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <arg type="x" name ="ipos_ns" direction = "in" />
+    </method>
     <method name="PipelineGetState">
-        <arg type="s" direction = "out" >
+        <arg type="s" name ="state" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+    </method>
+    <method name="PipelineSendEoS"/>
+    <method name="SetWindowId">
+        <arg type="t" name="winId" direction="in"/>
     </method>
 
     <!-- Signals definitions -->
-    <signal name="Eos">
+    <signal name="EoS">
+        <arg type="t" name="pipe_id"/>
     </signal>
     <signal name="Error">
-        <arg type="s" name="err_message" direction="out"/>
+        <arg type="t" name="pipe_id"/>
+        <arg type="s" name="err_message"/>
     </signal>
     <signal name="StateChanged">
-        <arg type="s" name="old_state" direction="out"/>
-        <arg type="s" name="new_state" direction="out"/>
-        <arg type="s" name="src" direction="out"/>
+        <arg type="t" name="pipe_id"/>
+        <arg type="s" name="old_state"/>
+        <arg type="s" name="new_state"/>
+        <arg type="s" name="src"/>
     </signal>
+    <signal name="QoS">
+        <arg type="t" name="pipe_id"/>
+        <arg type="b" name="live"/>
+        <arg type="t" name="running_time"/>
+        <arg type="t" name="stream_time"/>
+        <arg type="t" name="timestamp"/>
+        <arg type="t" name="duration"/>
+        <arg type="x" name="jitter"/>
+        <arg type="d" name="proportion"/>
+        <arg type="i" name="quality"/>
+        <arg type="i" name="format"/>
+        <arg type="t" name="processed"/>
+        <arg type="t" name="dropped"/>
+    </signal> 
 
   </interface>
 </node>

@@ -39,7 +39,7 @@ subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	gst-client-bsd.c gst-client.c gst_client_bsd_vala.stamp \
 	gst_client_vala.stamp gstd-factory.c gstd-pipeline.c \
-	gstd_vala.stamp main.c
+	gstd-watchdog.c gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -61,7 +61,7 @@ gst_client_bsd_DEPENDENCIES =
 gst_client_bsd_LINK = $(CCLD) $(gst_client_bsd_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
-	gstd-gstd-pipeline.$(OBJEXT)
+	gstd-gstd-pipeline.$(OBJEXT) gstd-gstd-watchdog.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
 gstd_DEPENDENCIES =
 gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -217,16 +217,16 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala
-gstd_VALAFLAGS = --pkg gstreamer-0.10 --pkg posix --pkg dbus-glib-1
-gstd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
-gstd_LDADD = @GSTREAMER_LIBS@ @DBUS_GLIB_LIBS@
+gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala
+gstd_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1
+gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS@
+gstd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
 gst_client_SOURCES = gst-client.vala
-gst_client_VALAFLAGS = --pkg posix --pkg dbus-glib-1 --pkg readline -X -lreadline
+gst_client_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg posix --pkg dbus-glib-1 --pkg readline -X -lreadline
 gst_client_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_LDADD = @DBUS_GLIB_LIBS@ -lreadline -lncurses
 gst_client_bsd_SOURCES = gst-client-bsd.vala
-gst_client_bsd_VALAFLAGS = --pkg posix --pkg dbus-glib-1
+gst_client_bsd_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg posix --pkg dbus-glib-1
 gst_client_bsd_CFLAGS = @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_bsd_LDADD = @DBUS_GLIB_LIBS@
 interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
@@ -326,6 +326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client_bsd-gst-client-bsd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-factory.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-pipeline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-watchdog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
 
 .c.o:
@@ -423,6 +424,22 @@ gstd-gstd-pipeline.obj: gstd-pipeline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-pipeline.c' object='gstd-gstd-pipeline.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-pipeline.obj `if test -f 'gstd-pipeline.c'; then $(CYGPATH_W) 'gstd-pipeline.c'; else $(CYGPATH_W) '$(srcdir)/gstd-pipeline.c'; fi`
+
+gstd-gstd-watchdog.o: gstd-watchdog.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-watchdog.o -MD -MP -MF $(DEPDIR)/gstd-gstd-watchdog.Tpo -c -o gstd-gstd-watchdog.o `test -f 'gstd-watchdog.c' || echo '$(srcdir)/'`gstd-watchdog.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-watchdog.Tpo $(DEPDIR)/gstd-gstd-watchdog.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-watchdog.c' object='gstd-gstd-watchdog.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-watchdog.o `test -f 'gstd-watchdog.c' || echo '$(srcdir)/'`gstd-watchdog.c
+
+gstd-gstd-watchdog.obj: gstd-watchdog.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-watchdog.obj -MD -MP -MF $(DEPDIR)/gstd-gstd-watchdog.Tpo -c -o gstd-gstd-watchdog.obj `if test -f 'gstd-watchdog.c'; then $(CYGPATH_W) 'gstd-watchdog.c'; else $(CYGPATH_W) '$(srcdir)/gstd-watchdog.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-watchdog.Tpo $(DEPDIR)/gstd-gstd-watchdog.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-watchdog.c' object='gstd-gstd-watchdog.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-watchdog.obj `if test -f 'gstd-watchdog.c'; then $(CYGPATH_W) 'gstd-watchdog.c'; else $(CYGPATH_W) '$(srcdir)/gstd-watchdog.c'; fi`
 $(srcdir)/main.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
@@ -434,6 +451,11 @@ $(srcdir)/gstd-factory.c: $(srcdir)/gstd_vala.stamp
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
 	fi
 $(srcdir)/gstd-pipeline.c: $(srcdir)/gstd_vala.stamp
+	@if test -f $@; then :; else \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
+	fi
+$(srcdir)/gstd-watchdog.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
@@ -598,6 +620,7 @@ maintainer-clean-generic:
 	-rm -f gst_client_vala.stamp
 	-rm -f gstd-factory.c
 	-rm -f gstd-pipeline.c
+	-rm -f gstd-watchdog.c
 	-rm -f gstd_vala.stamp
 	-rm -f main.c
 clean: clean-am
