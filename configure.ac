@@ -20,11 +20,11 @@ if test "x$HAVE_PKGCONFIG" = "xno"; then
 fi
 
 dnl Now we're ready to ask for gstreamer
-PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 >= 0.10.22 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
+PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 >= 0.10.29 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
 
 dnl Give error and exit if we don't have gstreamer
 if test "x$HAVE_GSTREAMER" = "xno"; then
-  AC_MSG_ERROR([you need gstreamer development packages installed >= 0.10.22 !])
+  AC_MSG_ERROR([you need gstreamer development packages installed >= 0.10.29 !])
 fi
 
 dnl append GSTREAMER_ERROR cflags to GSTREAMER_CFLAGS
@@ -67,7 +67,7 @@ AC_SUBST(DBUS_GLIB_LIBS)
 #AC_SUBST(GETTEXT_PACKAGE)
 
 if test -z "$VAPIDIR"; then
-  VAPIDIR=/usr/share/vala/vapi
+  VAPIDIR=/usr/share/vala-0.12/vapi
 fi
 AC_ARG_VAR([VAPIDIR], [path for the vala bindings])
 AC_ARG_WITH(vapidir,

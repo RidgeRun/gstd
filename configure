@@ -3605,12 +3605,12 @@ if test -n "$PKG_CONFIG"; then
         pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
     else
         if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.22 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.29 \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.29 ") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-0.10 >= 0.10.22 " 2>/dev/null`
+  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-0.10 >= 0.10.29 " 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3623,12 +3623,12 @@ if test -n "$PKG_CONFIG"; then
         pkg_cv_GSTREAMER_LIBS="$GSTREAMER_LIBS"
     else
         if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.22 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.29 \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.29 ") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gstreamer-0.10 >= 0.10.22 " 2>/dev/null`
+  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gstreamer-0.10 >= 0.10.29 " 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3647,9 +3647,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "gstreamer-0.10 >= 0.10.22 "`
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "gstreamer-0.10 >= 0.10.29 "`
         else
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gstreamer-0.10 >= 0.10.22 "`
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gstreamer-0.10 >= 0.10.29 "`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$GSTREAMER_PKG_ERRORS" >&5
@@ -3668,7 +3668,7 @@ $as_echo "yes" >&6; }
 fi
 
 if test "x$HAVE_GSTREAMER" = "xno"; then
-  as_fn_error $? "you need gstreamer development packages installed >= 0.10.22 !" "$LINENO" 5
+  as_fn_error $? "you need gstreamer development packages installed >= 0.10.29 !" "$LINENO" 5
 fi
 
 GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS $GSTREAMER_ERROR"
@@ -3842,7 +3842,7 @@ DBUS_GLIB_CFLAGS="$DBUS_GLIB_CFLAGS $DBUS_GLIB_ERROR"
 #AC_SUBST(GETTEXT_PACKAGE)
 
 if test -z "$VAPIDIR"; then
-  VAPIDIR=/usr/share/vala/vapi
+  VAPIDIR=/usr/share/vala-0.12/vapi
 fi
 
 
