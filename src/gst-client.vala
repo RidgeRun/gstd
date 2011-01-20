@@ -732,9 +732,9 @@ public class GstdCli : GLib.Object
 			if (args[0].down () != "create" && args[0].down () != "help")
 			{
 				stdout.printf ("Signals, activated\n");
-				pipeline.Error += this.Error_cb;
-				pipeline.Eos += this.Eos_cb;
-				pipeline.StateChanged += this.StateChanged_cb;
+				pipeline.Error.connect(this.Error_cb);
+				pipeline.Eos.connect(this.Eos_cb);
+				pipeline.StateChanged.connect(this.StateChanged_cb);
 			}
 		}
 
