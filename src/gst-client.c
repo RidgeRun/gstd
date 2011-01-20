@@ -71,8 +71,8 @@ static gboolean gstd_cli__debug;
 static gboolean gstd_cli__debug = FALSE;
 static gchar** gstd_cli__remaining_args;
 static gchar** gstd_cli__remaining_args = NULL;
-static gboolean gstd_cli_useSystemBus;
-static gboolean gstd_cli_useSystemBus = TRUE;
+static gboolean gstd_cli_useSessionBus;
+static gboolean gstd_cli_useSessionBus = FALSE;
 
 GType gstd_cli_get_type (void) G_GNUC_CONST;
 #define GSTD_CLI_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_GSTD_CLI, GstdCliPrivate))
@@ -147,7 +147,7 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-static const GOptionEntry GSTD_CLI_options[6] = {{"system", '\0', 0, G_OPTION_ARG_NONE, &gstd_cli_useSystemBus, "Use system bus", NULL}, {"path", 'p', 0, G_OPTION_ARG_STRING, &gstd_cli_obj_path, "Pipeline path or path_id, for which command will be apply." "Usage:-p <path_id>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &gstd_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &gstd_cli__debug, "Flag to enable debug information on a pipeline,useful just for 'create" \
+static const GOptionEntry GSTD_CLI_options[6] = {{"session", '\0', 0, G_OPTION_ARG_NONE, &gstd_cli_useSessionBus, "Use session bus", NULL}, {"path", 'p', 0, G_OPTION_ARG_STRING, &gstd_cli_obj_path, "Pipeline path or path_id, for which command will be apply." "Usage:-p <path_id>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &gstd_cli__signals, "Flag to enable the signals reception.Usage:-s <1>", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &gstd_cli__debug, "Flag to enable debug information on a pipeline,useful just for 'create" \
 "'" " command.Usage:-d <1>", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &gstd_cli__remaining_args, NULL, "[COMMANDS...]"}, {NULL}};
 
 GstdCli* gstd_cli_construct (GType object_type, gchar** args, int args_length1, GError** error) {
@@ -161,10 +161,10 @@ GstdCli* gstd_cli_construct (GType object_type, gchar** args, int args_length1, 
 	GError * _inner_error_ = NULL;
 	self = (GstdCli*) g_object_new (object_type, NULL);
 	gstd_cli_parse_options (self, args, args_length1);
-	if (gstd_cli_useSystemBus) {
-		_tmp0_ = DBUS_BUS_SYSTEM;
-	} else {
+	if (gstd_cli_useSessionBus) {
 		_tmp0_ = DBUS_BUS_SESSION;
+	} else {
+		_tmp0_ = DBUS_BUS_SYSTEM;
 	}
 	_tmp1_ = dbus_g_bus_get (_tmp0_, &_inner_error_);
 	_tmp2_ = _tmp1_;
