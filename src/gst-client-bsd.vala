@@ -48,7 +48,7 @@ public class GstdCli : GLib.Object
 	static bool _debug = false;
 	[CCode (array_length = false, array_null_terminated = true)]
 	static string[] _remaining_args;
-	static bool useSystemBus = false;
+	static bool useSystemBus = true;
 
 	/**
 	 * Application command line options
