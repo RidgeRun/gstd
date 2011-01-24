@@ -20,11 +20,11 @@ if test "x$HAVE_PKGCONFIG" = "xno"; then
 fi
 
 dnl Now we're ready to ask for gstreamer
-PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 >= 0.10.29 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
+PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 >= 0.10.22 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
 
 dnl Give error and exit if we don't have gstreamer
 if test "x$HAVE_GSTREAMER" = "xno"; then
-  AC_MSG_ERROR([you need gstreamer development packages installed >= 0.10.29 !])
+  AC_MSG_ERROR([you need gstreamer development packages installed >= 0.10.22 !])
 fi
 
 dnl append GSTREAMER_ERROR cflags to GSTREAMER_CFLAGS
@@ -33,6 +33,20 @@ GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS $GSTREAMER_ERROR"
 dnl make GSTREAMER_CFLAGS and GSTREAMER_LIBS available
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
+
+_PKG_CONFIG([GSTREAMER_VERSION], [modversion], [gstreamer-0.10])
+GSTREAMER_MAJOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\1/"`
+GSTREAMER_MINOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\2/"`
+GSTREAMER_RELEASE=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
+AC_MSG_CHECKING(Checking if gstreamer version has support for QOS signals)
+if test $GSTREAMER_RELEASE -ge 29 ; then
+    GSTREAMER_SUPPORT_QOS_SIGNAL=true
+    AC_MSG_RESULT(yes)
+else
+    GSTREAMER_SUPPORT_QOS_SIGNAL=false
+    AC_MSG_RESULT(no)
+fi
+AC_SUBST(GSTREAMER_SUPPORT_QOS_SIGNAL)
 
 dnl Now we're ready to ask for gstreamer-interfaces
 PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , HAVE_GSTREAMER_INTERFACES=yes, HAVE_GSTREAMER_INTERFACES=no)

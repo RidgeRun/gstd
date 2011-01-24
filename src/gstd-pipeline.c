@@ -1644,51 +1644,6 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			_g_free0 (src);
 			break;
 		}
-		case GST_MESSAGE_QOS:
-		{
-			gboolean live = FALSE;
-			guint64 running_time = 0ULL;
-			guint64 stream_time = 0ULL;
-			guint64 timestamp = 0ULL;
-			guint64 duration = 0ULL;
-			gint64 jitter = 0LL;
-			gdouble proportion = 0.0;
-			gint quality = 0;
-			gint format = 0;
-			guint64 processed = 0ULL;
-			guint64 dropped = 0ULL;
-			gboolean _tmp14_;
-			guint64 _tmp15_;
-			guint64 _tmp16_;
-			guint64 _tmp17_;
-			guint64 _tmp18_;
-			gint64 _tmp19_;
-			gdouble _tmp20_;
-			gint _tmp21_;
-			GstFormat fmt = 0;
-			GstFormat _tmp22_;
-			guint64 _tmp23_;
-			guint64 _tmp24_;
-			guint64 _tmp25_;
-			gst_message_parse_qos (message, &_tmp14_, &_tmp15_, &_tmp16_, &_tmp17_, &_tmp18_);
-			live = _tmp14_;
-			running_time = _tmp15_;
-			stream_time = _tmp16_;
-			timestamp = _tmp17_;
-			duration = _tmp18_;
-			gst_message_parse_qos_values (message, &_tmp19_, &_tmp20_, &_tmp21_);
-			jitter = _tmp19_;
-			proportion = _tmp20_;
-			quality = _tmp21_;
-			gst_message_parse_qos_stats (message, &_tmp22_, &_tmp23_, &_tmp24_);
-			fmt = _tmp22_;
-			processed = _tmp23_;
-			dropped = _tmp24_;
-			format = (gint) fmt;
-			_tmp25_ = pipeline_PipelineGetId (self);
-			g_signal_emit_by_name (self, "qo-s", _tmp25_, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
-			break;
-		}
 		default:
 		{
 			break;

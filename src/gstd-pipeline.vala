@@ -180,7 +180,7 @@ public class Pipeline : GLib.Object
 			    }
 			   }
 			   break;*/
-
+#if GSTREAMER_SUPPORT_QOS_SIGNAL
 			case MessageType.QOS:
 				bool live;
 		                uint64 running_time;
@@ -203,7 +203,7 @@ public class Pipeline : GLib.Object
 
 				QoS(PipelineGetId(), live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
-
+#endif
 			default:
 				break;
 		}
