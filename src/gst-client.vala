@@ -1,12 +1,14 @@
 /*
  * gstd/src/gst-client.vala
  *
- * Command line utility for sending D-Bus messages to GStreamer daemon with interactive support.
+ * Command line utility for sending D-Bus messages to GStreamer daemon with 
+*  interactive support.
  *
  * Copyright (c) 2010, RidgeRun
  * All rights reserved.
  *
- * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
+ * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for 
+*  complete text.
  */
 
 using GLib;
@@ -34,18 +36,19 @@ public class GstdCli : GLib.Object
 	 */
 	const OptionEntry[] options = {
 		{ "session", '\0', 0, OptionArg.NONE, ref useSessionBus,
-		  "Use session bus", null},
+		  "Use dbus session bus.", null},
 
 		{ "path", 'p', 0, OptionArg.STRING, ref obj_path,
-		  "Pipeline path or path_id, for which command will be apply."
-		  + "Usage:-p <path_id>", null},
+		  "Pipeline path or path_id.  Required for commands that " +
+		  "effect a specific pipeline.  Usage: -p <path_id>", null},
 
 		{ "enable_signals", 's', 0, OptionArg.INT, ref _signals,
-		  "Flag to enable the signals reception.Usage:-s <1>", null},
+		  "Flag to enable reception of dbus signals from GStreamer " +
+		  "Daemon.  Usage: -s 1", null},
 
 		{ "debug", 'd', 0, OptionArg.INT, ref _debug,
-		  "Flag to enable debug information on a pipeline,useful just for 'create'"
-		  + " command.Usage:-d <1>",
+		  "Flag to enable pipeline debug information to be displayed." + 
+		  "  Only used for the 'create' command.  Usage: -d 1",
 		  null},
 
 		{ "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
@@ -79,12 +82,15 @@ public class GstdCli : GLib.Object
 		{ "anull", "null-async", "Sets the pipeline to null state, it does not wait "
 		  + "the change to be done"},
 		{ "set", "set <element_name> <property_name> <data-type> <value>",
-		  "Sets an element's property value of the pipeline"},
+		  "Sets an element's property value of the pipeline\n" +
+		  "\t\tSupported <data-type>s include: boolean, integer, int64, and " +
+		  "string"},
 		{ "get", "get <element_name> <property_name> <data_type>",
 		  "Gets an element's property value of the pipeline"},
 		{ "get-duration", "get-duration", "Gets the pipeline duration time"},
 		{ "get-position", "get-position", "Gets the pipeline position"},
-		{ "sh", "sh \"<shell command with optional parameters>\"", "Execute a shell command using interactive console"},
+		{ "sh", "sh \"<shell command with optional parameters>\"", 
+		  "Execute a shell command using interactive console"},
 		{ "get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
 		  + " or the active pipeline"},
 		{ "list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
@@ -95,13 +101,14 @@ public class GstdCli : GLib.Object
 		{ "seek", "seek <position[ms]>", "Moves current playing position to a new"
 		  + " one"},
 		{ "skip", "skip <period[ms]>", "Skips a period, if period is positive: it"
-		  + " moves foward, if negative: it moves backward"},
-		{ "speed", "speed <rate>", "Changes playback rate:\n\t*rate>1.0: "
-		  + "fast-foward playback,\n\t*rate<1.0: slow-forward playback,\n\t"
-		  + "*rate=1.0: normal speed.\n\tWhen rate is negative: it enables "
-		  + "fast|slow-reverse playback "},
-		{ "exit", "exit", "Exit active console"},
-		{ "quit", "quit", "Quit active console"}
+		  + " moves forward, if negative: it moves backward"},
+		{ "speed", "speed <rate>", "Changes playback rate:\n" +
+		  "\t\t* rate>1.0: fast-forward playback,\n" +
+		  "\t\t* rate<1.0: slow-forward playback,\n" +
+		  "\t\t* rate=1.0: normal speed.\n" +
+		  "\t\tNegative rate causes reverse playback."},
+		{ "exit", "exit", "Exit/quit active console"},
+		{ "quit", "quit", "Exit/quit active console"}
 	};
 
 	/*
@@ -318,8 +325,8 @@ public class GstdCli : GLib.Object
 
 		string element = args[1];
 		string property = args[2];
-
 		bool success;
+
 		switch (args[3].down ())
 		{
 			case "boolean" :
@@ -679,7 +686,7 @@ public class GstdCli : GLib.Object
 	 *                 if there is no remaining args interactive
 	 *                 console is enable.
 	 */
-	public void parse_options (string[] args)
+	private void parse_options (string[] args)
 	{
 		/*Clean up global reference variables */
 		_signals = false;
@@ -688,7 +695,7 @@ public class GstdCli : GLib.Object
 		obj_path = null;
 
 		/*Parsing options */
-		var opt = new OptionContext ("(For Commands HELP: 'gst-client help')");
+		var opt = new OptionContext ("\n  For a list of [COMMANDS...], type: gst-client help");
 		opt.set_help_enabled (true);
 		opt.add_main_entries (options, null);
 
@@ -857,7 +864,7 @@ public class GstdCli : GLib.Object
 						if (cmds[id, 0] == args[1])
 						{
 							stdout.printf ("Command: %s\n", args[1]);
-							stdout.printf ("Description: %s\n", cmds[id, 2]);
+							stdout.printf ("Description:\t%s\n", cmds[id, 2]);
 							stdout.printf ("Syntax: %s\n", cmds[id, 1]);
 							return true;
 						}
@@ -874,7 +881,8 @@ public class GstdCli : GLib.Object
 					               "This is the list of supported commands:\n");
 					while (cmds[id, 0] != null)
 					{
-						stdout.printf (" %s:\t%s\n", cmds[id, 0], cmds[id, 2]);
+						stdout.printf (" %s:%s%s\n", cmds[id, 0], 
+						cmds[id, 0].length < 6 ? "\t\t" : "\t", cmds[id, 2]);
 						id++;
 					}
 					stdout.printf ("\n");
