@@ -178,8 +178,6 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
-PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
-PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -234,7 +232,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = gstd-1.0.pc
 dbusdir = $(datadir)/dbus-1/system-services/
 dbus_DATA = com.ridgerun.gstreamer.gstd.service
-dbusconfdir = /etc/dbus-1/system.d/
+dbusconfdir = $(sysconfdir)/dbus-1/system.d/
 dbusconf_DATA = gstd.conf
 EXTRA_DIST = gstd-1.0.pc.in com.ridgerun.gstreamer.gstd.service.in gstd.conf
 all: config.h
