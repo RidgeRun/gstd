@@ -126,6 +126,7 @@ public class GstdCli : GLib.Object
 		  "\t\t* rate<1.0: slow-forward playback,\n" +
 		  "\t\t* rate=1.0: normal speed.\n" +
 		  "\t\tNegative rate causes reverse playback."},
+		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
 		{ "exit", "exit", "Exit/quit active console"},
 		{ "quit", "quit", "Exit/quit active console"}
 	};
@@ -582,6 +583,13 @@ public class GstdCli : GLib.Object
 		return ret;
 	}
 
+	private bool pipeline_send_eos (dynamic DBus.Object pipeline, string[] args)
+	{
+		pipeline.PipelineSendEoS ();
+		stdout.printf ("Ok.\n");
+		return true;
+	}
+
 	private bool set_active (string path)
 	{
 		string new_active;
@@ -846,6 +854,9 @@ public class GstdCli : GLib.Object
 
 			case "speed":
 				return pipeline_speed (pipeline, args);
+
+			case "send-eos":
+				return pipeline_send_eos (pipeline, args);
 
 			case "list-pipes":
 				return pipeline_list ();
