@@ -54,25 +54,35 @@
     <method name="PipelineGetId">
         <arg type="t" name ="id" direction="out"/>
     </method>
+    <method name="PipelineSetState">
+        <arg type="i" name = "state" direction = "in" />
+        <arg type="b" name = "success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
     <method name="PipelinePlay">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+	<!-- annotation name="org.freedesktop.DBus.Deprecated" value="true"/ -->
     </method>
     <method name="PipelinePause">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+	<!-- annotation name="org.freedesktop.DBus.Deprecated" value="true"/ -->
     </method>
     <method name="PipelineReady">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+	<!-- annotation name="org.freedesktop.DBus.Deprecated" value="true"/ -->
     </method>
     <method name="PipelineNull">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+	<!-- annotation name="org.freedesktop.DBus.Deprecated" value="true"/ -->
     </method>
     <method name="PipelineAsyncPlay">
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>

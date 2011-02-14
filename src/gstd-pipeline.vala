@@ -92,7 +92,7 @@ public class Pipeline : GLib.Object
 		/* Destroy the pipeline */
 		if (this.PipelineIsInitialized())
 		{
-			if (!PipelineSetState (State.NULL))
+			if (!PipelineSetStateImpl (State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
 		}
 	}
@@ -211,7 +211,7 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	private bool PipelineSetState (State state)
+	private bool PipelineSetStateImpl (State state)
 	{
 		State current, pending;
 
@@ -229,6 +229,11 @@ public class Pipeline : GLib.Object
 			return false;
 		}
 		return true;
+	}
+
+	public bool PipelineSetState (int state)
+	{
+		return PipelineSetStateImpl((State)(state));
 	}
 
 	/**
@@ -290,7 +295,7 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelinePlay ()
 	{
-		return PipelineSetState (State.PLAYING);
+		return PipelineSetStateImpl (State.PLAYING);
 	}
 
 	/**
@@ -309,7 +314,7 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelineReady ()
 	{
-		return PipelineSetState (State.READY);
+		return PipelineSetStateImpl (State.READY);
 	}
 
 	/**
@@ -328,7 +333,7 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelinePause ()
 	{
-		return PipelineSetState (State.PAUSED);
+		return PipelineSetStateImpl (State.PAUSED);
 	}
 
 	/**
@@ -349,7 +354,7 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelineNull ()
 	{
-		return PipelineSetState (State.NULL);
+		return PipelineSetStateImpl (State.NULL);
 	}
 
 	/**
