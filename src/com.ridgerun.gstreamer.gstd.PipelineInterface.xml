@@ -200,6 +200,19 @@
     <method name="SetWindowId">
         <arg type="t" name="winId" direction="in"/>
     </method>
+    <method name="ElementSetState">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="i" name ="state" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="ElementAsyncSetState">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="i" name ="state" direction = "in" />
+	<annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+
 
     <!-- Signals definitions -->
     <signal name="EoS">
