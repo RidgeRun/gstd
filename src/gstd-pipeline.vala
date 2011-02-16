@@ -53,7 +53,7 @@ public class Pipeline : GLib.Object
 		try
 		{
 			/* Create the pipe */
-			pipeline = parse_launch (description) as Element;
+			this.pipeline = parse_launch (description) as Element;
 
 			/*Get and watch bus */
 			Gst.Bus bus = pipeline.get_bus ();
@@ -213,19 +213,15 @@ public class Pipeline : GLib.Object
 
 	private bool PipelineSetStateImpl (State state)
 	{
-		State current, pending;
-
 		pipeline.set_state (state);
-		/* Wait for the transition at most 8 secs */
-		pipeline.get_state (out current, out pending,
-		                    (Gst.ClockTime) 4000000000u);
-		pipeline.get_state (out current, out pending,
-		                    (Gst.ClockTime) 4000000000u);
+
+		/* Wait until state change is done */
+		State current, pending;
+		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE));
 		if (current != state)
 		{
 			if (debug)
-				Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s",
-				              state.to_string ());
+				Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
 			return false;
 		}
 		return true;
@@ -234,6 +230,18 @@ public class Pipeline : GLib.Object
 	public bool PipelineSetState (int state)
 	{
 		return PipelineSetStateImpl((State)(state));
+	}
+	
+	private void PipelineAsyncSetStateImpl(State state)
+	{
+		pipeline.set_state (state);
+		if (debug)
+			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
+	}
+	
+	public void PipelineAsyncSetState(int state)
+	{
+		PipelineAsyncSetStateImpl((State)(state));
 	}
 
 	/**
@@ -287,84 +295,6 @@ public class Pipeline : GLib.Object
 		pipeline.get_state (out current, out pending,
 		                    (Gst.ClockTime) 2000000000u);
 		return current.to_string ();
-	}
-
-	/**
-	   Sets a pipeline to play state. Returns when the pipeline has
-	   already reached that state.
-	 */
-	public bool PipelinePlay ()
-	{
-		return PipelineSetStateImpl (State.PLAYING);
-	}
-
-	/**
-	   Sets a pipeline to play state. Returns immediately
-	 */
-	public void PipelineAsyncPlay ()
-	{
-		pipeline.set_state (State.PLAYING);
-		if (debug)
-			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to playing");
-	}
-
-	/**
-	   Sets a pipeline to ready state. Returns when the pipeline has
-	   already reached that state.
-	 */
-	public bool PipelineReady ()
-	{
-		return PipelineSetStateImpl (State.READY);
-	}
-
-	/**
-	   Sets a pipeline to ready state. Returns immediately
-	 */
-	public void PipelineAsyncReady ()
-	{
-		pipeline.set_state (State.READY);
-		if (debug)
-			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to ready");
-	}
-
-	/**
-	   Sets a pipeline to paused state. Returns when the pipeline has
-	   already reached that state.
-	 */
-	public bool PipelinePause ()
-	{
-		return PipelineSetStateImpl (State.PAUSED);
-	}
-
-	/**
-	   Sets a pipeline to paused state. Returns immediately
-	 */
-	public void PipelineAsyncPause ()
-	{
-		pipeline.set_state (State.PAUSED);
-		if (debug)
-			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to pause");
-	}
-
-	/**
-	   Sets a pipeline to null state. Returns when the pipeline has already
-	   reached that state.
-	   On this state the pipeline releases all allocated resources, but can
-	   be reused again.
-	 */
-	public bool PipelineNull ()
-	{
-		return PipelineSetStateImpl (State.NULL);
-	}
-
-	/**
-	   Sets a pipeline to null state. Returns immediately
-	 */
-	public void PipelineAsyncNull ()
-	{
-		pipeline.set_state (State.NULL);
-		if (debug)
-			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to null");
 	}
 
 	/**

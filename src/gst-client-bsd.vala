@@ -31,6 +31,7 @@
  */
 
 using GLib;
+using Gst;
 
 public class GstdCli : GLib.Object
 {
@@ -56,7 +57,7 @@ public class GstdCli : GLib.Object
 	const OptionEntry[] options = {
 		{ "session", '\0', 0, OptionArg.NONE, ref useSessionBus,
 		  "Use dbus session bus.", null},
-
+		  
 		{ "path", 'p', 0, OptionArg.STRING, ref obj_path,
 		  "Pipeline path or path_id.  Required for commands that " +
 		  "effect a specific pipeline.  Usage: -p <path_id>", null},
@@ -224,7 +225,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelinePlay ();
+				bool ret = pipeline.PipelineSetState (State.PLAYING);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to play\n");
@@ -232,7 +233,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncPlay ();
+				pipeline.PipelineAsyncSetState (State.PLAYING);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -248,7 +249,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelineReady ();
+				bool ret = pipeline.PipelineSetState (State.READY);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to ready\n");
@@ -256,7 +257,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncReady ();
+				pipeline.PipelineAsyncSetState (State.READY);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -272,7 +273,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelinePause ();
+				bool ret = pipeline.PipelineSetState (State.PAUSED);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
@@ -280,7 +281,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncPause ();
+				pipeline.PipelineAsyncSetState (State.PAUSED);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -296,7 +297,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelineNull ();
+				bool ret = pipeline.PipelineSetState (State.NULL);
 				if (!ret)
 				{
 					stderr.printf ("Error:\nFailed to put the pipeline to null\n");
@@ -304,7 +305,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncNull ();
+				pipeline.PipelineAsyncSetState (State.NULL);
 			stdout.printf ("Ok.\n");
 			return true;
 		}

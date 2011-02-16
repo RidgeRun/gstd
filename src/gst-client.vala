@@ -12,6 +12,7 @@
  */
 
 using GLib;
+using Gst;
 
 public class GstdCli : GLib.Object
 {
@@ -30,6 +31,10 @@ public class GstdCli : GLib.Object
 	[CCode (array_length = false, array_null_terminated = true)]
 	static string[] _remaining_args;
 	static bool useSessionBus = false;
+	// true: This client is used by an interactive shell. false: This client is used as an interpreter of a script
+	static bool isInteractive;
+	// true: If a command fails, the client process exits. Prefered for script execution.
+	static bool isStrict = false;
 
 	/**
 	 * Application command line options
@@ -37,7 +42,7 @@ public class GstdCli : GLib.Object
 	const OptionEntry[] options = {
 		{ "session", '\0', 0, OptionArg.NONE, ref useSessionBus,
 		  "Use dbus session bus.", null},
-
+		  
 		{ "path", 'p', 0, OptionArg.STRING, ref obj_path,
 		  "Pipeline path or path_id.  Required for commands that " +
 		  "effect a specific pipeline.  Usage: -p <path_id>", null},
@@ -109,7 +114,8 @@ public class GstdCli : GLib.Object
 		  "\t\tNegative rate causes reverse playback."},
 		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
 		{ "exit", "exit", "Exit/quit active console"},
-		{ "quit", "quit", "Exit/quit active console"}
+		{ "quit", "quit", "Exit/quit active console"},
+		{ "strict", "strict", "Enable/disable strict execution mode."}
 	};
 
 	/*
@@ -118,6 +124,7 @@ public class GstdCli : GLib.Object
 	public GstdCli (string[] args) throws DBus.Error, GLib.Error
 	{
 		parse_options(args);
+		isInteractive = !(_remaining_args.length == 1);
 
 		/*Getting a Gstd Factory proxy object */
 		conn = DBus.Bus.get ((useSessionBus) ? DBus.BusType.SESSION : DBus.BusType.SYSTEM);
@@ -205,7 +212,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelinePlay ();
+				bool ret = pipeline.PipelineSetState (State.PLAYING);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to play\n");
@@ -213,7 +220,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncPlay ();
+				pipeline.PipelineAsyncSetState (State.PLAYING);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -229,7 +236,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelineReady ();
+				bool ret = pipeline.PipelineSetState (State.READY);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to ready\n");
@@ -237,7 +244,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncReady ();
+				pipeline.PipelineAsyncSetState (State.READY);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -253,7 +260,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelinePause ();
+				bool ret = pipeline.PipelineSetState (State.PAUSED);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
@@ -261,7 +268,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncPause ();
+				pipeline.PipelineAsyncSetState (State.PAUSED);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -277,7 +284,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelineNull ();
+				bool ret = pipeline.PipelineSetState (State.NULL);
 				if (!ret)
 				{
 					stderr.printf ("Error:\nFailed to put the pipeline to null\n");
@@ -285,7 +292,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.PipelineAsyncNull ();
+				pipeline.PipelineAsyncSetState (State.NULL);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -657,6 +664,30 @@ public class GstdCli : GLib.Object
 		}
 		return false;
 	}
+	
+	private bool set_strict (string[] args)
+	{
+		print ("set_strict\n");
+		foreach(string arg in args)
+		{
+			print (arg);
+			print("\n");
+		}
+		if(args.length < 2)
+			return false;
+		if(args[1] == "on")
+		{
+			isStrict = true;
+			return true;
+		}
+		if(args[1] == "off")
+		{
+			isStrict = false;
+			return true;
+		}
+		
+		return false;
+	}
 
 	/*
 	   *Create a proxy-object of the pipeline
@@ -730,7 +761,8 @@ public class GstdCli : GLib.Object
 			if (args[0].down () != "create" && args[0].down () != "help"
 			    && args[0].down () != "active" && args[0].down () != "quit"
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
-			    && args[0].down () != "exit" && args[0].down () != "sh" && active_pipe == null)
+			    && args[0].down () != "exit" && args[0].down () != "sh" 
+			    && args[0].down () != "strict" && active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -864,6 +896,9 @@ public class GstdCli : GLib.Object
 			case "exit":
 				cli_enable = false;
 				return true;
+				
+			case "strict":
+				return set_strict(args);
 
 			case "help":
 				int id = 0;
@@ -918,30 +953,35 @@ public class GstdCli : GLib.Object
 		string home = GLib.Environment.get_variable ("HOME");
 		Readline.History.read (home + "/.gst-client_history");
 
-		while (!stdin.eof ())
+		while (true)
 		{
 			/*Get the command from the stdin */
-			var cmd_line = Readline.readline ("gst-client$ ");
+			var cmd_line = Readline.readline ((isInteractive) ? "gst-client$ " : "");
+			
+			/* we reached the end of file */
+			if (cmd_line == null)
+				break;
 
-			if (cmd_line != null)
+			/*Saving command on history */
+			Readline.History.add (cmd_line);
+
+			/*Removes leading and trailing whitespace */
+			cmd_line.strip ();
+
+			/*Splits string into an array */
+			args = cmd_line.split (" ", -1);
+
+			/*Execute the command */
+			if (args[0] != null && cmd_line[0] != '#')
 			{
-				/*Saving command on history */
-				Readline.History.add (cmd_line);
-
-				/*Removes leading and trailing whitespace */
-				cmd_line.strip ();
-
-				/*Splits string into an array */
-				args = cmd_line.split (" ", -1);
-
-				/*Execute the command */
-				if (args[0] != null && cmd_line[0] != '#')
-					parse_cmd (args);
-
-				/*Exit from cli */
-				if (!cli_enable)
-					break;
+				bool result = parse_cmd (args);
+				if(!result && isStrict)
+					return false;
 			}
+
+			/*Exit from cli */
+			if (!cli_enable)
+				break;
 		}
 		Readline.History.write (home + "/.gst-client_history");
 		return true;
@@ -953,14 +993,24 @@ public class GstdCli : GLib.Object
 	 */
 	public bool parse (string[] args) throws DBus.Error, GLib.Error
 	{
-		if (args.length > 0)
+		if (isInteractive)
 		{
-			/*Parse single command */
-			return parse_cmd (args);
+			if (args.length > 0)
+			{
+				/*Parse single command */
+				return parse_cmd (args);
+			}
+			else
+			{
+				/*Execute interactive console */
+				cli_enable = true;
+				return cli ();
+			}
 		}
 		else
 		{
-			/*Execute interactive console */
+			Readline.instream = FileStream.open(_remaining_args[_remaining_args.length - 1], "r");
+			Readline.outstream = FileStream.open("/dev/null", "w");
 			cli_enable = true;
 			return cli ();
 		}
@@ -974,7 +1024,7 @@ public class GstdCli : GLib.Object
 
 			/*Parse commands */
 			if (!cli.parse (_remaining_args))
-				return -1;
+				return 1;
 		}
 		catch (DBus.Error e)
 		{
