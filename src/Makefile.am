@@ -15,7 +15,7 @@ gst_client_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gs
 gst_client_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@ -lreadline -lncurses
 
 gst_client_bsd_SOURCES = gst-client-bsd.vala
-gst_client_bsd_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg gstreamer-0.10 gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1
+gst_client_bsd_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1
 gst_client_bsd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
 gst_client_bsd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
 
