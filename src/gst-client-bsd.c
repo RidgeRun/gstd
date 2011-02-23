@@ -101,7 +101,7 @@ GstdCli* gstd_cli_new (gchar** args, int args_length1, GError** error);
 GstdCli* gstd_cli_construct (GType object_type, gchar** args, int args_length1, GError** error);
 static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length1);
 void gstd_cli_Error_cb (GstdCli* self);
-void gstd_cli_Eos_cb (GstdCli* self);
+void gstd_cli_EoS_cb (GstdCli* self);
 void gstd_cli_StateChanged_cb (GstdCli* self);
 static gboolean gstd_cli_pipeline_create (GstdCli* self, const gchar* description);
 static gchar* _dynamic_Create0 (DBusGProxy* self, const gchar* param1, GError** error);
@@ -122,43 +122,41 @@ static gboolean _dynamic_PipelineSetState8 (DBusGProxy* self, GstState param1, G
 static void _dynamic_PipelineAsyncSetState9 (DBusGProxy* self, GstState param1, GError** error);
 static gboolean gstd_cli_gstd_ping (GstdCli* self);
 static gboolean _dynamic_Ping10 (DBusGProxy* self, GError** error);
+static gboolean gstd_cli_pipeline_ping (GstdCli* self);
+static gboolean _dynamic_Ping11 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static void _dynamic_ElementGetPropertyBoolean11 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean* param3, gboolean* param4, GError** error);
-static void _dynamic_ElementGetPropertyInt12 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint* param3, gboolean* param4, GError** error);
-static void _dynamic_ElementGetPropertyInt6413 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64* param3, gboolean* param4, GError** error);
-static void _dynamic_ElementGetPropertyString14 (DBusGProxy* self, const gchar* param1, const gchar* param2, gchar** param3, gboolean* param4, GError** error);
+static void _dynamic_ElementGetPropertyBoolean12 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean* param3, gboolean* param4, GError** error);
+static void _dynamic_ElementGetPropertyInt13 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint* param3, gboolean* param4, GError** error);
+static void _dynamic_ElementGetPropertyInt6414 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64* param3, gboolean* param4, GError** error);
+static void _dynamic_ElementGetPropertyString15 (DBusGProxy* self, const gchar* param1, const gchar* param2, gchar** param3, gboolean* param4, GError** error);
 static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static gboolean _dynamic_ElementSetPropertyBoolean15 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean param3, GError** error);
-static gboolean _dynamic_ElementSetPropertyInt16 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint param3, GError** error);
-static gboolean _dynamic_ElementSetPropertyInt6417 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64 param3, GError** error);
-static gboolean _dynamic_ElementSetPropertyString18 (DBusGProxy* self, const gchar* param1, const gchar* param2, const gchar* param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyBoolean16 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyInt17 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyInt6418 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64 param3, GError** error);
+static gboolean _dynamic_ElementSetPropertyString19 (DBusGProxy* self, const gchar* param1, const gchar* param2, const gchar* param3, GError** error);
 static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipeline);
-static gint64 _dynamic_PipelineGetDuration19 (DBusGProxy* self, GError** error);
+static gint64 _dynamic_PipelineGetDuration20 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipeline);
-static gint64 _dynamic_PipelineGetPosition20 (DBusGProxy* self, GError** error);
+static gint64 _dynamic_PipelineGetPosition21 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline);
-static gchar* _dynamic_PipelineGetState21 (DBusGProxy* self, GError** error);
+static GstState _dynamic_PipelineGetState22 (DBusGProxy* self, GError** error);
+static gboolean gstd_cli_element_get_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
+static GstState _dynamic_ElementGetState23 (DBusGProxy* self, const gchar* param1, GError** error);
 static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static gboolean _dynamic_PipelineSeek22 (DBusGProxy* self, gint64 param1, GError** error);
+static gboolean _dynamic_PipelineSeek24 (DBusGProxy* self, gint64 param1, GError** error);
 static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static gboolean _dynamic_PipelineSkip23 (DBusGProxy* self, gint64 param1, GError** error);
+static gboolean _dynamic_PipelineSkip25 (DBusGProxy* self, gint64 param1, GError** error);
 static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static gboolean _dynamic_PipelineSpeed24 (DBusGProxy* self, gdouble param1, GError** error);
+static gboolean _dynamic_PipelineSpeed26 (DBusGProxy* self, gdouble param1, GError** error);
 static gboolean gstd_cli_pipeline_send_eos (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
-static void _dynamic_PipelineSendEoS25 (DBusGProxy* self, GError** error);
+static void _dynamic_PipelineSendEoS27 (DBusGProxy* self, GError** error);
 static gboolean gstd_cli_set_active (GstdCli* self, const gchar* path);
 static gboolean gstd_cli_get_active (GstdCli* self);
 static gboolean gstd_cli_pipeline_list (GstdCli* self);
-static gchar** _dynamic_List26 (DBusGProxy* self, int* result_length1, GError** error);
+static gchar** _dynamic_List28 (DBusGProxy* self, int* result_length1, GError** error);
 static gboolean gstd_cli_shell (GstdCli* self, const gchar* command);
-static gboolean _dynamic_PipelineIsInitialized27 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelineIsInitialized29 (DBusGProxy* self, GError** error);
 gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GError** error);
-static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self);
-void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-static void _gstd_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self);
-void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
-static void _gstd_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self);
-void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data);
 gboolean gstd_cli_parse (GstdCli* self, gchar** args, int args_length1, GError** error);
 static gint gstd_cli_main (gchar** args, int args_length1);
 static void gstd_cli_finalize (GObject* obj);
@@ -216,7 +214,7 @@ void gstd_cli_Error_cb (GstdCli* self) {
 }
 
 
-void gstd_cli_Eos_cb (GstdCli* self) {
+void gstd_cli_EoS_cb (GstdCli* self) {
 	g_return_if_fail (self != NULL);
 	fprintf (stdout, "End of Stream signal received\n");
 }
@@ -631,7 +629,60 @@ static gboolean gstd_cli_gstd_ping (GstdCli* self) {
 }
 
 
-static void _dynamic_ElementGetPropertyBoolean11 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean* param3, gboolean* param4, GError** error) {
+static gboolean _dynamic_Ping11 (DBusGProxy* self, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "Ping", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_pipeline_ping (GstdCli* self) {
+	gboolean result = FALSE;
+	gboolean _tmp0_;
+	gboolean _result_;
+	const gchar* _tmp1_;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	if (self->priv->pipeline == NULL) {
+		result = FALSE;
+		return result;
+	}
+	_tmp0_ = _dynamic_Ping11 (self->priv->pipeline, &_inner_error_);
+	_result_ = _tmp0_;
+	if (_inner_error_ != NULL) {
+		goto __catch6_g_error;
+	}
+	_tmp1_ = NULL;
+	if (_result_) {
+		_tmp1_ = "Success";
+	} else {
+		_tmp1_ = "Failed";
+	}
+	g_print ("Pipeline ping result = %s\n", _tmp1_);
+	result = _result_;
+	return result;
+	goto __finally6;
+	__catch6_g_error:
+	{
+		GError * e;
+		e = _inner_error_;
+		_inner_error_ = NULL;
+		fprintf (stderr, "Error:\nFailed to ping pipeline!\n");
+		result = FALSE;
+		_g_error_free0 (e);
+		return result;
+	}
+	__finally6:
+	g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+	g_clear_error (&_inner_error_);
+	return FALSE;
+}
+
+
+static void _dynamic_ElementGetPropertyBoolean12 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean* param3, gboolean* param4, GError** error) {
 	dbus_g_proxy_call (self, "ElementGetPropertyBoolean", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_BOOLEAN, param3, G_TYPE_BOOLEAN, param4, G_TYPE_INVALID);
 	if (*error) {
 		return;
@@ -639,7 +690,7 @@ static void _dynamic_ElementGetPropertyBoolean11 (DBusGProxy* self, const gchar*
 }
 
 
-static void _dynamic_ElementGetPropertyInt12 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint* param3, gboolean* param4, GError** error) {
+static void _dynamic_ElementGetPropertyInt13 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint* param3, gboolean* param4, GError** error) {
 	dbus_g_proxy_call (self, "ElementGetPropertyInt", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_INT, param3, G_TYPE_BOOLEAN, param4, G_TYPE_INVALID);
 	if (*error) {
 		return;
@@ -647,7 +698,7 @@ static void _dynamic_ElementGetPropertyInt12 (DBusGProxy* self, const gchar* par
 }
 
 
-static void _dynamic_ElementGetPropertyInt6413 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64* param3, gboolean* param4, GError** error) {
+static void _dynamic_ElementGetPropertyInt6414 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64* param3, gboolean* param4, GError** error) {
 	dbus_g_proxy_call (self, "ElementGetPropertyInt64", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_INT64, param3, G_TYPE_BOOLEAN, param4, G_TYPE_INVALID);
 	if (*error) {
 		return;
@@ -655,7 +706,7 @@ static void _dynamic_ElementGetPropertyInt6413 (DBusGProxy* self, const gchar* p
 }
 
 
-static void _dynamic_ElementGetPropertyString14 (DBusGProxy* self, const gchar* param1, const gchar* param2, gchar** param3, gboolean* param4, GError** error) {
+static void _dynamic_ElementGetPropertyString15 (DBusGProxy* self, const gchar* param1, const gchar* param2, gchar** param3, gboolean* param4, GError** error) {
 	dbus_g_proxy_call (self, "ElementGetPropertyString", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INVALID, G_TYPE_STRING, param3, G_TYPE_BOOLEAN, param4, G_TYPE_INVALID);
 	if (*error) {
 		return;
@@ -715,7 +766,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 				gboolean _tmp7_;
 				gboolean _tmp8_;
 				const gchar* _tmp9_;
-				_dynamic_ElementGetPropertyBoolean11 (pipeline, element, property, &_tmp7_, &_tmp8_, &_inner_error_);
+				_dynamic_ElementGetPropertyBoolean12 (pipeline, element, property, &_tmp7_, &_tmp8_, &_inner_error_);
 				boolean_v = _tmp7_;
 				success = _tmp8_;
 				if (_inner_error_ != NULL) {
@@ -747,7 +798,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 				gint integer_v = 0;
 				gint _tmp10_;
 				gboolean _tmp11_;
-				_dynamic_ElementGetPropertyInt12 (pipeline, element, property, &_tmp10_, &_tmp11_, &_inner_error_);
+				_dynamic_ElementGetPropertyInt13 (pipeline, element, property, &_tmp10_, &_tmp11_, &_inner_error_);
 				integer_v = _tmp10_;
 				success = _tmp11_;
 				if (_inner_error_ != NULL) {
@@ -773,7 +824,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 				gint64 int64_v = 0LL;
 				gint64 _tmp12_;
 				gboolean _tmp13_;
-				_dynamic_ElementGetPropertyInt6413 (pipeline, element, property, &_tmp12_, &_tmp13_, &_inner_error_);
+				_dynamic_ElementGetPropertyInt6414 (pipeline, element, property, &_tmp12_, &_tmp13_, &_inner_error_);
 				int64_v = _tmp12_;
 				success = _tmp13_;
 				if (_inner_error_ != NULL) {
@@ -800,7 +851,7 @@ static gboolean gstd_cli_pipeline_get_property (GstdCli* self, DBusGProxy* pipel
 				gchar* _tmp14_ = NULL;
 				gboolean _tmp15_;
 				string_v = NULL;
-				_dynamic_ElementGetPropertyString14 (pipeline, element, property, &_tmp14_, &_tmp15_, &_inner_error_);
+				_dynamic_ElementGetPropertyString15 (pipeline, element, property, &_tmp14_, &_tmp15_, &_inner_error_);
 				_g_free0 (string_v);
 				string_v = _tmp14_;
 				success = _tmp15_;
@@ -863,7 +914,7 @@ static gboolean string_to_bool (const gchar* self) {
 }
 
 
-static gboolean _dynamic_ElementSetPropertyBoolean15 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyBoolean16 (DBusGProxy* self, const gchar* param1, const gchar* param2, gboolean param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyBoolean", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_BOOLEAN, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -873,7 +924,7 @@ static gboolean _dynamic_ElementSetPropertyBoolean15 (DBusGProxy* self, const gc
 }
 
 
-static gboolean _dynamic_ElementSetPropertyInt16 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyInt17 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyInt", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INT, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -883,7 +934,7 @@ static gboolean _dynamic_ElementSetPropertyInt16 (DBusGProxy* self, const gchar*
 }
 
 
-static gboolean _dynamic_ElementSetPropertyInt6417 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64 param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyInt6418 (DBusGProxy* self, const gchar* param1, const gchar* param2, gint64 param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyInt64", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_INT64, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -893,7 +944,7 @@ static gboolean _dynamic_ElementSetPropertyInt6417 (DBusGProxy* self, const gcha
 }
 
 
-static gboolean _dynamic_ElementSetPropertyString18 (DBusGProxy* self, const gchar* param1, const gchar* param2, const gchar* param3, GError** error) {
+static gboolean _dynamic_ElementSetPropertyString19 (DBusGProxy* self, const gchar* param1, const gchar* param2, const gchar* param3, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "ElementSetPropertyString", error, G_TYPE_STRING, param1, G_TYPE_STRING, param2, G_TYPE_STRING, param3, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -974,7 +1025,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 					_tmp12_ = "false";
 				}
 				fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%s\n", property, element, _tmp12_);
-				_tmp13_ = _dynamic_ElementSetPropertyBoolean15 (pipeline, element, property, boolean_v, &_inner_error_);
+				_tmp13_ = _dynamic_ElementSetPropertyBoolean16 (pipeline, element, property, boolean_v, &_inner_error_);
 				_tmp14_ = _tmp13_;
 				if (_inner_error_ != NULL) {
 					_g_free0 (property);
@@ -998,7 +1049,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 				_tmp15_ = atoi (args[4]);
 				integer_v = _tmp15_;
 				fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%d\n", property, element, integer_v);
-				_tmp16_ = _dynamic_ElementSetPropertyInt16 (pipeline, element, property, integer_v, &_inner_error_);
+				_tmp16_ = _dynamic_ElementSetPropertyInt17 (pipeline, element, property, integer_v, &_inner_error_);
 				_tmp17_ = _tmp16_;
 				if (_inner_error_ != NULL) {
 					_g_free0 (property);
@@ -1022,7 +1073,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 				_tmp18_ = g_ascii_strtoll (args[4], NULL, 0);
 				int64_v = _tmp18_;
 				fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%lld\n", property, element, int64_v);
-				_tmp19_ = _dynamic_ElementSetPropertyInt6417 (pipeline, element, property, int64_v, &_inner_error_);
+				_tmp19_ = _dynamic_ElementSetPropertyInt6418 (pipeline, element, property, int64_v, &_inner_error_);
 				_tmp20_ = _tmp19_;
 				if (_inner_error_ != NULL) {
 					_g_free0 (property);
@@ -1046,7 +1097,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 				_tmp21_ = g_strdup (args[4]);
 				string_v = _tmp21_;
 				fprintf (stdout, "Trying to set '%s' on element '%s' to the value:%s\n", property, element, string_v);
-				_tmp22_ = _dynamic_ElementSetPropertyString18 (pipeline, element, property, string_v, &_inner_error_);
+				_tmp22_ = _dynamic_ElementSetPropertyString19 (pipeline, element, property, string_v, &_inner_error_);
 				_tmp23_ = _tmp22_;
 				if (_inner_error_ != NULL) {
 					_g_free0 (string_v);
@@ -1088,7 +1139,7 @@ static gboolean gstd_cli_pipeline_set_property (GstdCli* self, DBusGProxy* pipel
 }
 
 
-static gint64 _dynamic_PipelineGetDuration19 (DBusGProxy* self, GError** error) {
+static gint64 _dynamic_PipelineGetDuration20 (DBusGProxy* self, GError** error) {
 	gint64 result;
 	dbus_g_proxy_call (self, "PipelineGetDuration", error, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1105,7 +1156,7 @@ static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipel
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
-	_tmp0_ = _dynamic_PipelineGetDuration19 (pipeline, &_inner_error_);
+	_tmp0_ = _dynamic_PipelineGetDuration20 (pipeline, &_inner_error_);
 	time = _tmp0_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1125,7 +1176,7 @@ static gboolean gstd_cli_pipeline_get_duration (GstdCli* self, DBusGProxy* pipel
 }
 
 
-static gint64 _dynamic_PipelineGetPosition20 (DBusGProxy* self, GError** error) {
+static gint64 _dynamic_PipelineGetPosition21 (DBusGProxy* self, GError** error) {
 	gint64 result;
 	dbus_g_proxy_call (self, "PipelineGetPosition", error, G_TYPE_INVALID, G_TYPE_INT64, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1142,7 +1193,7 @@ static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipel
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
-	_tmp0_ = _dynamic_PipelineGetPosition20 (pipeline, &_inner_error_);
+	_tmp0_ = _dynamic_PipelineGetPosition21 (pipeline, &_inner_error_);
 	pos = _tmp0_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1162,11 +1213,11 @@ static gboolean gstd_cli_pipeline_get_position (GstdCli* self, DBusGProxy* pipel
 }
 
 
-static gchar* _dynamic_PipelineGetState21 (DBusGProxy* self, GError** error) {
-	gchar* result;
-	dbus_g_proxy_call (self, "PipelineGetState", error, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
+static GstState _dynamic_PipelineGetState22 (DBusGProxy* self, GError** error) {
+	GstState result;
+	dbus_g_proxy_call (self, "PipelineGetState", error, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
 	if (*error) {
-		return NULL;
+		return 0;
 	}
 	return result;
 }
@@ -1174,33 +1225,70 @@ static gchar* _dynamic_PipelineGetState21 (DBusGProxy* self, GError** error) {
 
 static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline) {
 	gboolean result = FALSE;
-	gchar* _tmp0_ = NULL;
-	gchar* state;
+	GstState _tmp0_;
+	GstState state;
+	const gchar* _tmp1_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
-	_tmp0_ = _dynamic_PipelineGetState21 (pipeline, &_inner_error_);
+	_tmp0_ = _dynamic_PipelineGetState22 (pipeline, &_inner_error_);
 	state = _tmp0_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
-	if (state == NULL) {
-		fprintf (stderr, "Error:\nFailed to get the pipeline state\n");
-		result = FALSE;
-		_g_free0 (state);
-		return result;
-	}
-	fprintf (stdout, "The pipeline state is: %s\n", state);
-	fprintf (stdout, "Ok.\n");
+	_tmp1_ = gst_element_state_get_name (state);
+	g_print ("The pipeline state is: %s\n", _tmp1_);
 	result = TRUE;
-	_g_free0 (state);
 	return result;
 }
 
 
-static gboolean _dynamic_PipelineSeek22 (DBusGProxy* self, gint64 param1, GError** error) {
+static GstState _dynamic_ElementGetState23 (DBusGProxy* self, const gchar* param1, GError** error) {
+	GstState result;
+	dbus_g_proxy_call (self, "ElementGetState", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_INT, &result, G_TYPE_INVALID);
+	if (*error) {
+		return 0;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_element_get_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1) {
+	gboolean result = FALSE;
+	gchar* _tmp0_;
+	gchar* element;
+	GstState _tmp1_;
+	GstState state;
+	const gchar* _tmp2_ = NULL;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	if (args[1] == NULL) {
+		fprintf (stdout, "Error:\nMissing element argument. Execute:'help element_get_state'\n");
+		result = FALSE;
+		return result;
+	}
+	_tmp0_ = g_strdup (args[1]);
+	element = _tmp0_;
+	_tmp1_ = _dynamic_ElementGetState23 (pipeline, element, &_inner_error_);
+	state = _tmp1_;
+	if (_inner_error_ != NULL) {
+		_g_free0 (element);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	_tmp2_ = gst_element_state_get_name (state);
+	g_print ("The state of %s is: %s\n", element, _tmp2_);
+	result = TRUE;
+	_g_free0 (element);
+	return result;
+}
+
+
+static gboolean _dynamic_PipelineSeek24 (DBusGProxy* self, gint64 param1, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSeek", error, G_TYPE_INT64, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1227,7 +1315,7 @@ static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, gch
 	_tmp0_ = atoi (args[1]);
 	pos_ms = (gint64) _tmp0_;
 	pos_ms = pos_ms * ((gint64) 1000000);
-	_tmp1_ = _dynamic_PipelineSeek22 (pipeline, pos_ms, &_inner_error_);
+	_tmp1_ = _dynamic_PipelineSeek24 (pipeline, pos_ms, &_inner_error_);
 	ret = _tmp1_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1245,7 +1333,7 @@ static gboolean gstd_cli_pipeline_seek (GstdCli* self, DBusGProxy* pipeline, gch
 }
 
 
-static gboolean _dynamic_PipelineSkip23 (DBusGProxy* self, gint64 param1, GError** error) {
+static gboolean _dynamic_PipelineSkip25 (DBusGProxy* self, gint64 param1, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSkip", error, G_TYPE_INT64, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1272,7 +1360,7 @@ static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, gch
 	_tmp0_ = atoi (args[1]);
 	period_ms = (gint64) _tmp0_;
 	period_ms = period_ms * ((gint64) 1000000);
-	_tmp1_ = _dynamic_PipelineSkip23 (pipeline, period_ms, &_inner_error_);
+	_tmp1_ = _dynamic_PipelineSkip25 (pipeline, period_ms, &_inner_error_);
 	ret = _tmp1_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1290,7 +1378,7 @@ static gboolean gstd_cli_pipeline_skip (GstdCli* self, DBusGProxy* pipeline, gch
 }
 
 
-static gboolean _dynamic_PipelineSpeed24 (DBusGProxy* self, gdouble param1, GError** error) {
+static gboolean _dynamic_PipelineSpeed26 (DBusGProxy* self, gdouble param1, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineSpeed", error, G_TYPE_DOUBLE, param1, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1316,7 +1404,7 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, gc
 	}
 	_tmp0_ = g_ascii_strtod (args[1], NULL);
 	rate = _tmp0_;
-	_tmp1_ = _dynamic_PipelineSpeed24 (pipeline, rate, &_inner_error_);
+	_tmp1_ = _dynamic_PipelineSpeed26 (pipeline, rate, &_inner_error_);
 	ret = _tmp1_;
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1334,7 +1422,7 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, gc
 }
 
 
-static void _dynamic_PipelineSendEoS25 (DBusGProxy* self, GError** error) {
+static void _dynamic_PipelineSendEoS27 (DBusGProxy* self, GError** error) {
 	dbus_g_proxy_call (self, "PipelineSendEoS", error, G_TYPE_INVALID, G_TYPE_INVALID);
 	if (*error) {
 		return;
@@ -1347,7 +1435,7 @@ static gboolean gstd_cli_pipeline_send_eos (GstdCli* self, DBusGProxy* pipeline,
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pipeline != NULL, FALSE);
-	_dynamic_PipelineSendEoS25 (pipeline, &_inner_error_);
+	_dynamic_PipelineSendEoS27 (pipeline, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1440,7 +1528,7 @@ static gboolean gstd_cli_get_active (GstdCli* self) {
 }
 
 
-static gchar** _dynamic_List26 (DBusGProxy* self, int* result_length1, GError** error) {
+static gchar** _dynamic_List28 (DBusGProxy* self, int* result_length1, GError** error) {
 	gchar** result;
 	dbus_g_proxy_call (self, "List", error, G_TYPE_INVALID, G_TYPE_STRV, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1461,7 +1549,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 	gchar** paths;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
-	_tmp1_ = _dynamic_List26 (self->priv->factory, &_tmp0_, &_inner_error_);
+	_tmp1_ = _dynamic_List28 (self->priv->factory, &_tmp0_, &_inner_error_);
 	_tmp2_ = _tmp1_;
 	paths_length1 = _tmp0_;
 	_paths_size_ = paths_length1;
@@ -1511,7 +1599,7 @@ static gboolean gstd_cli_shell (GstdCli* self, const gchar* command) {
 	g_spawn_command_line_sync (command, NULL, NULL, NULL, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == G_SPAWN_ERROR) {
-			goto __catch6_g_spawn_error;
+			goto __catch7_g_spawn_error;
 		}
 		g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1519,8 +1607,8 @@ static gboolean gstd_cli_shell (GstdCli* self, const gchar* command) {
 	}
 	result = TRUE;
 	return result;
-	goto __finally6;
-	__catch6_g_spawn_error:
+	goto __finally7;
+	__catch7_g_spawn_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1528,7 +1616,7 @@ static gboolean gstd_cli_shell (GstdCli* self, const gchar* command) {
 		fprintf (stderr, "Fail to execute command:%s", e->message);
 		_g_error_free0 (e);
 	}
-	__finally6:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1539,7 +1627,7 @@ static gboolean gstd_cli_shell (GstdCli* self, const gchar* command) {
 }
 
 
-static gboolean _dynamic_PipelineIsInitialized27 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelineIsInitialized29 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1554,7 +1642,7 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const gchar* object_path) {
 	DBusGProxy* _tmp0_ = NULL;
 	DBusGProxy* _tmp1_;
 	gboolean _tmp2_;
-	gboolean ret;
+	gboolean _tmp3_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (object_path == NULL) {
@@ -1565,17 +1653,15 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const gchar* object_path) {
 	_tmp1_ = _tmp0_;
 	_g_object_unref0 (self->priv->pipeline);
 	self->priv->pipeline = _tmp1_;
-	_tmp2_ = _dynamic_PipelineIsInitialized27 (self->priv->pipeline, &_inner_error_);
-	ret = _tmp2_;
+	_tmp2_ = _dynamic_PipelineIsInitialized29 (self->priv->pipeline, &_inner_error_);
+	_tmp3_ = _tmp2_;
 	if (_inner_error_ != NULL) {
-		goto __catch7_g_error;
+		goto __catch8_g_error;
 	}
-	if (!ret) {
-		result = FALSE;
-		return result;
-	}
-	goto __finally7;
-	__catch7_g_error:
+	result = _tmp3_;
+	return result;
+	goto __finally8;
+	__catch8_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1584,14 +1670,10 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const gchar* object_path) {
 		_g_error_free0 (e);
 		return result;
 	}
-	__finally7:
-	if (_inner_error_ != NULL) {
-		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-		g_clear_error (&_inner_error_);
-		return FALSE;
-	}
-	result = TRUE;
-	return result;
+	__finally8:
+	g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+	g_clear_error (&_inner_error_);
+	return FALSE;
 }
 
 
@@ -1618,7 +1700,7 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 	g_option_context_parse (opt, &args_length1, &args, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == G_OPTION_ERROR) {
-			goto __catch8_g_option_error;
+			goto __catch9_g_option_error;
 		}
 		_g_option_context_free0 (opt);
 		g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1638,8 +1720,8 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 		_g_free0 (gstd_cli_obj_path);
 		gstd_cli_obj_path = _tmp5_;
 	}
-	goto __finally8;
-	__catch8_g_option_error:
+	goto __finally9;
+	__catch9_g_option_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -1647,7 +1729,7 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 		fprintf (stderr, "OptionError failure: %s\n", e->message);
 		_g_error_free0 (e);
 	}
-	__finally8:
+	__finally9:
 	if (_inner_error_ != NULL) {
 		_g_option_context_free0 (opt);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1671,45 +1753,10 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 }
 
 
-static void _gstd_cli_Error_cb_dynamic_Error0_ (DBusGProxy* _sender, gpointer self) {
-	gstd_cli_Error_cb (self);
-}
-
-
-void _dynamic_Error1_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (obj, "Error", G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (obj, "Error", handler, data, NULL);
-}
-
-
-static void _gstd_cli_Eos_cb_dynamic_Eos2_ (DBusGProxy* _sender, gpointer self) {
-	gstd_cli_Eos_cb (self);
-}
-
-
-void _dynamic_Eos3_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (obj, "Eos", G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (obj, "Eos", handler, data, NULL);
-}
-
-
-static void _gstd_cli_StateChanged_cb_dynamic_StateChanged4_ (DBusGProxy* _sender, gpointer self) {
-	gstd_cli_StateChanged_cb (self);
-}
-
-
-void _dynamic_StateChanged5_connect (gpointer obj, const char * signal_name, GCallback handler, gpointer data) {
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (obj, "StateChanged", G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (obj, "StateChanged", handler, data, NULL);
-}
-
-
 gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GError** error) {
 	gboolean result = FALSE;
 	gboolean _tmp0_;
+	gboolean success;
 	gchar* _tmp32_ = NULL;
 	gchar* _tmp33_;
 	GQuark _tmp34_;
@@ -1739,9 +1786,12 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 	static GQuark _tmp34__label23 = 0;
 	static GQuark _tmp34__label24 = 0;
 	static GQuark _tmp34__label25 = 0;
+	static GQuark _tmp34__label26 = 0;
+	static GQuark _tmp34__label27 = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = gstd_cli_create_proxypipe (self, gstd_cli_obj_path);
-	if (!_tmp0_) {
+	success = _tmp0_;
+	if (!success) {
 		gboolean _tmp1_ = FALSE;
 		gboolean _tmp2_ = FALSE;
 		gboolean _tmp3_ = FALSE;
@@ -1750,78 +1800,100 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 		gboolean _tmp6_ = FALSE;
 		gboolean _tmp7_ = FALSE;
 		gboolean _tmp8_ = FALSE;
-		gchar* _tmp9_ = NULL;
-		gchar* _tmp10_;
-		gboolean _tmp11_;
-		_tmp9_ = g_utf8_strdown (args[0], (gssize) (-1));
-		_tmp10_ = _tmp9_;
-		if ((_tmp11_ = g_strcmp0 (_tmp10_, "create") != 0, _g_free0 (_tmp10_), _tmp11_)) {
-			gchar* _tmp12_ = NULL;
-			gchar* _tmp13_;
-			_tmp12_ = g_utf8_strdown (args[0], (gssize) (-1));
-			_tmp13_ = _tmp12_;
-			_tmp8_ = g_strcmp0 (_tmp13_, "help") != 0;
-			_g_free0 (_tmp13_);
-		} else {
-			_tmp8_ = FALSE;
-		}
-		if (_tmp8_) {
+		gboolean _tmp9_ = FALSE;
+		gboolean _tmp10_ = FALSE;
+		gchar* _tmp11_ = NULL;
+		gchar* _tmp12_;
+		gboolean _tmp13_;
+		_tmp11_ = g_utf8_strdown (args[0], (gssize) (-1));
+		_tmp12_ = _tmp11_;
+		if ((_tmp13_ = g_strcmp0 (_tmp12_, "create") != 0, _g_free0 (_tmp12_), _tmp13_)) {
 			gchar* _tmp14_ = NULL;
 			gchar* _tmp15_;
 			_tmp14_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp15_ = _tmp14_;
-			_tmp7_ = g_strcmp0 (_tmp15_, "active") != 0;
+			_tmp10_ = g_strcmp0 (_tmp15_, "help") != 0;
 			_g_free0 (_tmp15_);
 		} else {
-			_tmp7_ = FALSE;
+			_tmp10_ = FALSE;
 		}
-		if (_tmp7_) {
+		if (_tmp10_) {
 			gchar* _tmp16_ = NULL;
 			gchar* _tmp17_;
 			_tmp16_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp17_ = _tmp16_;
-			_tmp6_ = g_strcmp0 (_tmp17_, "quit") != 0;
+			_tmp9_ = g_strcmp0 (_tmp17_, "active") != 0;
 			_g_free0 (_tmp17_);
 		} else {
-			_tmp6_ = FALSE;
+			_tmp9_ = FALSE;
 		}
-		if (_tmp6_) {
+		if (_tmp9_) {
 			gchar* _tmp18_ = NULL;
 			gchar* _tmp19_;
 			_tmp18_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp19_ = _tmp18_;
-			_tmp5_ = g_strcmp0 (_tmp19_, "list-pipes") != 0;
+			_tmp8_ = g_strcmp0 (_tmp19_, "quit") != 0;
 			_g_free0 (_tmp19_);
 		} else {
-			_tmp5_ = FALSE;
+			_tmp8_ = FALSE;
 		}
-		if (_tmp5_) {
+		if (_tmp8_) {
 			gchar* _tmp20_ = NULL;
 			gchar* _tmp21_;
 			_tmp20_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp21_ = _tmp20_;
-			_tmp4_ = g_strcmp0 (_tmp21_, "ping") != 0;
+			_tmp7_ = g_strcmp0 (_tmp21_, "list-pipes") != 0;
 			_g_free0 (_tmp21_);
 		} else {
-			_tmp4_ = FALSE;
+			_tmp7_ = FALSE;
 		}
-		if (_tmp4_) {
+		if (_tmp7_) {
 			gchar* _tmp22_ = NULL;
 			gchar* _tmp23_;
 			_tmp22_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp23_ = _tmp22_;
-			_tmp3_ = g_strcmp0 (_tmp23_, "exit") != 0;
+			_tmp6_ = g_strcmp0 (_tmp23_, "ping") != 0;
 			_g_free0 (_tmp23_);
 		} else {
-			_tmp3_ = FALSE;
+			_tmp6_ = FALSE;
 		}
-		if (_tmp3_) {
+		if (_tmp6_) {
 			gchar* _tmp24_ = NULL;
 			gchar* _tmp25_;
 			_tmp24_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp25_ = _tmp24_;
-			_tmp2_ = g_strcmp0 (_tmp25_, "sh") != 0;
+			_tmp5_ = g_strcmp0 (_tmp25_, "ping-pipe") != 0;
 			_g_free0 (_tmp25_);
+		} else {
+			_tmp5_ = FALSE;
+		}
+		if (_tmp5_) {
+			gchar* _tmp26_ = NULL;
+			gchar* _tmp27_;
+			_tmp26_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp27_ = _tmp26_;
+			_tmp4_ = g_strcmp0 (_tmp27_, "exit") != 0;
+			_g_free0 (_tmp27_);
+		} else {
+			_tmp4_ = FALSE;
+		}
+		if (_tmp4_) {
+			gchar* _tmp28_ = NULL;
+			gchar* _tmp29_;
+			_tmp28_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp29_ = _tmp28_;
+			_tmp3_ = g_strcmp0 (_tmp29_, "sh") != 0;
+			_g_free0 (_tmp29_);
+		} else {
+			_tmp3_ = FALSE;
+		}
+		if (_tmp3_) {
+			gchar* _tmp30_ = NULL;
+			gchar* _tmp31_;
+			_tmp30_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp31_ = _tmp30_;
+			_tmp2_ = g_strcmp0 (_tmp31_, "strict") != 0;
+			_g_free0 (_tmp31_);
 		} else {
 			_tmp2_ = FALSE;
 		}
@@ -1838,32 +1910,6 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 			}
 			result = FALSE;
 			return result;
-		}
-	} else {
-		if (gstd_cli__signals) {
-			gboolean _tmp26_ = FALSE;
-			gchar* _tmp27_ = NULL;
-			gchar* _tmp28_;
-			gboolean _tmp29_;
-			fprintf (stdout, "Signals need to be fixed! \n");
-			_tmp27_ = g_utf8_strdown (args[0], (gssize) (-1));
-			_tmp28_ = _tmp27_;
-			if ((_tmp29_ = g_strcmp0 (_tmp28_, "create") != 0, _g_free0 (_tmp28_), _tmp29_)) {
-				gchar* _tmp30_ = NULL;
-				gchar* _tmp31_;
-				_tmp30_ = g_utf8_strdown (args[0], (gssize) (-1));
-				_tmp31_ = _tmp30_;
-				_tmp26_ = g_strcmp0 (_tmp31_, "help") != 0;
-				_g_free0 (_tmp31_);
-			} else {
-				_tmp26_ = FALSE;
-			}
-			if (_tmp26_) {
-				fprintf (stdout, "Signals, activated\n");
-				_dynamic_Error1_connect (self->priv->pipeline, "Error", (GCallback) _gstd_cli_Error_cb_dynamic_Error0_, self);
-				_dynamic_Eos3_connect (self->priv->pipeline, "Eos", (GCallback) _gstd_cli_Eos_cb_dynamic_Eos2_, self);
-				_dynamic_StateChanged5_connect (self->priv->pipeline, "StateChanged", (GCallback) _gstd_cli_StateChanged_cb_dynamic_StateChanged4_, self);
-			}
 		}
 	}
 	_tmp32_ = g_utf8_strdown (args[0], (gssize) (-1));
@@ -2064,114 +2110,134 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label15) ? _tmp34__label15 : (_tmp34__label15 = g_quark_from_static_string ("sh")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label15) ? _tmp34__label15 : (_tmp34__label15 = g_quark_from_static_string ("get-elem-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp58_;
+				_tmp58_ = gstd_cli_element_get_state (self, self->priv->pipeline, args, args_length1);
+				result = _tmp58_;
+				return result;
+			}
+		}
+	} else if (_tmp34_ == ((0 != _tmp34__label16) ? _tmp34__label16 : (_tmp34__label16 = g_quark_from_static_string ("sh")))) {
 		switch (0) {
 			default:
 			{
 				gint command_length1;
 				gint _command_size_;
 				gchar** command;
-				gchar* _tmp58_ = NULL;
-				gchar* _tmp59_;
-				gchar** _tmp60_;
-				gchar** _tmp61_ = NULL;
-				gchar** _tmp62_;
-				gboolean _tmp63_;
+				gchar* _tmp59_ = NULL;
+				gchar* _tmp60_;
+				gchar** _tmp61_;
+				gchar** _tmp62_ = NULL;
+				gchar** _tmp63_;
+				gboolean _tmp64_;
 				command_length1 = 0;
 				command = NULL;
-				_tmp58_ = g_strjoinv (" ", args);
-				_tmp59_ = _tmp58_;
-				_tmp61_ = _tmp60_ = g_strsplit (_tmp59_, "\"", -1);
-				_tmp62_ = _tmp61_;
+				_tmp59_ = g_strjoinv (" ", args);
+				_tmp60_ = _tmp59_;
+				_tmp62_ = _tmp61_ = g_strsplit (_tmp60_, "\"", -1);
+				_tmp63_ = _tmp62_;
 				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
-				command_length1 = _vala_array_length (_tmp60_);
+				command_length1 = _vala_array_length (_tmp61_);
 				_command_size_ = command_length1;
-				command = _tmp62_;
-				_g_free0 (_tmp59_);
-				_tmp63_ = gstd_cli_shell (self, command[1]);
-				result = _tmp63_;
+				command = _tmp63_;
+				_g_free0 (_tmp60_);
+				_tmp64_ = gstd_cli_shell (self, command[1]);
+				result = _tmp64_;
 				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label16) ? _tmp34__label16 : (_tmp34__label16 = g_quark_from_static_string ("seek")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp64_;
-				_tmp64_ = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
-				result = _tmp64_;
-				return result;
-			}
-		}
-	} else if (_tmp34_ == ((0 != _tmp34__label17) ? _tmp34__label17 : (_tmp34__label17 = g_quark_from_static_string ("skip")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label17) ? _tmp34__label17 : (_tmp34__label17 = g_quark_from_static_string ("seek")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp65_;
-				_tmp65_ = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
+				_tmp65_ = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
 				result = _tmp65_;
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label18) ? _tmp34__label18 : (_tmp34__label18 = g_quark_from_static_string ("speed")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label18) ? _tmp34__label18 : (_tmp34__label18 = g_quark_from_static_string ("skip")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp66_;
-				_tmp66_ = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
+				_tmp66_ = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
 				result = _tmp66_;
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label19) ? _tmp34__label19 : (_tmp34__label19 = g_quark_from_static_string ("send-eos")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label19) ? _tmp34__label19 : (_tmp34__label19 = g_quark_from_static_string ("speed")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp67_;
-				_tmp67_ = gstd_cli_pipeline_send_eos (self, self->priv->pipeline, args, args_length1);
+				_tmp67_ = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
 				result = _tmp67_;
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label20) ? _tmp34__label20 : (_tmp34__label20 = g_quark_from_static_string ("list-pipes")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label20) ? _tmp34__label20 : (_tmp34__label20 = g_quark_from_static_string ("send-eos")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp68_;
-				_tmp68_ = gstd_cli_pipeline_list (self);
+				_tmp68_ = gstd_cli_pipeline_send_eos (self, self->priv->pipeline, args, args_length1);
 				result = _tmp68_;
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label21) ? _tmp34__label21 : (_tmp34__label21 = g_quark_from_static_string ("ping")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label21) ? _tmp34__label21 : (_tmp34__label21 = g_quark_from_static_string ("list-pipes")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp69_;
-				_tmp69_ = gstd_cli_gstd_ping (self);
+				_tmp69_ = gstd_cli_pipeline_list (self);
 				result = _tmp69_;
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label22) ? _tmp34__label22 : (_tmp34__label22 = g_quark_from_static_string ("active")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label22) ? _tmp34__label22 : (_tmp34__label22 = g_quark_from_static_string ("ping")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp70_;
+				_tmp70_ = gstd_cli_gstd_ping (self);
+				result = _tmp70_;
+				return result;
+			}
+		}
+	} else if (_tmp34_ == ((0 != _tmp34__label23) ? _tmp34__label23 : (_tmp34__label23 = g_quark_from_static_string ("ping-pipe")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp71_;
+				_tmp71_ = gstd_cli_pipeline_ping (self);
+				result = _tmp71_;
+				return result;
+			}
+		}
+	} else if (_tmp34_ == ((0 != _tmp34__label24) ? _tmp34__label24 : (_tmp34__label24 = g_quark_from_static_string ("active")))) {
 		switch (0) {
 			default:
 			{
 				if (args[1] == NULL) {
-					gboolean _tmp70_;
-					_tmp70_ = gstd_cli_get_active (self);
-					result = _tmp70_;
+					gboolean _tmp72_;
+					_tmp72_ = gstd_cli_get_active (self);
+					result = _tmp72_;
 					return result;
 				} else {
-					gboolean _tmp71_;
-					_tmp71_ = gstd_cli_set_active (self, args[1]);
-					result = _tmp71_;
+					gboolean _tmp73_;
+					_tmp73_ = gstd_cli_set_active (self, args[1]);
+					result = _tmp73_;
 					return result;
 				}
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label23) ? _tmp34__label23 : (_tmp34__label23 = g_quark_from_static_string ("quit")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label25) ? _tmp34__label25 : (_tmp34__label25 = g_quark_from_static_string ("quit")))) {
 		switch (0) {
 			default:
 			{
@@ -2180,7 +2246,7 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label24) ? _tmp34__label24 : (_tmp34__label24 = g_quark_from_static_string ("exit")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label26) ? _tmp34__label26 : (_tmp34__label26 = g_quark_from_static_string ("exit")))) {
 		switch (0) {
 			default:
 			{
@@ -2189,7 +2255,7 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				return result;
 			}
 		}
-	} else if (_tmp34_ == ((0 != _tmp34__label25) ? _tmp34__label25 : (_tmp34__label25 = g_quark_from_static_string ("help")))) {
+	} else if (_tmp34_ == ((0 != _tmp34__label27) ? _tmp34__label27 : (_tmp34__label27 = g_quark_from_static_string ("help")))) {
 		switch (0) {
 			default:
 			{
@@ -2215,19 +2281,19 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				} else {
 					fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 					while (TRUE) {
-						const gchar* _tmp72_;
-						gint _tmp73_;
+						const gchar* _tmp74_;
+						gint _tmp75_;
 						if (!(self->priv->cmds[(id * self->priv->cmds_length2) + 0] != NULL)) {
 							break;
 						}
-						_tmp72_ = NULL;
-						_tmp73_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
-						if (_tmp73_ < 6) {
-							_tmp72_ = "\t\t";
+						_tmp74_ = NULL;
+						_tmp75_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
+						if (_tmp75_ < 6) {
+							_tmp74_ = "\t\t";
 						} else {
-							_tmp72_ = "\t";
+							_tmp74_ = "\t";
 						}
-						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp72_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
+						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp74_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
 						id++;
 					}
 					fprintf (stdout, "\n");
@@ -2288,18 +2354,18 @@ static gint gstd_cli_main (gchar** args, int args_length1) {
 	cli = _tmp1_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == DBUS_GERROR) {
-			goto __catch9_dbus_gerror;
+			goto __catch10_dbus_gerror;
 		}
-		goto __catch9_g_error;
+		goto __catch10_g_error;
 	}
 	_tmp2_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
 	_tmp3_ = _tmp2_;
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (cli);
 		if (_inner_error_->domain == DBUS_GERROR) {
-			goto __catch9_dbus_gerror;
+			goto __catch10_dbus_gerror;
 		}
-		goto __catch9_g_error;
+		goto __catch10_g_error;
 	}
 	if (!_tmp3_) {
 		result = -1;
@@ -2307,8 +2373,8 @@ static gint gstd_cli_main (gchar** args, int args_length1) {
 		return result;
 	}
 	_g_object_unref0 (cli);
-	goto __finally9;
-	__catch9_dbus_gerror:
+	goto __finally10;
+	__catch10_dbus_gerror:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -2318,8 +2384,8 @@ static gint gstd_cli_main (gchar** args, int args_length1) {
 		_g_error_free0 (e);
 		return result;
 	}
-	goto __finally9;
-	__catch9_g_error:
+	goto __finally10;
+	__catch10_g_error:
 	{
 		GError * e;
 		e = _inner_error_;
@@ -2329,7 +2395,7 @@ static gint gstd_cli_main (gchar** args, int args_length1) {
 		_g_error_free0 (e);
 		return result;
 	}
-	__finally9:
+	__finally10:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -2429,7 +2495,13 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	gchar* _tmp72_;
 	gchar* _tmp73_;
 	gchar* _tmp74_;
-	gchar** _tmp75_ = NULL;
+	gchar* _tmp75_;
+	gchar* _tmp76_;
+	gchar* _tmp77_;
+	gchar* _tmp78_;
+	gchar* _tmp79_;
+	gchar* _tmp80_;
+	gchar** _tmp81_ = NULL;
 	self->priv = GSTD_CLI_GET_PRIVATE (self);
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
@@ -2482,111 +2554,123 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	_tmp45_ = g_strdup ("get-state");
 	_tmp46_ = g_strdup ("get-state");
 	_tmp47_ = g_strdup ("Get the state of a specific pipeline(-p flag)" " or the active pipeline");
-	_tmp48_ = g_strdup ("list-pipes");
-	_tmp49_ = g_strdup ("list-pipes");
-	_tmp50_ = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines");
-	_tmp51_ = g_strdup ("ping");
-	_tmp52_ = g_strdup ("ping");
-	_tmp53_ = g_strdup ("Shows if gstd is alive");
-	_tmp54_ = g_strdup ("active");
-	_tmp55_ = g_strdup ("active <path>");
-	_tmp56_ = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline");
-	_tmp57_ = g_strdup ("seek");
-	_tmp58_ = g_strdup ("seek <position[ms]>");
-	_tmp59_ = g_strdup ("Moves current playing position to a new" " one");
-	_tmp60_ = g_strdup ("skip");
-	_tmp61_ = g_strdup ("skip <period[ms]>");
-	_tmp62_ = g_strdup ("Skips a period, if period is positive: it" " moves forward, if negative: it moves backward");
-	_tmp63_ = g_strdup ("speed");
-	_tmp64_ = g_strdup ("speed <rate>");
-	_tmp65_ = g_strdup ("Changes playback rate:\n" "\t\t* rate>1.0: fast-forward playback,\n" "\t\t* rate<1.0: slow-forward playback,\n" "\t\t* rate=1.0: normal speed.\n" "\t\tNegative rate causes reverse playback.");
-	_tmp66_ = g_strdup ("send-eos");
-	_tmp67_ = g_strdup ("send-eos");
-	_tmp68_ = g_strdup ("Send an EOS event on the pipeline");
-	_tmp69_ = g_strdup ("exit");
-	_tmp70_ = g_strdup ("exit");
-	_tmp71_ = g_strdup ("Exit/quit active console");
-	_tmp72_ = g_strdup ("quit");
-	_tmp73_ = g_strdup ("quit");
-	_tmp74_ = g_strdup ("Exit/quit active console");
-	_tmp75_ = g_new0 (gchar*, (25 * 3) + 1);
-	_tmp75_[0] = _tmp0_;
-	_tmp75_[1] = _tmp1_;
-	_tmp75_[2] = _tmp2_;
-	_tmp75_[3] = _tmp3_;
-	_tmp75_[4] = _tmp4_;
-	_tmp75_[5] = _tmp5_;
-	_tmp75_[6] = _tmp6_;
-	_tmp75_[7] = _tmp7_;
-	_tmp75_[8] = _tmp8_;
-	_tmp75_[9] = _tmp9_;
-	_tmp75_[10] = _tmp10_;
-	_tmp75_[11] = _tmp11_;
-	_tmp75_[12] = _tmp12_;
-	_tmp75_[13] = _tmp13_;
-	_tmp75_[14] = _tmp14_;
-	_tmp75_[15] = _tmp15_;
-	_tmp75_[16] = _tmp16_;
-	_tmp75_[17] = _tmp17_;
-	_tmp75_[18] = _tmp18_;
-	_tmp75_[19] = _tmp19_;
-	_tmp75_[20] = _tmp20_;
-	_tmp75_[21] = _tmp21_;
-	_tmp75_[22] = _tmp22_;
-	_tmp75_[23] = _tmp23_;
-	_tmp75_[24] = _tmp24_;
-	_tmp75_[25] = _tmp25_;
-	_tmp75_[26] = _tmp26_;
-	_tmp75_[27] = _tmp27_;
-	_tmp75_[28] = _tmp28_;
-	_tmp75_[29] = _tmp29_;
-	_tmp75_[30] = _tmp30_;
-	_tmp75_[31] = _tmp31_;
-	_tmp75_[32] = _tmp32_;
-	_tmp75_[33] = _tmp33_;
-	_tmp75_[34] = _tmp34_;
-	_tmp75_[35] = _tmp35_;
-	_tmp75_[36] = _tmp36_;
-	_tmp75_[37] = _tmp37_;
-	_tmp75_[38] = _tmp38_;
-	_tmp75_[39] = _tmp39_;
-	_tmp75_[40] = _tmp40_;
-	_tmp75_[41] = _tmp41_;
-	_tmp75_[42] = _tmp42_;
-	_tmp75_[43] = _tmp43_;
-	_tmp75_[44] = _tmp44_;
-	_tmp75_[45] = _tmp45_;
-	_tmp75_[46] = _tmp46_;
-	_tmp75_[47] = _tmp47_;
-	_tmp75_[48] = _tmp48_;
-	_tmp75_[49] = _tmp49_;
-	_tmp75_[50] = _tmp50_;
-	_tmp75_[51] = _tmp51_;
-	_tmp75_[52] = _tmp52_;
-	_tmp75_[53] = _tmp53_;
-	_tmp75_[54] = _tmp54_;
-	_tmp75_[55] = _tmp55_;
-	_tmp75_[56] = _tmp56_;
-	_tmp75_[57] = _tmp57_;
-	_tmp75_[58] = _tmp58_;
-	_tmp75_[59] = _tmp59_;
-	_tmp75_[60] = _tmp60_;
-	_tmp75_[61] = _tmp61_;
-	_tmp75_[62] = _tmp62_;
-	_tmp75_[63] = _tmp63_;
-	_tmp75_[64] = _tmp64_;
-	_tmp75_[65] = _tmp65_;
-	_tmp75_[66] = _tmp66_;
-	_tmp75_[67] = _tmp67_;
-	_tmp75_[68] = _tmp68_;
-	_tmp75_[69] = _tmp69_;
-	_tmp75_[70] = _tmp70_;
-	_tmp75_[71] = _tmp71_;
-	_tmp75_[72] = _tmp72_;
-	_tmp75_[73] = _tmp73_;
-	_tmp75_[74] = _tmp74_;
-	self->priv->cmds = _tmp75_;
-	self->priv->cmds_length1 = 25;
+	_tmp48_ = g_strdup ("get-elem-state");
+	_tmp49_ = g_strdup ("get-elem-state");
+	_tmp50_ = g_strdup ("Get the state of a specific element of" "the active pipeline");
+	_tmp51_ = g_strdup ("list-pipes");
+	_tmp52_ = g_strdup ("list-pipes");
+	_tmp53_ = g_strdup ("Returns a list of all the dbus-path of" "the existing pipelines");
+	_tmp54_ = g_strdup ("ping");
+	_tmp55_ = g_strdup ("ping");
+	_tmp56_ = g_strdup ("Shows if gstd is alive");
+	_tmp57_ = g_strdup ("ping-pipe");
+	_tmp58_ = g_strdup ("ping-pipe");
+	_tmp59_ = g_strdup ("Test if the active pipeline is alive");
+	_tmp60_ = g_strdup ("active");
+	_tmp61_ = g_strdup ("active <path>");
+	_tmp62_ = g_strdup ("Sets the active pipeline,if no <path> is " "passed:it returns the actual active pipeline");
+	_tmp63_ = g_strdup ("seek");
+	_tmp64_ = g_strdup ("seek <position[ms]>");
+	_tmp65_ = g_strdup ("Moves current playing position to a new" " one");
+	_tmp66_ = g_strdup ("skip");
+	_tmp67_ = g_strdup ("skip <period[ms]>");
+	_tmp68_ = g_strdup ("Skips a period, if period is positive: it" " moves forward, if negative: it moves backward");
+	_tmp69_ = g_strdup ("speed");
+	_tmp70_ = g_strdup ("speed <rate>");
+	_tmp71_ = g_strdup ("Changes playback rate:\n" "\t\t* rate>1.0: fast-forward playback,\n" "\t\t* rate<1.0: slow-forward playback,\n" "\t\t* rate=1.0: normal speed.\n" "\t\tNegative rate causes reverse playback.");
+	_tmp72_ = g_strdup ("send-eos");
+	_tmp73_ = g_strdup ("send-eos");
+	_tmp74_ = g_strdup ("Send an EOS event on the pipeline");
+	_tmp75_ = g_strdup ("exit");
+	_tmp76_ = g_strdup ("exit");
+	_tmp77_ = g_strdup ("Exit/quit active console");
+	_tmp78_ = g_strdup ("quit");
+	_tmp79_ = g_strdup ("quit");
+	_tmp80_ = g_strdup ("Exit/quit active console");
+	_tmp81_ = g_new0 (gchar*, (27 * 3) + 1);
+	_tmp81_[0] = _tmp0_;
+	_tmp81_[1] = _tmp1_;
+	_tmp81_[2] = _tmp2_;
+	_tmp81_[3] = _tmp3_;
+	_tmp81_[4] = _tmp4_;
+	_tmp81_[5] = _tmp5_;
+	_tmp81_[6] = _tmp6_;
+	_tmp81_[7] = _tmp7_;
+	_tmp81_[8] = _tmp8_;
+	_tmp81_[9] = _tmp9_;
+	_tmp81_[10] = _tmp10_;
+	_tmp81_[11] = _tmp11_;
+	_tmp81_[12] = _tmp12_;
+	_tmp81_[13] = _tmp13_;
+	_tmp81_[14] = _tmp14_;
+	_tmp81_[15] = _tmp15_;
+	_tmp81_[16] = _tmp16_;
+	_tmp81_[17] = _tmp17_;
+	_tmp81_[18] = _tmp18_;
+	_tmp81_[19] = _tmp19_;
+	_tmp81_[20] = _tmp20_;
+	_tmp81_[21] = _tmp21_;
+	_tmp81_[22] = _tmp22_;
+	_tmp81_[23] = _tmp23_;
+	_tmp81_[24] = _tmp24_;
+	_tmp81_[25] = _tmp25_;
+	_tmp81_[26] = _tmp26_;
+	_tmp81_[27] = _tmp27_;
+	_tmp81_[28] = _tmp28_;
+	_tmp81_[29] = _tmp29_;
+	_tmp81_[30] = _tmp30_;
+	_tmp81_[31] = _tmp31_;
+	_tmp81_[32] = _tmp32_;
+	_tmp81_[33] = _tmp33_;
+	_tmp81_[34] = _tmp34_;
+	_tmp81_[35] = _tmp35_;
+	_tmp81_[36] = _tmp36_;
+	_tmp81_[37] = _tmp37_;
+	_tmp81_[38] = _tmp38_;
+	_tmp81_[39] = _tmp39_;
+	_tmp81_[40] = _tmp40_;
+	_tmp81_[41] = _tmp41_;
+	_tmp81_[42] = _tmp42_;
+	_tmp81_[43] = _tmp43_;
+	_tmp81_[44] = _tmp44_;
+	_tmp81_[45] = _tmp45_;
+	_tmp81_[46] = _tmp46_;
+	_tmp81_[47] = _tmp47_;
+	_tmp81_[48] = _tmp48_;
+	_tmp81_[49] = _tmp49_;
+	_tmp81_[50] = _tmp50_;
+	_tmp81_[51] = _tmp51_;
+	_tmp81_[52] = _tmp52_;
+	_tmp81_[53] = _tmp53_;
+	_tmp81_[54] = _tmp54_;
+	_tmp81_[55] = _tmp55_;
+	_tmp81_[56] = _tmp56_;
+	_tmp81_[57] = _tmp57_;
+	_tmp81_[58] = _tmp58_;
+	_tmp81_[59] = _tmp59_;
+	_tmp81_[60] = _tmp60_;
+	_tmp81_[61] = _tmp61_;
+	_tmp81_[62] = _tmp62_;
+	_tmp81_[63] = _tmp63_;
+	_tmp81_[64] = _tmp64_;
+	_tmp81_[65] = _tmp65_;
+	_tmp81_[66] = _tmp66_;
+	_tmp81_[67] = _tmp67_;
+	_tmp81_[68] = _tmp68_;
+	_tmp81_[69] = _tmp69_;
+	_tmp81_[70] = _tmp70_;
+	_tmp81_[71] = _tmp71_;
+	_tmp81_[72] = _tmp72_;
+	_tmp81_[73] = _tmp73_;
+	_tmp81_[74] = _tmp74_;
+	_tmp81_[75] = _tmp75_;
+	_tmp81_[76] = _tmp76_;
+	_tmp81_[77] = _tmp77_;
+	_tmp81_[78] = _tmp78_;
+	_tmp81_[79] = _tmp79_;
+	_tmp81_[80] = _tmp80_;
+	self->priv->cmds = _tmp81_;
+	self->priv->cmds_length1 = 27;
 	self->priv->cmds_length2 = 3;
 }
 

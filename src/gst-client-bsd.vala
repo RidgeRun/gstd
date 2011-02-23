@@ -107,9 +107,12 @@ public class GstdCli : GLib.Object
 		  "Execute a shell command using interactive console"},
 		{ "get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
 		  + " or the active pipeline"},
+		{ "get-elem-state", "get-elem-state", "Get the state of a specific element of"
+		  + "the active pipeline"},
 		{ "list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
 		  + "the existing pipelines"},
 		{ "ping", "ping", "Shows if gstd is alive"},
+		{ "ping-pipe", "ping-pipe", "Test if the active pipeline is alive"},
 		{ "active", "active <path>", "Sets the active pipeline,if no <path> is "
 		  + "passed:it returns the actual active pipeline"},
 		{ "seek", "seek <position[ms]>", "Moves current playing position to a new"
@@ -149,7 +152,7 @@ public class GstdCli : GLib.Object
 		stdout.printf ("Error signal received\n");
 	}
 
-	public void Eos_cb ()
+	public void EoS_cb ()
 	{
 		stdout.printf ("End of Stream signal received\n");
 	}
@@ -325,6 +328,24 @@ public class GstdCli : GLib.Object
 
 		stdout.printf ("pong\n");
 		return ret;
+	}
+	
+	private bool pipeline_ping ()
+	{
+		if(pipeline == null)
+			return false;
+		
+		try {
+			bool result = pipeline.Ping ();
+			
+			print("Pipeline ping result = %s\n", result ? "Success" : "Failed");
+			return result;
+		}
+		catch (Error e)
+		{
+			stderr.printf ("Error:\nFailed to ping pipeline!\n");
+			return false;
+		}
 	}
 
 	private bool pipeline_get_property (dynamic DBus.Object pipeline,
@@ -507,17 +528,25 @@ public class GstdCli : GLib.Object
 
 	private bool pipeline_get_state (dynamic DBus.Object pipeline)
 	{
-		string state = pipeline.PipelineGetState ();
-		if (state == null)
+		State state = pipeline.PipelineGetState ();
+		print ("The pipeline state is: %s\n", state.to_string ());
+		return true;
+	}
+	
+	private bool element_get_state ( dynamic DBus.Object pipeline, string[] args)
+	{
+		if (args[1] == null)
 		{
-			stderr.printf ("Error:\nFailed to get the pipeline state\n");
+			stdout.printf ("Error:\nMissing element argument. Execute:'help element_get_state'\n");
 			return false;
 		}
 
-		stdout.printf ("The pipeline state is: %s\n", state);
-		stdout.printf ("Ok.\n");
+		string element = args[1];
+		State state = pipeline.ElementGetState (element);
+		print ("The state of %s is: %s\n", element, state.to_string ());
 		return true;
 	}
+
 
 	private bool pipeline_seek (dynamic DBus.Object pipeline, string[] args)
 	{
@@ -671,7 +700,7 @@ public class GstdCli : GLib.Object
 		}
 		return false;
 	}
-
+	
 	/*
 	   *Create a proxy-object of the pipeline
 	 */
@@ -683,17 +712,14 @@ public class GstdCli : GLib.Object
 		/*Create a proxy-object of the pipeline */
 		pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
 		                            object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface");
-		try {
-			bool ret = pipeline.PipelineIsInitialized ();
-			if (!ret)
-				return false;
+		try 
+		{
+			return pipeline.PipelineIsInitialized ();
 		}
 		catch (Error e)
 		{
 			return false;
 		}
-
-		return true;
 	}
 
 	/*
@@ -720,6 +746,7 @@ public class GstdCli : GLib.Object
 
 		try {
 			opt.parse (ref args);
+			// Create a useful pipe name, if the used parameter form -p 0 --> /com/ridgerun/gstreamer/gstd/pipe0
 			if (obj_path != null && obj_path[0] != '/')
 				obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
 		}
@@ -736,12 +763,17 @@ public class GstdCli : GLib.Object
 	 */
 	public bool parse_cmd (string[] args) throws DBus.Error, GLib.Error
 	{
-		if (!create_proxypipe (obj_path))
+		bool success = create_proxypipe(obj_path); // May only be true in interactive none cli mode 
+		//print (@"Create proxy pipe $(success ? "succesful" : "failed").\n");
+		if (!success)
 		{
+			// Test: In cli mode the active_pipe must be set.
 			if (args[0].down () != "create" && args[0].down () != "help"
 			    && args[0].down () != "active" && args[0].down () != "quit"
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
-			    && args[0].down () != "exit" && args[0].down () != "sh" && active_pipe == null)
+				&& args[0].down () != "ping-pipe" && args[0].down () != "exit" 
+				&& args[0].down () != "sh" && args[0].down () != "strict" 
+				&& active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -751,18 +783,26 @@ public class GstdCli : GLib.Object
 				return false;
 			}
 		}
-		else if (_signals)
+		
+		/**
+		* Remark 02/23/11 RuH
+		* Disabled signal subscription beause
+		* - There is no mainloop which could receive incoming events.
+		* - There is no mechanism which prevent repeated subscription.
+		* - How must DBus signal parameters in Vala be handled?
+		* 
+		if (false && _signals && (null != pipeline))
 		{
-			/*Enable the reception of signals, if _signals flag was activated */
-			stdout.printf ("Signals need to be fixed! \n");
+			//Enable the reception of signals, if _signals flag was activated 
+			//print ("Signals need to be fixed! \n");
 			if (args[0].down () != "create" && args[0].down () != "help")
 			{
-				stdout.printf ("Signals, activated\n");
+				print ("Activate signals:\n");
 				pipeline.Error.connect(this.Error_cb);
-				pipeline.Eos.connect(this.Eos_cb);
+				pipeline.EoS.connect( this.EoS_cb);
 				pipeline.StateChanged.connect(this.StateChanged_cb);
 			}
-		}
+		}*/
 
 		switch (args[0].down ())
 		{
@@ -830,6 +870,9 @@ public class GstdCli : GLib.Object
 
 			case "get-state":
 				return pipeline_get_state (pipeline);
+			
+			case "get-elem-state":
+				return element_get_state (pipeline, args);
 
 			case "sh":
 				string[] command;
@@ -855,6 +898,9 @@ public class GstdCli : GLib.Object
 
 			case "ping":
 				return gstd_ping ();
+				
+			case "ping-pipe":
+				return pipeline_ping ();
 
 			case "active":
 				if (args[1] == null)
