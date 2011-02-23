@@ -747,6 +747,59 @@ public class Pipeline : GLib.Object
 	   Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
 	   }*/
 
+	/**
+	   Sets an element to the specified state
+	   @param element, whose state is to be set
+	   @param state, desired element state
+	 */
+	public bool ElementSetState (string element, int state)
+	{
+		Element e;
+		Gst.Pipeline pipe;
+		State current, pending;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		e.set_state ((State)(state));
+
+		/* Wait for the transition at most 8 secs */
+		e.get_state (out current, out pending,
+				    (Gst.ClockTime) 4000000000u);
+		e.get_state (out current, out pending,
+				    (Gst.ClockTime) 4000000000u);
+		if (current != state)
+		{
+			Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	   Sets an element to the specified state, returning before the state change may have occurred
+	   @param element, whose state is to be set
+	   @param state, desired element state
+	 */
+	public void ElementAsyncSetState (string element, int state)
+	{
+		Element e;
+		Gst.Pipeline pipe;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+		}
+		e.set_state ((State)(state));
+	}
+
 	public void SetWindowId(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
 	{
 		windowId = (ulong)(winId);

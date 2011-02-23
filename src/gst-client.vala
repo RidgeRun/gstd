@@ -111,6 +111,11 @@ public class GstdCli : GLib.Object
 		  "\t\t* rate=1.0: normal speed.\n" +
 		  "\t\tNegative rate causes reverse playback."},
 		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
+		{ "element-set-state", "element-set-state <element_name> <state>",
+		  "Sets the element state" +
+		  "\t\tSupported <state>s include: null, ready, paused, playing"},
+		{ "element-async-set-state", "element-async-set-state <element_name> <state>",
+		  "Sets the element state, it does not wait the change to be done"},
 		{ "exit", "exit", "Exit/quit active console"},
 		{ "quit", "quit", "Exit/quit active console"},
 		{ "strict", "strict", "Enable/disable strict execution mode."}
@@ -601,6 +606,80 @@ public class GstdCli : GLib.Object
 		return true;
 	}
 
+	private int string_to_state (string state)
+	{
+		switch (state.down ())
+		{
+			case "null":
+				return 1;
+
+			case "ready":
+				return 2;
+
+			case "paused":
+				return 3;
+
+			case "playing":
+				return 4;
+
+			default:
+				stderr.printf ("Error:\nState not supported: %s\n", state);
+				return 0;
+		}
+	}
+
+	private bool element_set_state (dynamic DBus.Object pipeline,
+	                                    string[] args)
+	{
+		bool ret;
+		int state;
+
+		if (args[1] == null || args[2] == null)
+		{
+			stdout.printf ("Error:\nMissing argument.  Execute:'help element-set-state'\n");
+			return false;
+		}
+
+		string element = args[1];
+		state = string_to_state (args[2]);
+
+		ret = pipeline.ElementSetState (element, state);
+
+		if (!ret)
+		{
+			stderr.printf ("Error:\nFailed to set element state: %s\n", args[2]);
+			return false;
+		}
+		stdout.printf ("Ok.\n");
+		return ret;
+	}
+
+	private bool element_async_set_state (dynamic DBus.Object pipeline,
+	                                    string[] args)
+	{
+		bool ret;
+		int state;
+
+		if (args[1] == null || args[2] == null)
+		{
+			stdout.printf ("Error:\nMissing argument.  Execute:'help element-set-state'\n");
+			return false;
+		}
+
+		string element = args[1];
+		state = string_to_state (args[2]);
+
+		ret = pipeline.ElementAsyncSetState (element, state);
+
+		if (!ret)
+		{
+			stderr.printf ("Error:\nFailed to set element async state: %s\n", args[2]);
+			return false;
+		}
+		stdout.printf ("Ok.\n");
+		return ret;
+	}
+
 	private bool set_active (string path)
 	{
 		string new_active;
@@ -759,10 +838,11 @@ public class GstdCli : GLib.Object
 		opt.set_help_enabled (true);
 		opt.add_main_entries (options, null);
 
-		try {
+		try
+		{
 			opt.parse (ref args);
 			// Create a useful pipe name, if the used parameter form -p 0 --> /com/ridgerun/gstreamer/gstd/pipe0
-			if (obj_path != null && obj_path[0] != '/')
+			if (obj_path != null && obj_path.length >= 1 && (obj_path[0] != '/'))
 				obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
 		}
 		catch (GLib.OptionError e)
@@ -936,6 +1016,12 @@ public class GstdCli : GLib.Object
 					return set_active (args[1]);
 				}
 
+			case "element-set-state":
+				return element_set_state (pipeline, args);
+
+			case "element-async-set-state":
+				return element_async_set_state (pipeline, args);
+
 			case "quit":
 				cli_enable = false;
 				return true;
@@ -1019,7 +1105,7 @@ public class GstdCli : GLib.Object
 			args = cmd_line.split (" ", -1);
 
 			/*Execute the command */
-			if (args[0] != null && cmd_line[0] != '#')
+			if (args[0] != null && !(cmd_line.length >= 1 && cmd_line[0] == '#'))
 			{
 				bool result = parse_cmd (args);
 				if(!result && isStrict)

@@ -138,15 +138,20 @@ static gboolean gstd_cli_pipeline_speed (GstdCli* self, DBusGProxy* pipeline, gc
 static gboolean _dynamic_PipelineSpeed26 (DBusGProxy* self, gdouble param1, GError** error);
 static gboolean gstd_cli_pipeline_send_eos (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
 static void _dynamic_PipelineSendEoS27 (DBusGProxy* self, GError** error);
+static gint gstd_cli_string_to_state (GstdCli* self, const gchar* state);
+static gboolean gstd_cli_element_set_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
+static gboolean _dynamic_ElementSetState28 (DBusGProxy* self, const gchar* param1, gint param2, GError** error);
+static gboolean gstd_cli_element_async_set_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1);
+static gboolean _dynamic_ElementAsyncSetState29 (DBusGProxy* self, const gchar* param1, gint param2, GError** error);
 static gboolean gstd_cli_set_active (GstdCli* self, const gchar* path);
 static gboolean gstd_cli_get_active (GstdCli* self);
 static gboolean gstd_cli_pipeline_list (GstdCli* self);
-static gchar** _dynamic_List28 (DBusGProxy* self, int* result_length1, GError** error);
+static gchar** _dynamic_List30 (DBusGProxy* self, int* result_length1, GError** error);
 static gboolean gstd_cli_shell (GstdCli* self, const gchar* command);
 static gboolean gstd_cli_set_strict (GstdCli* self, gchar** args, int args_length1);
-static gboolean _dynamic_PipelineIsInitialized29 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_PipelineIsInitialized31 (DBusGProxy* self, GError** error);
 gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GError** error);
-static gboolean _dynamic_DestroyAll30 (DBusGProxy* self, GError** error);
+static gboolean _dynamic_DestroyAll32 (DBusGProxy* self, GError** error);
 gboolean gstd_cli_cli (GstdCli* self, GError** error);
 gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs_length1, GError** error);
 static gint gstd_cli_main (gchar** args, int args_length1);
@@ -1438,6 +1443,184 @@ static gboolean gstd_cli_pipeline_send_eos (GstdCli* self, DBusGProxy* pipeline,
 }
 
 
+static gint gstd_cli_string_to_state (GstdCli* self, const gchar* state) {
+	gint result = 0;
+	gchar* _tmp0_ = NULL;
+	gchar* _tmp1_;
+	GQuark _tmp2_;
+	static GQuark _tmp2__label0 = 0;
+	static GQuark _tmp2__label1 = 0;
+	static GQuark _tmp2__label2 = 0;
+	static GQuark _tmp2__label3 = 0;
+	g_return_val_if_fail (self != NULL, 0);
+	g_return_val_if_fail (state != NULL, 0);
+	_tmp0_ = g_utf8_strdown (state, (gssize) (-1));
+	_tmp1_ = _tmp0_;
+	_tmp2_ = (NULL == _tmp1_) ? 0 : g_quark_from_string (_tmp1_);
+	g_free (_tmp1_);
+	if (_tmp2_ == ((0 != _tmp2__label0) ? _tmp2__label0 : (_tmp2__label0 = g_quark_from_static_string ("null")))) {
+		switch (0) {
+			default:
+			{
+				result = 1;
+				return result;
+			}
+		}
+	} else if (_tmp2_ == ((0 != _tmp2__label1) ? _tmp2__label1 : (_tmp2__label1 = g_quark_from_static_string ("ready")))) {
+		switch (0) {
+			default:
+			{
+				result = 2;
+				return result;
+			}
+		}
+	} else if (_tmp2_ == ((0 != _tmp2__label2) ? _tmp2__label2 : (_tmp2__label2 = g_quark_from_static_string ("paused")))) {
+		switch (0) {
+			default:
+			{
+				result = 3;
+				return result;
+			}
+		}
+	} else if (_tmp2_ == ((0 != _tmp2__label3) ? _tmp2__label3 : (_tmp2__label3 = g_quark_from_static_string ("playing")))) {
+		switch (0) {
+			default:
+			{
+				result = 4;
+				return result;
+			}
+		}
+	} else {
+		switch (0) {
+			default:
+			{
+				fprintf (stderr, "Error:\nState not supported: %s\n", state);
+				result = 0;
+				return result;
+			}
+		}
+	}
+}
+
+
+static gboolean _dynamic_ElementSetState28 (DBusGProxy* self, const gchar* param1, gint param2, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "ElementSetState", error, G_TYPE_STRING, param1, G_TYPE_INT, param2, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_element_set_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1) {
+	gboolean result = FALSE;
+	gboolean ret = FALSE;
+	gint state = 0;
+	gboolean _tmp0_ = FALSE;
+	gchar* _tmp1_;
+	gchar* element;
+	gint _tmp2_;
+	gboolean _tmp3_;
+	gboolean _tmp4_;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	if (args[1] == NULL) {
+		_tmp0_ = TRUE;
+	} else {
+		_tmp0_ = args[2] == NULL;
+	}
+	if (_tmp0_) {
+		fprintf (stdout, "Error:\nMissing argument.  Execute:'help element-set-state'\n");
+		result = FALSE;
+		return result;
+	}
+	_tmp1_ = g_strdup (args[1]);
+	element = _tmp1_;
+	_tmp2_ = gstd_cli_string_to_state (self, args[2]);
+	state = _tmp2_;
+	_tmp3_ = _dynamic_ElementSetState28 (pipeline, element, state, &_inner_error_);
+	_tmp4_ = _tmp3_;
+	if (_inner_error_ != NULL) {
+		_g_free0 (element);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	ret = _tmp4_;
+	if (!ret) {
+		fprintf (stderr, "Error:\nFailed to set element state: %s\n", args[2]);
+		result = FALSE;
+		_g_free0 (element);
+		return result;
+	}
+	fprintf (stdout, "Ok.\n");
+	result = ret;
+	_g_free0 (element);
+	return result;
+}
+
+
+static gboolean _dynamic_ElementAsyncSetState29 (DBusGProxy* self, const gchar* param1, gint param2, GError** error) {
+	gboolean result;
+	dbus_g_proxy_call (self, "ElementAsyncSetState", error, G_TYPE_STRING, param1, G_TYPE_INT, param2, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
+	if (*error) {
+		return FALSE;
+	}
+	return result;
+}
+
+
+static gboolean gstd_cli_element_async_set_state (GstdCli* self, DBusGProxy* pipeline, gchar** args, int args_length1) {
+	gboolean result = FALSE;
+	gboolean ret = FALSE;
+	gint state = 0;
+	gboolean _tmp0_ = FALSE;
+	gchar* _tmp1_;
+	gchar* element;
+	gint _tmp2_;
+	gboolean _tmp3_;
+	gboolean _tmp4_;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (pipeline != NULL, FALSE);
+	if (args[1] == NULL) {
+		_tmp0_ = TRUE;
+	} else {
+		_tmp0_ = args[2] == NULL;
+	}
+	if (_tmp0_) {
+		fprintf (stdout, "Error:\nMissing argument.  Execute:'help element-set-state'\n");
+		result = FALSE;
+		return result;
+	}
+	_tmp1_ = g_strdup (args[1]);
+	element = _tmp1_;
+	_tmp2_ = gstd_cli_string_to_state (self, args[2]);
+	state = _tmp2_;
+	_tmp3_ = _dynamic_ElementAsyncSetState29 (pipeline, element, state, &_inner_error_);
+	_tmp4_ = _tmp3_;
+	if (_inner_error_ != NULL) {
+		_g_free0 (element);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return FALSE;
+	}
+	ret = _tmp4_;
+	if (!ret) {
+		fprintf (stderr, "Error:\nFailed to set element async state: %s\n", args[2]);
+		result = FALSE;
+		_g_free0 (element);
+		return result;
+	}
+	fprintf (stdout, "Ok.\n");
+	result = ret;
+	_g_free0 (element);
+	return result;
+}
+
+
 static gchar string_get (const gchar* self, glong index) {
 	gchar result = '\0';
 	g_return_val_if_fail (self != NULL, '\0');
@@ -1519,7 +1702,7 @@ static gboolean gstd_cli_get_active (GstdCli* self) {
 }
 
 
-static gchar** _dynamic_List28 (DBusGProxy* self, int* result_length1, GError** error) {
+static gchar** _dynamic_List30 (DBusGProxy* self, int* result_length1, GError** error) {
 	gchar** result;
 	dbus_g_proxy_call (self, "List", error, G_TYPE_INVALID, G_TYPE_STRV, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1540,7 +1723,7 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 	gchar** paths;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
-	_tmp1_ = _dynamic_List28 (self->priv->factory, &_tmp0_, &_inner_error_);
+	_tmp1_ = _dynamic_List30 (self->priv->factory, &_tmp0_, &_inner_error_);
 	_tmp2_ = _tmp1_;
 	paths_length1 = _tmp0_;
 	_paths_size_ = paths_length1;
@@ -1653,7 +1836,7 @@ static gboolean gstd_cli_set_strict (GstdCli* self, gchar** args, int args_lengt
 }
 
 
-static gboolean _dynamic_PipelineIsInitialized29 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_PipelineIsInitialized31 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "PipelineIsInitialized", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1679,7 +1862,7 @@ gboolean gstd_cli_create_proxypipe (GstdCli* self, const gchar* object_path) {
 	_tmp1_ = _tmp0_;
 	_g_object_unref0 (self->priv->pipeline);
 	self->priv->pipeline = _tmp1_;
-	_tmp2_ = _dynamic_PipelineIsInitialized29 (self->priv->pipeline, &_inner_error_);
+	_tmp2_ = _dynamic_PipelineIsInitialized31 (self->priv->pipeline, &_inner_error_);
 	_tmp3_ = _tmp2_;
 	if (_inner_error_ != NULL) {
 		goto __catch8_g_error;
@@ -1709,7 +1892,8 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 	GOptionContext* _tmp2_ = NULL;
 	GOptionContext* opt;
 	gboolean _tmp3_ = FALSE;
-	gboolean _tmp6_ = FALSE;
+	gboolean _tmp4_ = FALSE;
+	gboolean _tmp8_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	gstd_cli__signals = FALSE;
@@ -1734,17 +1918,24 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 		return;
 	}
 	if (gstd_cli_obj_path != NULL) {
-		gchar _tmp4_;
-		_tmp4_ = string_get (gstd_cli_obj_path, (glong) 0);
-		_tmp3_ = _tmp4_ != '/';
+		gint _tmp5_;
+		_tmp5_ = strlen (gstd_cli_obj_path);
+		_tmp4_ = _tmp5_ >= 1;
+	} else {
+		_tmp4_ = FALSE;
+	}
+	if (_tmp4_) {
+		gchar _tmp6_;
+		_tmp6_ = string_get (gstd_cli_obj_path, (glong) 0);
+		_tmp3_ = _tmp6_ != '/';
 	} else {
 		_tmp3_ = FALSE;
 	}
 	if (_tmp3_) {
-		gchar* _tmp5_;
-		_tmp5_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", gstd_cli_obj_path, NULL);
+		gchar* _tmp7_;
+		_tmp7_ = g_strconcat ("/com/ridgerun/gstreamer/gstd/pipe", gstd_cli_obj_path, NULL);
 		_g_free0 (gstd_cli_obj_path);
-		gstd_cli_obj_path = _tmp5_;
+		gstd_cli_obj_path = _tmp7_;
 	}
 	goto __finally9;
 	__catch9_g_option_error:
@@ -1763,23 +1954,23 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 		return;
 	}
 	if (self->priv->cli_enable) {
-		_tmp6_ = gstd_cli_obj_path != NULL;
+		_tmp8_ = gstd_cli_obj_path != NULL;
 	} else {
-		_tmp6_ = FALSE;
+		_tmp8_ = FALSE;
 	}
-	if (_tmp6_) {
-		gchar* _tmp7_;
-		gchar* _tmp8_;
-		_tmp7_ = g_strdup (gstd_cli_obj_path);
-		_tmp8_ = _tmp7_;
+	if (_tmp8_) {
+		gchar* _tmp9_;
+		gchar* _tmp10_;
+		_tmp9_ = g_strdup (gstd_cli_obj_path);
+		_tmp10_ = _tmp9_;
 		_g_free0 (self->priv->active_pipe);
-		self->priv->active_pipe = _tmp8_;
+		self->priv->active_pipe = _tmp10_;
 	}
 	_g_option_context_free0 (opt);
 }
 
 
-static gboolean _dynamic_DestroyAll30 (DBusGProxy* self, GError** error) {
+static gboolean _dynamic_DestroyAll32 (DBusGProxy* self, GError** error) {
 	gboolean result;
 	dbus_g_proxy_call (self, "DestroyAll", error, G_TYPE_INVALID, G_TYPE_BOOLEAN, &result, G_TYPE_INVALID);
 	if (*error) {
@@ -1826,6 +2017,8 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 	static GQuark _tmp37__label27 = 0;
 	static GQuark _tmp37__label28 = 0;
 	static GQuark _tmp37__label29 = 0;
+	static GQuark _tmp37__label30 = 0;
+	static GQuark _tmp37__label31 = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = gstd_cli_create_proxypipe (self, gstd_cli_obj_path);
@@ -2044,7 +2237,7 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				_tmp48_ = NULL;
 				_g_free0 (self->priv->active_pipe);
 				self->priv->active_pipe = _tmp48_;
-				_tmp49_ = _dynamic_DestroyAll30 (self->priv->factory, &_inner_error_);
+				_tmp49_ = _dynamic_DestroyAll32 (self->priv->factory, &_inner_error_);
 				_tmp50_ = _tmp49_;
 				if (_inner_error_ != NULL) {
 					g_propagate_error (error, _inner_error_);
@@ -2311,35 +2504,55 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				}
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label26) ? _tmp37__label26 : (_tmp37__label26 = g_quark_from_static_string ("quit")))) {
-		switch (0) {
-			default:
-			{
-				self->priv->cli_enable = FALSE;
-				result = TRUE;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label27) ? _tmp37__label27 : (_tmp37__label27 = g_quark_from_static_string ("exit")))) {
-		switch (0) {
-			default:
-			{
-				self->priv->cli_enable = FALSE;
-				result = TRUE;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label28) ? _tmp37__label28 : (_tmp37__label28 = g_quark_from_static_string ("strict")))) {
+	} else if (_tmp37_ == ((0 != _tmp37__label26) ? _tmp37__label26 : (_tmp37__label26 = g_quark_from_static_string ("element-set-state")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp80_;
-				_tmp80_ = gstd_cli_set_strict (self, args, args_length1);
+				_tmp80_ = gstd_cli_element_set_state (self, self->priv->pipeline, args, args_length1);
 				result = _tmp80_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label29) ? _tmp37__label29 : (_tmp37__label29 = g_quark_from_static_string ("help")))) {
+	} else if (_tmp37_ == ((0 != _tmp37__label27) ? _tmp37__label27 : (_tmp37__label27 = g_quark_from_static_string ("element-async-set-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp81_;
+				_tmp81_ = gstd_cli_element_async_set_state (self, self->priv->pipeline, args, args_length1);
+				result = _tmp81_;
+				return result;
+			}
+		}
+	} else if (_tmp37_ == ((0 != _tmp37__label28) ? _tmp37__label28 : (_tmp37__label28 = g_quark_from_static_string ("quit")))) {
+		switch (0) {
+			default:
+			{
+				self->priv->cli_enable = FALSE;
+				result = TRUE;
+				return result;
+			}
+		}
+	} else if (_tmp37_ == ((0 != _tmp37__label29) ? _tmp37__label29 : (_tmp37__label29 = g_quark_from_static_string ("exit")))) {
+		switch (0) {
+			default:
+			{
+				self->priv->cli_enable = FALSE;
+				result = TRUE;
+				return result;
+			}
+		}
+	} else if (_tmp37_ == ((0 != _tmp37__label30) ? _tmp37__label30 : (_tmp37__label30 = g_quark_from_static_string ("strict")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp82_;
+				_tmp82_ = gstd_cli_set_strict (self, args, args_length1);
+				result = _tmp82_;
+				return result;
+			}
+		}
+	} else if (_tmp37_ == ((0 != _tmp37__label31) ? _tmp37__label31 : (_tmp37__label31 = g_quark_from_static_string ("help")))) {
 		switch (0) {
 			default:
 			{
@@ -2365,19 +2578,19 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				} else {
 					fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 					while (TRUE) {
-						const gchar* _tmp81_;
-						gint _tmp82_;
+						const gchar* _tmp83_;
+						gint _tmp84_;
 						if (!(self->priv->cmds[(id * self->priv->cmds_length2) + 0] != NULL)) {
 							break;
 						}
-						_tmp81_ = NULL;
-						_tmp82_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
-						if (_tmp82_ < 6) {
-							_tmp81_ = "\t\t";
+						_tmp83_ = NULL;
+						_tmp84_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
+						if (_tmp84_ < 6) {
+							_tmp83_ = "\t\t";
 						} else {
-							_tmp81_ = "\t";
+							_tmp83_ = "\t";
 						}
-						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp81_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
+						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp83_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
 						id++;
 					}
 					fprintf (stdout, "\n");
@@ -2442,7 +2655,7 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 	gchar* _tmp1_;
 	gchar* home;
 	gchar* _tmp2_;
-	gchar* _tmp14_;
+	gchar* _tmp16_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	args_length1 = 0;
@@ -2486,18 +2699,26 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 		_args_size_ = args_length1;
 		args = _tmp9_;
 		if (args[0] != NULL) {
-			gchar _tmp11_;
-			_tmp11_ = string_get (cmd_line, (glong) 0);
-			_tmp10_ = _tmp11_ != '#';
+			gboolean _tmp11_ = FALSE;
+			gint _tmp12_;
+			_tmp12_ = strlen (cmd_line);
+			if (_tmp12_ >= 1) {
+				gchar _tmp13_;
+				_tmp13_ = string_get (cmd_line, (glong) 0);
+				_tmp11_ = _tmp13_ == '#';
+			} else {
+				_tmp11_ = FALSE;
+			}
+			_tmp10_ = !_tmp11_;
 		} else {
 			_tmp10_ = FALSE;
 		}
 		if (_tmp10_) {
-			gboolean _tmp12_;
+			gboolean _tmp14_;
 			gboolean _result_;
-			gboolean _tmp13_ = FALSE;
-			_tmp12_ = gstd_cli_parse_cmd (self, args, args_length1, &_inner_error_);
-			_result_ = _tmp12_;
+			gboolean _tmp15_ = FALSE;
+			_tmp14_ = gstd_cli_parse_cmd (self, args, args_length1, &_inner_error_);
+			_result_ = _tmp14_;
 			if (_inner_error_ != NULL) {
 				g_propagate_error (error, _inner_error_);
 				_g_free0 (cmd_line);
@@ -2506,11 +2727,11 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 				return FALSE;
 			}
 			if (!_result_) {
-				_tmp13_ = gstd_cli_isStrict;
+				_tmp15_ = gstd_cli_isStrict;
 			} else {
-				_tmp13_ = FALSE;
+				_tmp15_ = FALSE;
 			}
-			if (_tmp13_) {
+			if (_tmp15_) {
 				result = FALSE;
 				_g_free0 (cmd_line);
 				_g_free0 (home);
@@ -2524,9 +2745,9 @@ gboolean gstd_cli_cli (GstdCli* self, GError** error) {
 		}
 		_g_free0 (cmd_line);
 	}
-	_tmp14_ = g_strconcat (home, "/.gst-client_history", NULL);
-	write_history (_tmp14_);
-	_g_free0 (_tmp14_);
+	_tmp16_ = g_strconcat (home, "/.gst-client_history", NULL);
+	write_history (_tmp16_);
+	_g_free0 (_tmp16_);
 	result = TRUE;
 	_g_free0 (home);
 	args = (_vala_array_free (args, args_length1, (GDestroyNotify) g_free), NULL);
@@ -2784,7 +3005,13 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	gchar* _tmp84_;
 	gchar* _tmp85_;
 	gchar* _tmp86_;
-	gchar** _tmp87_ = NULL;
+	gchar* _tmp87_;
+	gchar* _tmp88_;
+	gchar* _tmp89_;
+	gchar* _tmp90_;
+	gchar* _tmp91_;
+	gchar* _tmp92_;
+	gchar** _tmp93_ = NULL;
 	self->priv = GSTD_CLI_GET_PRIVATE (self);
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
@@ -2867,105 +3094,117 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	_tmp75_ = g_strdup ("send-eos");
 	_tmp76_ = g_strdup ("send-eos");
 	_tmp77_ = g_strdup ("Send an EOS event on the pipeline");
-	_tmp78_ = g_strdup ("exit");
-	_tmp79_ = g_strdup ("exit");
-	_tmp80_ = g_strdup ("Exit/quit active console");
-	_tmp81_ = g_strdup ("quit");
-	_tmp82_ = g_strdup ("quit");
-	_tmp83_ = g_strdup ("Exit/quit active console");
-	_tmp84_ = g_strdup ("strict");
-	_tmp85_ = g_strdup ("strict");
-	_tmp86_ = g_strdup ("Enable/disable strict execution mode.");
-	_tmp87_ = g_new0 (gchar*, (29 * 3) + 1);
-	_tmp87_[0] = _tmp0_;
-	_tmp87_[1] = _tmp1_;
-	_tmp87_[2] = _tmp2_;
-	_tmp87_[3] = _tmp3_;
-	_tmp87_[4] = _tmp4_;
-	_tmp87_[5] = _tmp5_;
-	_tmp87_[6] = _tmp6_;
-	_tmp87_[7] = _tmp7_;
-	_tmp87_[8] = _tmp8_;
-	_tmp87_[9] = _tmp9_;
-	_tmp87_[10] = _tmp10_;
-	_tmp87_[11] = _tmp11_;
-	_tmp87_[12] = _tmp12_;
-	_tmp87_[13] = _tmp13_;
-	_tmp87_[14] = _tmp14_;
-	_tmp87_[15] = _tmp15_;
-	_tmp87_[16] = _tmp16_;
-	_tmp87_[17] = _tmp17_;
-	_tmp87_[18] = _tmp18_;
-	_tmp87_[19] = _tmp19_;
-	_tmp87_[20] = _tmp20_;
-	_tmp87_[21] = _tmp21_;
-	_tmp87_[22] = _tmp22_;
-	_tmp87_[23] = _tmp23_;
-	_tmp87_[24] = _tmp24_;
-	_tmp87_[25] = _tmp25_;
-	_tmp87_[26] = _tmp26_;
-	_tmp87_[27] = _tmp27_;
-	_tmp87_[28] = _tmp28_;
-	_tmp87_[29] = _tmp29_;
-	_tmp87_[30] = _tmp30_;
-	_tmp87_[31] = _tmp31_;
-	_tmp87_[32] = _tmp32_;
-	_tmp87_[33] = _tmp33_;
-	_tmp87_[34] = _tmp34_;
-	_tmp87_[35] = _tmp35_;
-	_tmp87_[36] = _tmp36_;
-	_tmp87_[37] = _tmp37_;
-	_tmp87_[38] = _tmp38_;
-	_tmp87_[39] = _tmp39_;
-	_tmp87_[40] = _tmp40_;
-	_tmp87_[41] = _tmp41_;
-	_tmp87_[42] = _tmp42_;
-	_tmp87_[43] = _tmp43_;
-	_tmp87_[44] = _tmp44_;
-	_tmp87_[45] = _tmp45_;
-	_tmp87_[46] = _tmp46_;
-	_tmp87_[47] = _tmp47_;
-	_tmp87_[48] = _tmp48_;
-	_tmp87_[49] = _tmp49_;
-	_tmp87_[50] = _tmp50_;
-	_tmp87_[51] = _tmp51_;
-	_tmp87_[52] = _tmp52_;
-	_tmp87_[53] = _tmp53_;
-	_tmp87_[54] = _tmp54_;
-	_tmp87_[55] = _tmp55_;
-	_tmp87_[56] = _tmp56_;
-	_tmp87_[57] = _tmp57_;
-	_tmp87_[58] = _tmp58_;
-	_tmp87_[59] = _tmp59_;
-	_tmp87_[60] = _tmp60_;
-	_tmp87_[61] = _tmp61_;
-	_tmp87_[62] = _tmp62_;
-	_tmp87_[63] = _tmp63_;
-	_tmp87_[64] = _tmp64_;
-	_tmp87_[65] = _tmp65_;
-	_tmp87_[66] = _tmp66_;
-	_tmp87_[67] = _tmp67_;
-	_tmp87_[68] = _tmp68_;
-	_tmp87_[69] = _tmp69_;
-	_tmp87_[70] = _tmp70_;
-	_tmp87_[71] = _tmp71_;
-	_tmp87_[72] = _tmp72_;
-	_tmp87_[73] = _tmp73_;
-	_tmp87_[74] = _tmp74_;
-	_tmp87_[75] = _tmp75_;
-	_tmp87_[76] = _tmp76_;
-	_tmp87_[77] = _tmp77_;
-	_tmp87_[78] = _tmp78_;
-	_tmp87_[79] = _tmp79_;
-	_tmp87_[80] = _tmp80_;
-	_tmp87_[81] = _tmp81_;
-	_tmp87_[82] = _tmp82_;
-	_tmp87_[83] = _tmp83_;
-	_tmp87_[84] = _tmp84_;
-	_tmp87_[85] = _tmp85_;
-	_tmp87_[86] = _tmp86_;
-	self->priv->cmds = _tmp87_;
-	self->priv->cmds_length1 = 29;
+	_tmp78_ = g_strdup ("element-set-state");
+	_tmp79_ = g_strdup ("element-set-state <element_name> <state>");
+	_tmp80_ = g_strdup ("Sets the element state" "\t\tSupported <state>s include: null, ready, paused, playing");
+	_tmp81_ = g_strdup ("element-async-set-state");
+	_tmp82_ = g_strdup ("element-async-set-state <element_name> <state>");
+	_tmp83_ = g_strdup ("Sets the element state, it does not wait the change to be done");
+	_tmp84_ = g_strdup ("exit");
+	_tmp85_ = g_strdup ("exit");
+	_tmp86_ = g_strdup ("Exit/quit active console");
+	_tmp87_ = g_strdup ("quit");
+	_tmp88_ = g_strdup ("quit");
+	_tmp89_ = g_strdup ("Exit/quit active console");
+	_tmp90_ = g_strdup ("strict");
+	_tmp91_ = g_strdup ("strict");
+	_tmp92_ = g_strdup ("Enable/disable strict execution mode.");
+	_tmp93_ = g_new0 (gchar*, (31 * 3) + 1);
+	_tmp93_[0] = _tmp0_;
+	_tmp93_[1] = _tmp1_;
+	_tmp93_[2] = _tmp2_;
+	_tmp93_[3] = _tmp3_;
+	_tmp93_[4] = _tmp4_;
+	_tmp93_[5] = _tmp5_;
+	_tmp93_[6] = _tmp6_;
+	_tmp93_[7] = _tmp7_;
+	_tmp93_[8] = _tmp8_;
+	_tmp93_[9] = _tmp9_;
+	_tmp93_[10] = _tmp10_;
+	_tmp93_[11] = _tmp11_;
+	_tmp93_[12] = _tmp12_;
+	_tmp93_[13] = _tmp13_;
+	_tmp93_[14] = _tmp14_;
+	_tmp93_[15] = _tmp15_;
+	_tmp93_[16] = _tmp16_;
+	_tmp93_[17] = _tmp17_;
+	_tmp93_[18] = _tmp18_;
+	_tmp93_[19] = _tmp19_;
+	_tmp93_[20] = _tmp20_;
+	_tmp93_[21] = _tmp21_;
+	_tmp93_[22] = _tmp22_;
+	_tmp93_[23] = _tmp23_;
+	_tmp93_[24] = _tmp24_;
+	_tmp93_[25] = _tmp25_;
+	_tmp93_[26] = _tmp26_;
+	_tmp93_[27] = _tmp27_;
+	_tmp93_[28] = _tmp28_;
+	_tmp93_[29] = _tmp29_;
+	_tmp93_[30] = _tmp30_;
+	_tmp93_[31] = _tmp31_;
+	_tmp93_[32] = _tmp32_;
+	_tmp93_[33] = _tmp33_;
+	_tmp93_[34] = _tmp34_;
+	_tmp93_[35] = _tmp35_;
+	_tmp93_[36] = _tmp36_;
+	_tmp93_[37] = _tmp37_;
+	_tmp93_[38] = _tmp38_;
+	_tmp93_[39] = _tmp39_;
+	_tmp93_[40] = _tmp40_;
+	_tmp93_[41] = _tmp41_;
+	_tmp93_[42] = _tmp42_;
+	_tmp93_[43] = _tmp43_;
+	_tmp93_[44] = _tmp44_;
+	_tmp93_[45] = _tmp45_;
+	_tmp93_[46] = _tmp46_;
+	_tmp93_[47] = _tmp47_;
+	_tmp93_[48] = _tmp48_;
+	_tmp93_[49] = _tmp49_;
+	_tmp93_[50] = _tmp50_;
+	_tmp93_[51] = _tmp51_;
+	_tmp93_[52] = _tmp52_;
+	_tmp93_[53] = _tmp53_;
+	_tmp93_[54] = _tmp54_;
+	_tmp93_[55] = _tmp55_;
+	_tmp93_[56] = _tmp56_;
+	_tmp93_[57] = _tmp57_;
+	_tmp93_[58] = _tmp58_;
+	_tmp93_[59] = _tmp59_;
+	_tmp93_[60] = _tmp60_;
+	_tmp93_[61] = _tmp61_;
+	_tmp93_[62] = _tmp62_;
+	_tmp93_[63] = _tmp63_;
+	_tmp93_[64] = _tmp64_;
+	_tmp93_[65] = _tmp65_;
+	_tmp93_[66] = _tmp66_;
+	_tmp93_[67] = _tmp67_;
+	_tmp93_[68] = _tmp68_;
+	_tmp93_[69] = _tmp69_;
+	_tmp93_[70] = _tmp70_;
+	_tmp93_[71] = _tmp71_;
+	_tmp93_[72] = _tmp72_;
+	_tmp93_[73] = _tmp73_;
+	_tmp93_[74] = _tmp74_;
+	_tmp93_[75] = _tmp75_;
+	_tmp93_[76] = _tmp76_;
+	_tmp93_[77] = _tmp77_;
+	_tmp93_[78] = _tmp78_;
+	_tmp93_[79] = _tmp79_;
+	_tmp93_[80] = _tmp80_;
+	_tmp93_[81] = _tmp81_;
+	_tmp93_[82] = _tmp82_;
+	_tmp93_[83] = _tmp83_;
+	_tmp93_[84] = _tmp84_;
+	_tmp93_[85] = _tmp85_;
+	_tmp93_[86] = _tmp86_;
+	_tmp93_[87] = _tmp87_;
+	_tmp93_[88] = _tmp88_;
+	_tmp93_[89] = _tmp89_;
+	_tmp93_[90] = _tmp90_;
+	_tmp93_[91] = _tmp91_;
+	_tmp93_[92] = _tmp92_;
+	self->priv->cmds = _tmp93_;
+	self->priv->cmds_length1 = 31;
 	self->priv->cmds_length2 = 3;
 }
 
