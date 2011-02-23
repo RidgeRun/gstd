@@ -8,30 +8,35 @@ create "videotestsrc name=src ! ffmpegcolorspace ! videoscale ! xvimagesink name
 ready
 get-elem-state src
 get-elem-state sink
+ping-pipe
 sh "sleep 1"
 get-state
 sh "echo pause"
 pause
 get-elem-state src
 get-elem-state sink
+ping-pipe
 sh "sleep 1"
 get-state
 play
 sh "echo play"
 get-elem-state src
 get-elem-state sink
+ping-pipe
 sh "sleep 1"
 get-state
 sh "echo pause"
 pause
 get-elem-state src
 get-elem-state sink
+ping-pipe
 sh "sleep 1"
 get-state
 sh "echo ready"
 ready
 get-elem-state src
 get-elem-state sink
+ping-pipe
 sh "sleep 1"
 get-state
 sh "echo null."

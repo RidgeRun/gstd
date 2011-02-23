@@ -751,6 +751,15 @@ public class Pipeline : GLib.Object
 	{
 		windowId = (ulong)(winId);
 	}
+	
+	/**
+	   Ping pipeline..
+	   @return true if alive
+	 */
+	public bool Ping ()
+	{
+		return true;
+	}
 
 	/*public uint GetCounter() {
 	   return _counter;

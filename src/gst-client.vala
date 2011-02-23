@@ -97,6 +97,7 @@ public class GstdCli : GLib.Object
 		{ "list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
 		  + "the existing pipelines"},
 		{ "ping", "ping", "Shows if gstd is alive"},
+		{ "ping-pipe", "ping-pipe", "Test if the active pipeline is alive"},
 		{ "active", "active <path>", "Sets the active pipeline,if no <path> is "
 		  + "passed:it returns the actual active pipeline"},
 		{ "seek", "seek <position[ms]>", "Moves current playing position to a new"
@@ -313,6 +314,24 @@ public class GstdCli : GLib.Object
 
 		stdout.printf ("pong\n");
 		return ret;
+	}
+	
+	private bool pipeline_ping ()
+	{
+		if(pipeline == null)
+			return false;
+		
+		try {
+			bool result = pipeline.Ping ();
+			
+			print("Pipeline ping result = %s\n", result ? "Success" : "Failed");
+			return result;
+		}
+		catch (Error e)
+		{
+			stderr.printf ("Error:\nFailed to ping pipeline!\n");
+			return false;
+		}
 	}
 
 	private bool pipeline_get_property (dynamic DBus.Object pipeline,
@@ -762,8 +781,9 @@ public class GstdCli : GLib.Object
 			if (args[0].down () != "create" && args[0].down () != "help"
 			    && args[0].down () != "active" && args[0].down () != "quit"
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
-			    && args[0].down () != "exit" && args[0].down () != "sh" 
-			    && args[0].down () != "strict" && active_pipe == null)
+				&& args[0].down () != "ping-pipe" && args[0].down () != "exit" 
+				&& args[0].down () != "sh" && args[0].down () != "strict" 
+				&& active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -888,6 +908,9 @@ public class GstdCli : GLib.Object
 
 			case "ping":
 				return gstd_ping ();
+				
+			case "ping-pipe":
+				return pipeline_ping ();
 
 			case "active":
 				if (args[1] == null)
