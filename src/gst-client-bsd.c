@@ -662,7 +662,7 @@ static gboolean gstd_cli_pipeline_ping (GstdCli* self) {
 	} else {
 		_tmp1_ = "Failed";
 	}
-	g_print ("Pipeline ping result = %s\n", _tmp1_);
+	fprintf (stdout, "Pipeline ping result = %s\n", _tmp1_);
 	result = _result_;
 	return result;
 	goto __finally6;
@@ -1240,7 +1240,7 @@ static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline
 		return FALSE;
 	}
 	_tmp1_ = gst_element_state_get_name (state);
-	g_print ("The pipeline state is: %s\n", _tmp1_);
+	fprintf (stdout, "The pipeline state is: %s\n", _tmp1_);
 	result = TRUE;
 	return result;
 }
@@ -1282,7 +1282,7 @@ static gboolean gstd_cli_element_get_state (GstdCli* self, DBusGProxy* pipeline,
 		return FALSE;
 	}
 	_tmp2_ = gst_element_state_get_name (state);
-	g_print ("The state of %s is: %s\n", element, _tmp2_);
+	fprintf (stdout, "The state of %s is: %s\n", element, _tmp2_);
 	result = TRUE;
 	_g_free0 (element);
 	return result;
