@@ -339,7 +339,7 @@ public class GstdCli : GLib.Object
 		try {
 			bool result = pipeline.Ping ();
 			
-			print("Pipeline ping result = %s\n", result ? "Success" : "Failed");
+			stdout.printf("Pipeline ping result = %s\n", result ? "Success" : "Failed");
 			return result;
 		}
 		catch (Error e)
@@ -530,7 +530,7 @@ public class GstdCli : GLib.Object
 	private bool pipeline_get_state (dynamic DBus.Object pipeline)
 	{
 		State state = pipeline.PipelineGetState ();
-		print ("The pipeline state is: %s\n", state.to_string ());
+		stdout.printf ("The pipeline state is: %s\n", state.to_string ());
 		return true;
 	}
 	
@@ -544,7 +544,7 @@ public class GstdCli : GLib.Object
 
 		string element = args[1];
 		State state = pipeline.ElementGetState (element);
-		print ("The state of %s is: %s\n", element, state.to_string ());
+		stdout.printf ("The state of %s is: %s\n", element, state.to_string ());
 		return true;
 	}
 

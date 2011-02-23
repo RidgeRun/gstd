@@ -652,7 +652,7 @@ static gboolean gstd_cli_pipeline_ping (GstdCli* self) {
 	} else {
 		_tmp1_ = "Failed";
 	}
-	g_print ("Pipeline ping result = %s\n", _tmp1_);
+	fprintf (stdout, "Pipeline ping result = %s\n", _tmp1_);
 	result = _result_;
 	return result;
 	goto __finally6;
@@ -1230,7 +1230,7 @@ static gboolean gstd_cli_pipeline_get_state (GstdCli* self, DBusGProxy* pipeline
 		return FALSE;
 	}
 	_tmp1_ = gst_element_state_get_name (state);
-	g_print ("The pipeline state is: %s\n", _tmp1_);
+	fprintf (stdout, "The pipeline state is: %s\n", _tmp1_);
 	result = TRUE;
 	return result;
 }
@@ -1272,7 +1272,7 @@ static gboolean gstd_cli_element_get_state (GstdCli* self, DBusGProxy* pipeline,
 		return FALSE;
 	}
 	_tmp2_ = gst_element_state_get_name (state);
-	g_print ("The state of %s is: %s\n", element, _tmp2_);
+	fprintf (stdout, "The state of %s is: %s\n", element, _tmp2_);
 	result = TRUE;
 	_g_free0 (element);
 	return result;
@@ -1620,41 +1620,35 @@ static gboolean gstd_cli_shell (GstdCli* self, const gchar* command) {
 
 static gboolean gstd_cli_set_strict (GstdCli* self, gchar** args, int args_length1) {
 	gboolean result = FALSE;
+	gchar* _tmp0_ = NULL;
+	gchar* _tmp1_;
+	gboolean _tmp2_;
 	g_return_val_if_fail (self != NULL, FALSE);
-	g_print ("set_strict\n");
-	{
-		gchar** arg_collection;
-		int arg_collection_length1;
-		int arg_it;
-		arg_collection = args;
-		arg_collection_length1 = args_length1;
-		for (arg_it = 0; arg_it < args_length1; arg_it = arg_it + 1) {
-			gchar* _tmp0_;
-			gchar* arg;
-			_tmp0_ = g_strdup (arg_collection[arg_it]);
-			arg = _tmp0_;
-			{
-				g_print ("%s", arg);
-				g_print ("\n");
-				_g_free0 (arg);
-			}
-		}
-	}
 	if (args_length1 < 2) {
+		fprintf (stdout, "Set strict failed because of missing argument\n");
 		result = FALSE;
 		return result;
 	}
-	if (g_strcmp0 (args[1], "on") == 0) {
+	_tmp0_ = g_utf8_strdown (args[1], (gssize) (-1));
+	_tmp1_ = _tmp0_;
+	if ((_tmp2_ = g_strcmp0 (_tmp1_, "on") == 0, _g_free0 (_tmp1_), _tmp2_)) {
 		gstd_cli_isStrict = TRUE;
-		result = TRUE;
-		return result;
+	} else {
+		gchar* _tmp3_ = NULL;
+		gchar* _tmp4_;
+		gboolean _tmp5_;
+		_tmp3_ = g_utf8_strdown (args[1], (gssize) (-1));
+		_tmp4_ = _tmp3_;
+		if ((_tmp5_ = g_strcmp0 (_tmp4_, "off") == 0, _g_free0 (_tmp4_), _tmp5_)) {
+			gstd_cli_isStrict = FALSE;
+		} else {
+			fprintf (stdout, "Set strict failed because of unexpected argument '%s'\n", args[1]);
+			result = FALSE;
+			return result;
+		}
 	}
-	if (g_strcmp0 (args[1], "off") == 0) {
-		gstd_cli_isStrict = FALSE;
-		result = TRUE;
-		return result;
-	}
-	result = FALSE;
+	fprintf (stdout, "Set strict = '%s'\n", args[1]);
+	result = TRUE;
 	return result;
 }
 
@@ -2548,7 +2542,7 @@ gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs
 		if (remainingArgs_length1 > 0) {
 			gboolean _tmp0_;
 			gboolean _tmp1_;
-			g_print ("Parse single command interactive:\n");
+			fprintf (stdout, "Parse single command interactive:\n");
 			_tmp0_ = gstd_cli_parse_cmd (self, remainingArgs, remainingArgs_length1, &_inner_error_);
 			_tmp1_ = _tmp0_;
 			if (_inner_error_ != NULL) {
@@ -2560,7 +2554,7 @@ gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs
 		} else {
 			gboolean _tmp2_;
 			gboolean _tmp3_;
-			g_print ("Interactive console execution:\n");
+			fprintf (stdout, "Interactive console execution:\n");
 			self->priv->cli_enable = TRUE;
 			_tmp2_ = gstd_cli_cli (self, &_inner_error_);
 			_tmp3_ = _tmp2_;
@@ -2580,8 +2574,8 @@ gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs
 		gboolean _tmp9_;
 		g_print ("Interpret script:\n");
 		if (remainingArgs_length1 != 1) {
-			g_print ("Please define the script file name.\n");
-			g_print ("Furthermore you may use the standard options (signal, ...).\n");
+			fprintf (stdout, "Please define the script file name.\n");
+			fprintf (stdout, "Furthermore you may use the standard options (signal, ...).\n");
 		}
 		_tmp4_ = fopen (remainingArgs[0], "r");
 		_tmp5_ = _tmp4_;
@@ -2617,51 +2611,32 @@ static gboolean string_contains (const gchar* self, const gchar* needle) {
 
 static gint gstd_cli_main (gchar** args, int args_length1) {
 	gint result = 0;
-	gboolean _tmp1_;
-	gchar* _tmp2_;
-	GstdCli* _tmp3_ = NULL;
+	gboolean _tmp0_;
+	gchar* _tmp1_;
+	GstdCli* _tmp2_ = NULL;
 	GstdCli* cli;
+	gboolean _tmp3_;
 	gboolean _tmp4_;
-	gboolean _tmp5_;
 	GError * _inner_error_ = NULL;
 	if (args_length1 == 0) {
 		result = 1;
 		return result;
 	}
-	g_print ("args:\n");
-	{
-		gchar** arg_collection;
-		int arg_collection_length1;
-		int arg_it;
-		arg_collection = args;
-		arg_collection_length1 = args_length1;
-		for (arg_it = 0; arg_it < args_length1; arg_it = arg_it + 1) {
-			gchar* _tmp0_;
-			gchar* arg;
-			_tmp0_ = g_strdup (arg_collection[arg_it]);
-			arg = _tmp0_;
-			{
-				g_print ("%s", arg);
-				g_print ("\n");
-				_g_free0 (arg);
-			}
-		}
-	}
-	_tmp1_ = string_contains (args[0], "interpreter");
-	gstd_cli_isInteractive = !_tmp1_;
-	_tmp2_ = NULL;
+	_tmp0_ = string_contains (args[0], "interpreter");
+	gstd_cli_isInteractive = !_tmp0_;
+	_tmp1_ = NULL;
 	_g_free0 (gstd_cli_obj_path);
-	gstd_cli_obj_path = _tmp2_;
-	_tmp3_ = gstd_cli_new (args, args_length1, &_inner_error_);
-	cli = _tmp3_;
+	gstd_cli_obj_path = _tmp1_;
+	_tmp2_ = gstd_cli_new (args, args_length1, &_inner_error_);
+	cli = _tmp2_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == DBUS_GERROR) {
 			goto __catch10_dbus_gerror;
 		}
 		goto __catch10_g_error;
 	}
-	_tmp4_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
-	_tmp5_ = _tmp4_;
+	_tmp3_ = gstd_cli_parse (cli, gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), &_inner_error_);
+	_tmp4_ = _tmp3_;
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (cli);
 		if (_inner_error_->domain == DBUS_GERROR) {
@@ -2669,7 +2644,7 @@ static gint gstd_cli_main (gchar** args, int args_length1) {
 		}
 		goto __catch10_g_error;
 	}
-	if (!_tmp5_) {
+	if (!_tmp4_) {
 		result = 1;
 		_g_object_unref0 (cli);
 		return result;

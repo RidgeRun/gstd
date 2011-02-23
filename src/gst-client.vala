@@ -325,7 +325,7 @@ public class GstdCli : GLib.Object
 		try {
 			bool result = pipeline.Ping ();
 			
-			print("Pipeline ping result = %s\n", result ? "Success" : "Failed");
+			stdout.printf("Pipeline ping result = %s\n", result ? "Success" : "Failed");
 			return result;
 		}
 		catch (Error e)
@@ -516,7 +516,7 @@ public class GstdCli : GLib.Object
 	private bool pipeline_get_state (dynamic DBus.Object pipeline)
 	{
 		State state = pipeline.PipelineGetState ();
-		print ("The pipeline state is: %s\n", state.to_string ());
+		stdout.printf ("The pipeline state is: %s\n", state.to_string ());
 		return true;
 	}
 	
@@ -530,7 +530,7 @@ public class GstdCli : GLib.Object
 
 		string element = args[1];
 		State state = pipeline.ElementGetState (element);
-		print ("The state of %s is: %s\n", element, state.to_string ());
+		stdout.printf ("The state of %s is: %s\n", element, state.to_string ());
 		return true;
 	}
 
@@ -691,26 +691,29 @@ public class GstdCli : GLib.Object
 	
 	private bool set_strict (string[] args)
 	{
-		print ("set_strict\n");
-		foreach(string arg in args)
-		{
-			print (arg);
-			print("\n");
-		}
 		if(args.length < 2)
+		{
+			stdout.printf ("Set strict failed because of missing argument\n");
 			return false;
-		if(args[1] == "on")
+		}
+
+		if(args[1].down() == "on")
 		{
 			isStrict = true;
-			return true;
 		}
-		if(args[1] == "off")
+		else if(args[1].down() == "off")
 		{
 			isStrict = false;
-			return true;
+		}
+		else
+		{
+			stdout.printf ("Set strict failed because of unexpected argument '%s'\n", args[1]);
+			return false;
 		}
 		
-		return false;
+		stdout.printf ("Set strict = '%s'\n", args[1]);
+		
+		return true;
 	}
 
 	/*
@@ -1042,12 +1045,12 @@ public class GstdCli : GLib.Object
 			if (remainingArgs.length > 0)
 			{
 				/*Parse single command */
-				print("Parse single command interactive:\n");
+				stdout.printf("Parse single command interactive:\n");
 				return parse_cmd (remainingArgs);
 			}
 			else
 			{
-				print("Interactive console execution:\n");
+				stdout.printf("Interactive console execution:\n");
 				cli_enable = true;
 				return cli ();
 			}
@@ -1057,8 +1060,8 @@ public class GstdCli : GLib.Object
 			print("Interpret script:\n");
 			if(remainingArgs.length != 1)
 			{
-				print ("Please define the script file name.\n");
-				print ("Furthermore you may use the standard options (signal, ...).\n");
+				stdout.printf ("Please define the script file name.\n");
+				stdout.printf ("Furthermore you may use the standard options (signal, ...).\n");
 			}
 			// Let the command line interpreter read from the script file.
 			Readline.instream = FileStream.open(remainingArgs[0], "r");
@@ -1074,12 +1077,12 @@ public class GstdCli : GLib.Object
 			if(args.length == 0)
 				return 1;
 			
-			print("args:\n");
+			/*stdout.printf("args:\n");
 			foreach(string arg in args)
 			{
-				print(arg);
-				print("\n");
-			}
+				stdout.printf(arg);
+				stdout.printf("\n");
+			}*/
 			
 			// Script execution? 
 			isInteractive = !("interpreter" in args[0]);
