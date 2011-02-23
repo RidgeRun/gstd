@@ -48,7 +48,7 @@ public class Factory : GLib.Object
 	   @param debug, flag to enable debug information
 	   @return the dbus-path of the pipeline, or null if out of resources
 	 */
-	public string Create (string description, bool debug)
+	public string Create (string description)
 	{
 		/* Create our pipeline */
 		int next_id = 0;
@@ -60,7 +60,7 @@ public class Factory : GLib.Object
 				return "";
 			}
 		}
-		pipes[next_id] = new Pipeline (description, debug);
+		pipes[next_id] = new Pipeline (description);
 
 		if (!pipes[next_id].PipelineIsInitialized ())
 		{

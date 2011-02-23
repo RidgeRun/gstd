@@ -19,7 +19,6 @@ public class Pipeline : GLib.Object
 	/* Private data */
 	private Gst.Element pipeline;
 	private uint64 id = 0;
-	private bool debug = false;
 	private bool initialized = false;
 	private string path = "";
 	private double rate = 1.0;
@@ -46,9 +45,8 @@ public class Pipeline : GLib.Object
 	   Create a new instance of a Pipeline
 	   @param description, gst-launch style string description of the pipeline
 	   @param ids, pipeline identifier
-	   @param _debug, flag to enable debug information
 	 */
-	public Pipeline (string description, bool _debug)
+	public Pipeline (string description)
 	{
 		try
 		{
@@ -68,15 +66,10 @@ public class Pipeline : GLib.Object
 			/* Set pipeline state to initialized */
 			initialized = true;
 
-			this.debug = _debug;
-
-			if (_debug)
-			{
-				if (this.PipelineIsInitialized ())
-					Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
-				else
-					Posix.syslog (Posix.LOG_ERR, "Pipeline could not be initialized");
-			}
+			if (this.PipelineIsInitialized ())
+				Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
+			else
+				Posix.syslog (Posix.LOG_ERR, "Pipeline could not be initialized");
 		}
 		catch (GLib.Error e)
 		{
@@ -140,8 +133,7 @@ public class Pipeline : GLib.Object
 				/*Sending Error Signal */
 				Error (PipelineGetId(), err.message);
 
-				if (debug)
-					Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
+				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
 				break;
 
 			case MessageType.EOS:
@@ -159,9 +151,8 @@ public class Pipeline : GLib.Object
 				string src = ((Element)message.src).get_name ();
 				message.parse_state_changed (out oldstate, out newstate,
 				                             out pending);
-				if (debug)
-					Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src,
-					              oldstate.to_string (), newstate.to_string ());
+				
+				Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src, oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
 				StateChanged (PipelineGetId(), oldstate, newstate, src);
@@ -220,8 +211,7 @@ public class Pipeline : GLib.Object
 		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		if (current != state)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
+			Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
 			return false;
 		}
 		return true;
@@ -235,8 +225,7 @@ public class Pipeline : GLib.Object
 	private void PipelineAsyncSetStateImpl(State state)
 	{
 		pipeline.set_state (state);
-		if (debug)
-			Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
+		Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
 	}
 	
 	public void PipelineAsyncSetState(int state)
@@ -311,16 +300,14 @@ public class Pipeline : GLib.Object
 		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -345,17 +332,14 @@ public class Pipeline : GLib.Object
 		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline",
-				              element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Gstd: Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Gstd: Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -379,16 +363,14 @@ public class Pipeline : GLib.Object
 		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -413,16 +395,14 @@ public class Pipeline : GLib.Object
 		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -445,16 +425,14 @@ public class Pipeline : GLib.Object
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -477,16 +455,14 @@ public class Pipeline : GLib.Object
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -509,16 +485,14 @@ public class Pipeline : GLib.Object
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -541,16 +515,14 @@ public class Pipeline : GLib.Object
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -598,16 +570,14 @@ public class Pipeline : GLib.Object
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
 		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
-			if (debug)
-				Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
 				              element, property);
 			return false;
 		}
@@ -642,14 +612,12 @@ public class Pipeline : GLib.Object
 		if (duration == Gst.CLOCK_TIME_NONE)
 			return -1;
 
-		if (debug)
-		{
-			Posix.syslog (Posix.LOG_DEBUG, "Duration at server is %u:%02u:%02u.%03u",
-			              (uint)(duration / (SECOND * 60 * 60)),
-			              (uint)((duration / (SECOND * 60)) % 60),
-			              (uint)((duration / SECOND) % 60),
-			              (uint)(duration % SECOND));
-		}
+		Posix.syslog (Posix.LOG_DEBUG, "Duration at server is %u:%02u:%02u.%03u",
+			      (uint)(duration / (SECOND * 60 * 60)),
+			      (uint)((duration / (SECOND * 60)) % 60),
+			      (uint)((duration / SECOND) % 60),
+			      (uint)(duration % SECOND));
+
 		return duration;
 	}
 
@@ -670,14 +638,11 @@ public class Pipeline : GLib.Object
 		if (position == Gst.CLOCK_TIME_NONE)
 			return -1;
 
-		if (debug)
-		{
-			Posix.syslog (Posix.LOG_DEBUG, "Position at server is %u:%02u:%02u.%03u",
-			              (uint)(position / (SECOND * 60 * 60)),
-			              (uint)((position / (SECOND * 60)) % 60),
-			              (uint)((position / SECOND) % 60),
-			              (uint)(position % SECOND));
-		}
+		Posix.syslog (Posix.LOG_DEBUG, "Position at server is %u:%02u:%02u.%03u",
+			      (uint)(position / (SECOND * 60 * 60)),
+			      (uint)((position / (SECOND * 60)) % 60),
+			      (uint)((position / SECOND) % 60),
+			      (uint)(position % SECOND));
 		return position;
 	}
 
@@ -691,11 +656,8 @@ public class Pipeline : GLib.Object
 		/*Set the current position */
 		if (!pipeline.seek (rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
 		{
-			if (debug)
-			{
-				Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
-				return false;
-			}
+			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
+			return false;
 		}
 		return true;
 	}
@@ -739,11 +701,8 @@ public class Pipeline : GLib.Object
 		if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,
 		                    stp_pos_ns))
 		{
-			if (debug)
-			{
-				Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
-				return false;
-			}
+			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
+			return false;
 		}
 		return true;
 	}
@@ -768,11 +727,8 @@ public class Pipeline : GLib.Object
 		/*Changes the rate on the pipeline */
 		if (!pipeline.seek (rate, format, flag, type, pos_ns, type, pos_ns))
 		{
-			if (debug)
-			{
-				Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
-				return false;
-			}
+			Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
+			return false;
 		}
 		return true;
 	}

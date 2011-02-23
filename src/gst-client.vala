@@ -27,7 +27,6 @@ public class GstdCli : GLib.Object
 	 */
 	static string obj_path; // Used in non cli mode
 	static bool _signals = false;
-	static bool _debug = false;
 	[CCode (array_length = false, array_null_terminated = true)]
 	static string[] _remaining_args;
 	static bool useSessionBus = false;
@@ -50,11 +49,6 @@ public class GstdCli : GLib.Object
 		{ "enable_signals", 's', 0, OptionArg.INT, ref _signals,
 		  "Flag to enable reception of dbus signals from GStreamer " +
 		  "Daemon.  Usage: -s 1", null},
-
-		{ "debug", 'd', 0, OptionArg.INT, ref _debug,
-		  "Flag to enable pipeline debug information to be displayed." + 
-		  "  Only used for the 'create' command.  Usage: -d 1",
-		  null},
 
 		{ "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
 		  null, N_("[COMMANDS...]")},
@@ -166,7 +160,7 @@ public class GstdCli : GLib.Object
 		}
 
 		try {
-			string new_objpath = factory.Create (description, _debug);
+			string new_objpath = factory.Create (description);
 
 			if (new_objpath == "")
 			{
@@ -723,8 +717,6 @@ public class GstdCli : GLib.Object
 	   *Parse entry-options or flags:
 	   *_signals:  flag to enable signals reception,
 	 *           useful when executing interactive console.
-	 ****_debug:    flag to enable debug information
-	 *           when creating a pipeline.
 	 ****obj_path:  option to specified the pipeline
 	 *           when executing a single command.
 	 ****_remaining_args: command to be executed remains here,
@@ -735,7 +727,6 @@ public class GstdCli : GLib.Object
 	{
 		/*Clean up global reference variables */
 		_signals = false;
-		_debug = false;
 		_remaining_args = null;
 		obj_path = null;
 
@@ -1035,7 +1026,7 @@ public class GstdCli : GLib.Object
 			if(remainingArgs.length != 1)
 			{
 				print ("Please define the script file name.\n");
-				print ("Furthermore you may use the standard options (signal, debug, ...).\n");
+				print ("Furthermore you may use the standard options (signal, ...).\n");
 			}
 			// Let the command line interpreter read from the script file.
 			Readline.instream = FileStream.open(remainingArgs[0], "r");

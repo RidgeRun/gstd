@@ -55,7 +55,6 @@ struct _PipelineClass {
 struct _PipelinePrivate {
 	GstElement* pipeline;
 	guint64 id;
-	gboolean debug;
 	gboolean initialized;
 	gchar* path;
 	gdouble rate;
@@ -113,8 +112,8 @@ static void _dbus_pipeline_error (GObject* _sender, guint64 pipe_id, const gchar
 static void _dbus_pipeline_qo_s (GObject* _sender, guint64 pipe_id, gboolean live, guint64 running_time, guint64 stream_time, guint64 timestamp, guint64 duration, gint64 jitter, gdouble proportion, gint quality, gint format, guint64 processed, guint64 dropped, DBusConnection* _connection);
 gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state);
-Pipeline* pipeline_new (const gchar* description, gboolean _debug);
-Pipeline* pipeline_construct (GType object_type, const gchar* description, gboolean _debug);
+Pipeline* pipeline_new (const gchar* description);
+Pipeline* pipeline_construct (GType object_type, const gchar* description);
 static GstBusSyncReply pipeline_bus_sync_callback (Pipeline* self, GstBus* bus, GstMessage* message);
 static GstBusSyncReply _pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self);
 static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* message);
@@ -1304,7 +1303,6 @@ void pipeline_dbus_register_object (DBusConnection* connection, const char* path
    Create a new instance of a Pipeline
    @param description, gst-launch style string description of the pipeline
    @param ids, pipeline identifier
-   @param _debug, flag to enable debug information
  */
 static GstBusSyncReply _pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self) {
 	GstBusSyncReply result;
@@ -1320,7 +1318,7 @@ static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* me
 }
 
 
-Pipeline* pipeline_construct (GType object_type, const gchar* description, gboolean _debug) {
+Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	Pipeline * self = NULL;
 	GstElement* _tmp0_ = NULL;
 	GstElement* _tmp1_;
@@ -1328,6 +1326,7 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description, gbool
 	GstElement* _tmp3_;
 	GstBus* _tmp4_ = NULL;
 	GstBus* bus;
+	gboolean _tmp5_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (description != NULL, NULL);
 	self = (Pipeline*) g_object_new (object_type, NULL);
@@ -1345,15 +1344,11 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description, gbool
 	gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
 	g_object_unref (self);
 	self->priv->initialized = TRUE;
-	self->priv->debug = _debug;
-	if (_debug) {
-		gboolean _tmp5_;
-		_tmp5_ = pipeline_PipelineIsInitialized (self);
-		if (_tmp5_) {
-			syslog (LOG_NOTICE, "Pipeline created, %s", description, NULL);
-		} else {
-			syslog (LOG_ERR, "Pipeline could not be initialized", NULL);
-		}
+	_tmp5_ = pipeline_PipelineIsInitialized (self);
+	if (_tmp5_) {
+		syslog (LOG_NOTICE, "Pipeline created, %s", description, NULL);
+	} else {
+		syslog (LOG_ERR, "Pipeline could not be initialized", NULL);
 	}
 	_gst_object_unref0 (bus);
 	goto __finally2;
@@ -1375,8 +1370,8 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description, gbool
 }
 
 
-Pipeline* pipeline_new (const gchar* description, gboolean _debug) {
-	return pipeline_construct (TYPE_PIPELINE, description, _debug);
+Pipeline* pipeline_new (const gchar* description) {
+	return pipeline_construct (TYPE_PIPELINE, description);
 }
 
 
@@ -1475,9 +1470,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			dbg = _tmp2_;
 			_tmp3_ = pipeline_PipelineGetId (self);
 			g_signal_emit_by_name (self, "error", _tmp3_, err->message);
-			if (self->priv->debug) {
-				syslog (LOG_DEBUG, "Error on pipeline, %s", err->message, NULL);
-			}
+			syslog (LOG_DEBUG, "Error on pipeline, %s", err->message, NULL);
 			_g_free0 (dbg);
 			_g_error_free0 (err);
 			break;
@@ -1499,6 +1492,8 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			GstState _tmp6_;
 			GstState _tmp7_;
 			GstState _tmp8_;
+			const gchar* _tmp9_ = NULL;
+			const gchar* _tmp10_ = NULL;
 			guint64 _tmp11_;
 			_tmp5_ = gst_object_get_name ((GstObject*) GST_ELEMENT (message->src));
 			src = _tmp5_;
@@ -1506,13 +1501,9 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			oldstate = _tmp6_;
 			newstate = _tmp7_;
 			pending = _tmp8_;
-			if (self->priv->debug) {
-				const gchar* _tmp9_ = NULL;
-				const gchar* _tmp10_ = NULL;
-				_tmp9_ = gst_element_state_get_name (oldstate);
-				_tmp10_ = gst_element_state_get_name (newstate);
-				syslog (LOG_INFO, "%s,changes state from %s to %s", src, _tmp9_, _tmp10_, NULL);
-			}
+			_tmp9_ = gst_element_state_get_name (oldstate);
+			_tmp10_ = gst_element_state_get_name (newstate);
+			syslog (LOG_INFO, "%s,changes state from %s to %s", src, _tmp9_, _tmp10_, NULL);
 			_tmp11_ = pipeline_PipelineGetId (self);
 			g_signal_emit_by_name (self, "state-changed", _tmp11_, oldstate, newstate, src);
 			_g_free0 (src);
@@ -1540,11 +1531,9 @@ static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state) {
 	current = _tmp0_;
 	pending = _tmp1_;
 	if (current != state) {
-		if (self->priv->debug) {
-			const gchar* _tmp2_ = NULL;
-			_tmp2_ = gst_element_state_get_name (state);
-			syslog (LOG_ERR, "Pipeline failed to change state to %s", _tmp2_, NULL);
-		}
+		const gchar* _tmp2_ = NULL;
+		_tmp2_ = gst_element_state_get_name (state);
+		syslog (LOG_ERR, "Pipeline failed to change state to %s", _tmp2_, NULL);
 		result = FALSE;
 		return result;
 	}
@@ -1564,13 +1553,11 @@ gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
 
 
 static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state) {
+	const gchar* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
 	gst_element_set_state (self->priv->pipeline, state);
-	if (self->priv->debug) {
-		const gchar* _tmp0_ = NULL;
-		_tmp0_ = gst_element_state_get_name (state);
-		syslog (LOG_DEBUG, "Asynchronous state change to %s", _tmp0_, NULL);
-	}
+	_tmp0_ = gst_element_state_get_name (state);
+	syslog (LOG_DEBUG, "Asynchronous state change to %s", _tmp0_, NULL);
 }
 
 
@@ -1701,9 +1688,7 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* elemen
 	_gst_object_unref0 (e);
 	e = _tmp5_;
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1717,9 +1702,7 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* elemen
 	_g_param_spec_unref0 (spec);
 	spec = _tmp9_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1771,9 +1754,7 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, c
 	_gst_object_unref0 (e);
 	e = _tmp5_;
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1787,9 +1768,7 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, c
 	_g_param_spec_unref0 (spec);
 	spec = _tmp9_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Gstd: Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Gstd: Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1840,9 +1819,7 @@ gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element,
 	_gst_object_unref0 (e);
 	e = _tmp5_;
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1856,9 +1833,7 @@ gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element,
 	_g_param_spec_unref0 (spec);
 	spec = _tmp9_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1911,9 +1886,7 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element
 	_gst_object_unref0 (e);
 	e = _tmp5_;
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1927,9 +1900,7 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element
 	_g_param_spec_unref0 (spec);
 	spec = _tmp9_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (pipe);
@@ -1972,9 +1943,7 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const gchar* elemen
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	e = (_tmp3_ = _tmp2_, GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL);
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -1988,9 +1957,7 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const gchar* elemen
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
 	spec = _tmp6_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (e);
@@ -2040,9 +2007,7 @@ gboolean pipeline_ElementGetPropertyInt (Pipeline* self, const gchar* element, c
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	e = (_tmp3_ = _tmp2_, GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL);
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -2056,9 +2021,7 @@ gboolean pipeline_ElementGetPropertyInt (Pipeline* self, const gchar* element, c
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
 	spec = _tmp6_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (e);
@@ -2108,9 +2071,7 @@ gboolean pipeline_ElementGetPropertyInt64 (Pipeline* self, const gchar* element,
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	e = (_tmp3_ = _tmp2_, GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL);
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -2124,9 +2085,7 @@ gboolean pipeline_ElementGetPropertyInt64 (Pipeline* self, const gchar* element,
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
 	spec = _tmp6_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (e);
@@ -2181,9 +2140,7 @@ gboolean pipeline_ElementGetPropertyString (Pipeline* self, const gchar* element
 	_tmp4_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	e = (_tmp5_ = _tmp4_, GST_IS_ELEMENT (_tmp5_) ? ((GstElement*) _tmp5_) : NULL);
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -2199,9 +2156,7 @@ gboolean pipeline_ElementGetPropertyString (Pipeline* self, const gchar* element
 	_tmp8_ = _g_param_spec_ref0 (_tmp7_);
 	spec = _tmp8_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (e);
@@ -2321,9 +2276,7 @@ gboolean pipeline_ElementGetPropertyBuffer (Pipeline* self, const gchar* element
 	_tmp6_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	e = (_tmp7_ = _tmp6_, GST_IS_ELEMENT (_tmp7_) ? ((GstElement*) _tmp7_) : NULL);
 	if (e == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -2347,9 +2300,7 @@ gboolean pipeline_ElementGetPropertyBuffer (Pipeline* self, const gchar* element
 	_tmp10_ = _g_param_spec_ref0 (_tmp9_);
 	spec = _tmp10_;
 	if (spec == NULL) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
-		}
+		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
 		_gst_object_unref0 (e);
@@ -2450,9 +2401,7 @@ gint64 pipeline_PipelineGetDuration (Pipeline* self) {
 		result = (gint64) (-1);
 		return result;
 	}
-	if (self->priv->debug) {
-		syslog (LOG_DEBUG, "Duration at server is %u:%02u:%02u.%03u", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND), NULL);
-	}
+	syslog (LOG_DEBUG, "Duration at server is %u:%02u:%02u.%03u", (guint) (duration / ((GST_SECOND * 60) * 60)), (guint) ((duration / (GST_SECOND * 60)) % 60), (guint) ((duration / GST_SECOND) % 60), (guint) (duration % GST_SECOND), NULL);
 	result = duration;
 	return result;
 }
@@ -2481,9 +2430,7 @@ gint64 pipeline_PipelineGetPosition (Pipeline* self) {
 		result = (gint64) (-1);
 		return result;
 	}
-	if (self->priv->debug) {
-		syslog (LOG_DEBUG, "Position at server is %u:%02u:%02u.%03u", (guint) (position / ((GST_SECOND * 60) * 60)), (guint) ((position / (GST_SECOND * 60)) % 60), (guint) ((position / GST_SECOND) % 60), (guint) (position % GST_SECOND), NULL);
-	}
+	syslog (LOG_DEBUG, "Position at server is %u:%02u:%02u.%03u", (guint) (position / ((GST_SECOND * 60) * 60)), (guint) ((position / (GST_SECOND * 60)) % 60), (guint) ((position / GST_SECOND) % 60), (guint) (position % GST_SECOND), NULL);
 	result = position;
 	return result;
 }
@@ -2500,11 +2447,9 @@ gboolean pipeline_PipelineSeek (Pipeline* self, gint64 ipos_ns) {
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = gst_element_seek (self->priv->pipeline, self->priv->rate, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, ipos_ns, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
 	if (!_tmp0_) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Media type not seekable", NULL);
-			result = FALSE;
-			return result;
-		}
+		syslog (LOG_WARNING, "Media type not seekable", NULL);
+		result = FALSE;
+		return result;
 	}
 	result = TRUE;
 	return result;
@@ -2557,11 +2502,9 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
 	seek_ns = cur_pos_ns + period_ns;
 	_tmp2_ = gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, cur_type, seek_ns, stp_type, stp_pos_ns);
 	if (!_tmp2_) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Media type not seekable", NULL);
-			result = FALSE;
-			return result;
-		}
+		syslog (LOG_WARNING, "Media type not seekable", NULL);
+		result = FALSE;
+		return result;
 	}
 	result = TRUE;
 	return result;
@@ -2590,11 +2533,9 @@ gboolean pipeline_PipelineSpeed (Pipeline* self, gdouble new_rate) {
 	self->priv->rate = new_rate;
 	_tmp0_ = gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, type, pos_ns, type, pos_ns);
 	if (!_tmp0_) {
-		if (self->priv->debug) {
-			syslog (LOG_WARNING, "Speed could not be changed", NULL);
-			result = FALSE;
-			return result;
-		}
+		syslog (LOG_WARNING, "Speed could not be changed", NULL);
+		result = FALSE;
+		return result;
 	}
 	result = TRUE;
 	return result;
@@ -2707,7 +2648,6 @@ static void pipeline_instance_init (Pipeline * self) {
 	gchar* _tmp0_;
 	self->priv = PIPELINE_GET_PRIVATE (self);
 	self->priv->id = (guint64) 0;
-	self->priv->debug = FALSE;
 	self->priv->initialized = FALSE;
 	_tmp0_ = g_strdup ("");
 	self->priv->path = _tmp0_;

@@ -89,9 +89,9 @@ static DBusHandlerResult _dbus_factory_Ping (Factory* self, DBusConnection* conn
 #define FACTORY_num_pipes 20
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
-gchar* factory_Create (Factory* self, const gchar* description, gboolean debug);
-Pipeline* pipeline_new (const gchar* description, gboolean _debug);
-Pipeline* pipeline_construct (GType object_type, const gchar* description, gboolean _debug);
+gchar* factory_Create (Factory* self, const gchar* description);
+Pipeline* pipeline_new (const gchar* description);
+Pipeline* pipeline_construct (GType object_type, const gchar* description);
 gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath);
 gboolean factory_Destroy (Factory* self, const gchar* objectpath);
@@ -138,7 +138,7 @@ static DBusHandlerResult _dbus_factory_introspect (Factory* self, DBusConnection
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	xml_data = g_string_new ("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n");
-	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.FactoryInterface\">\n  <method name=\"Create\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"debug\" type=\"b\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"Destroy\">\n    <arg name=\"objectpath\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"List\">\n    <arg name=\"result\" type=\"as\" direction=\"out\"/>\n  </method>\n  <method name=\"Ping\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n</interface>\n");
+	g_string_append (xml_data, "<node>\n<interface name=\"org.freedesktop.DBus.Introspectable\">\n  <method name=\"Introspect\">\n    <arg name=\"data\" direction=\"out\" type=\"s\"/>\n  </method>\n</interface>\n<interface name=\"org.freedesktop.DBus.Properties\">\n  <method name=\"Get\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"out\" type=\"v\"/>\n  </method>\n  <method name=\"Set\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"propname\" direction=\"in\" type=\"s\"/>\n    <arg name=\"value\" direction=\"in\" type=\"v\"/>\n  </method>\n  <method name=\"GetAll\">\n    <arg name=\"interface\" direction=\"in\" type=\"s\"/>\n    <arg name=\"props\" direction=\"out\" type=\"a{sv}\"/>\n  </method>\n</interface>\n<interface name=\"com.ridgerun.gstreamer.gstd.FactoryInterface\">\n  <method name=\"Create\">\n    <arg name=\"description\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"s\" direction=\"out\"/>\n  </method>\n  <method name=\"Destroy\">\n    <arg name=\"objectpath\" type=\"s\" direction=\"in\"/>\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n  <method name=\"List\">\n    <arg name=\"result\" type=\"as\" direction=\"out\"/>\n  </method>\n  <method name=\"Ping\">\n    <arg name=\"result\" type=\"b\" direction=\"out\"/>\n  </method>\n</interface>\n");
 	dbus_connection_list_registered (connection, g_object_get_data ((GObject *) self, "dbus_object_path"), &children);
 	for (i = 0; children[i]; i++) {
 		g_string_append_printf (xml_data, "<node name=\"%s\"/>\n", children[i]);
@@ -194,28 +194,23 @@ static DBusHandlerResult _dbus_factory_Create (Factory* self, DBusConnection* co
 	GError* error;
 	gchar* description = NULL;
 	const char* _tmp1_;
-	gboolean debug = FALSE;
-	dbus_bool_t _tmp2_;
 	gchar* result;
 	DBusMessage* reply;
-	const char* _tmp3_;
+	const char* _tmp2_;
 	error = NULL;
-	if (strcmp (dbus_message_get_signature (message), "sb")) {
+	if (strcmp (dbus_message_get_signature (message), "s")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
 	dbus_message_iter_get_basic (&iter, &_tmp1_);
 	dbus_message_iter_next (&iter);
 	description = g_strdup (_tmp1_);
-	dbus_message_iter_get_basic (&iter, &_tmp2_);
-	dbus_message_iter_next (&iter);
-	debug = _tmp2_;
-	result = factory_Create (self, description, debug);
+	result = factory_Create (self, description);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (description);
-	_tmp3_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &_tmp3_);
+	_tmp2_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_STRING, &_tmp2_);
 	_g_free0 (result);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
@@ -231,24 +226,24 @@ static DBusHandlerResult _dbus_factory_Destroy (Factory* self, DBusConnection* c
 	DBusMessageIter iter;
 	GError* error;
 	gchar* objectpath = NULL;
-	const char* _tmp4_;
+	const char* _tmp3_;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp5_;
+	dbus_bool_t _tmp4_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "s")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	dbus_message_iter_init (message, &iter);
-	dbus_message_iter_get_basic (&iter, &_tmp4_);
+	dbus_message_iter_get_basic (&iter, &_tmp3_);
 	dbus_message_iter_next (&iter);
-	objectpath = g_strdup (_tmp4_);
+	objectpath = g_strdup (_tmp3_);
 	result = factory_Destroy (self, objectpath);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
 	_g_free0 (objectpath);
-	_tmp5_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp5_);
+	_tmp4_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp4_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -265,9 +260,9 @@ static DBusHandlerResult _dbus_factory_List (Factory* self, DBusConnection* conn
 	gchar** result;
 	int result_length1;
 	DBusMessage* reply;
-	gchar** _tmp6_;
-	DBusMessageIter _tmp7_;
-	int _tmp8_;
+	gchar** _tmp5_;
+	DBusMessageIter _tmp6_;
+	int _tmp7_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -277,15 +272,15 @@ static DBusHandlerResult _dbus_factory_List (Factory* self, DBusConnection* conn
 	result = factory_List (self, &result_length1);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
-	_tmp6_ = result;
-	dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY, "s", &_tmp7_);
-	for (_tmp8_ = 0; _tmp8_ < result_length1; _tmp8_++) {
-		const char* _tmp9_;
-		_tmp9_ = *_tmp6_;
-		dbus_message_iter_append_basic (&_tmp7_, DBUS_TYPE_STRING, &_tmp9_);
-		_tmp6_++;
+	_tmp5_ = result;
+	dbus_message_iter_open_container (&iter, DBUS_TYPE_ARRAY, "s", &_tmp6_);
+	for (_tmp7_ = 0; _tmp7_ < result_length1; _tmp7_++) {
+		const char* _tmp8_;
+		_tmp8_ = *_tmp5_;
+		dbus_message_iter_append_basic (&_tmp6_, DBUS_TYPE_STRING, &_tmp8_);
+		_tmp5_++;
 	}
-	dbus_message_iter_close_container (&iter, &_tmp7_);
+	dbus_message_iter_close_container (&iter, &_tmp6_);
 	result = (_vala_array_free (result,  result_length1, (GDestroyNotify) g_free), NULL);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
@@ -302,7 +297,7 @@ static DBusHandlerResult _dbus_factory_Ping (Factory* self, DBusConnection* conn
 	GError* error;
 	gboolean result;
 	DBusMessage* reply;
-	dbus_bool_t _tmp10_;
+	dbus_bool_t _tmp9_;
 	error = NULL;
 	if (strcmp (dbus_message_get_signature (message), "")) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -311,8 +306,8 @@ static DBusHandlerResult _dbus_factory_Ping (Factory* self, DBusConnection* conn
 	result = factory_Ping (self);
 	reply = dbus_message_new_method_return (message);
 	dbus_message_iter_init_append (reply, &iter);
-	_tmp10_ = result;
-	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp10_);
+	_tmp9_ = result;
+	dbus_message_iter_append_basic (&iter, DBUS_TYPE_BOOLEAN, &_tmp9_);
 	if (reply) {
 		dbus_connection_send (connection, reply, NULL);
 		dbus_message_unref (reply);
@@ -408,7 +403,7 @@ Factory* factory_new (void) {
    @param debug, flag to enable debug information
    @return the dbus-path of the pipeline, or null if out of resources
  */
-gchar* factory_Create (Factory* self, const gchar* description, gboolean debug) {
+gchar* factory_Create (Factory* self, const gchar* description) {
 	gchar* result = NULL;
 	gint next_id;
 	Pipeline* _tmp1_ = NULL;
@@ -433,7 +428,7 @@ gchar* factory_Create (Factory* self, const gchar* description, gboolean debug) 
 			return result;
 		}
 	}
-	_tmp1_ = pipeline_new (description, debug);
+	_tmp1_ = pipeline_new (description);
 	_tmp2_ = _tmp1_;
 	_g_object_unref0 (self->priv->pipes[next_id]);
 	self->priv->pipes[next_id] = _tmp2_;

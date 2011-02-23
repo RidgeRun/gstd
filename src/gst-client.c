@@ -71,8 +71,6 @@ static gchar* gstd_cli_obj_path;
 static gchar* gstd_cli_obj_path = NULL;
 static gboolean gstd_cli__signals;
 static gboolean gstd_cli__signals = FALSE;
-static gboolean gstd_cli__debug;
-static gboolean gstd_cli__debug = FALSE;
 static gchar** gstd_cli__remaining_args;
 static gchar** gstd_cli__remaining_args = NULL;
 static gboolean gstd_cli_useSessionBus;
@@ -94,7 +92,7 @@ void gstd_cli_Error_cb (GstdCli* self);
 void gstd_cli_EoS_cb (GstdCli* self);
 void gstd_cli_StateChanged_cb (GstdCli* self);
 static gboolean gstd_cli_pipeline_create (GstdCli* self, const gchar* description);
-static gchar* _dynamic_Create0 (DBusGProxy* self, const gchar* param1, gboolean param2, GError** error);
+static gchar* _dynamic_Create0 (DBusGProxy* self, const gchar* param1, GError** error);
 gboolean gstd_cli_create_proxypipe (GstdCli* self, const gchar* object_path);
 static gboolean gstd_cli_pipeline_destroy (GstdCli* self, const gchar* objpath);
 static gboolean _dynamic_Destroy1 (DBusGProxy* self, const gchar* param1, GError** error);
@@ -154,7 +152,7 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-static const GOptionEntry GSTD_CLI_options[6] = {{"session", '\0', 0, G_OPTION_ARG_NONE, &gstd_cli_useSessionBus, "Use dbus session bus.", NULL}, {"path", 'p', 0, G_OPTION_ARG_STRING, &gstd_cli_obj_path, "Pipeline path or path_id.  Required for commands that " "effect a specific pipeline.  Usage: -p <path_id>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &gstd_cli__signals, "Flag to enable reception of dbus signals from GStreamer " "Daemon.  Usage: -s 1", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &gstd_cli__debug, "Flag to enable pipeline debug information to be displayed." "  Only used for the 'create' command.  Usage: -d 1", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &gstd_cli__remaining_args, NULL, "[COMMANDS...]"}, {NULL}};
+static const GOptionEntry GSTD_CLI_options[5] = {{"session", '\0', 0, G_OPTION_ARG_NONE, &gstd_cli_useSessionBus, "Use dbus session bus.", NULL}, {"path", 'p', 0, G_OPTION_ARG_STRING, &gstd_cli_obj_path, "Pipeline path or path_id.  Required for commands that " "effect a specific pipeline.  Usage: -p <path_id>", NULL}, {"enable_signals", 's', 0, G_OPTION_ARG_INT, &gstd_cli__signals, "Flag to enable reception of dbus signals from GStreamer " "Daemon.  Usage: -s 1", NULL}, {"", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &gstd_cli__remaining_args, NULL, "[COMMANDS...]"}, {NULL}};
 
 GstdCli* gstd_cli_construct (GType object_type, gchar** args, int args_length1, GError** error) {
 	GstdCli * self = NULL;
@@ -219,9 +217,9 @@ void gstd_cli_StateChanged_cb (GstdCli* self) {
 /**
  * Console Commands Functions
  */
-static gchar* _dynamic_Create0 (DBusGProxy* self, const gchar* param1, gboolean param2, GError** error) {
+static gchar* _dynamic_Create0 (DBusGProxy* self, const gchar* param1, GError** error) {
 	gchar* result;
-	dbus_g_proxy_call (self, "Create", error, G_TYPE_STRING, param1, G_TYPE_BOOLEAN, param2, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
+	dbus_g_proxy_call (self, "Create", error, G_TYPE_STRING, param1, G_TYPE_INVALID, G_TYPE_STRING, &result, G_TYPE_INVALID);
 	if (*error) {
 		return NULL;
 	}
@@ -240,7 +238,7 @@ static gboolean gstd_cli_pipeline_create (GstdCli* self, const gchar* descriptio
 		result = FALSE;
 		return result;
 	}
-	_tmp0_ = _dynamic_Create0 (self->priv->factory, description, gstd_cli__debug, &_inner_error_);
+	_tmp0_ = _dynamic_Create0 (self->priv->factory, description, &_inner_error_);
 	new_objpath = _tmp0_;
 	if (_inner_error_ != NULL) {
 		goto __catch0_g_error;
@@ -1665,7 +1663,6 @@ static void gstd_cli_parse_options (GstdCli* self, gchar** args, int args_length
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	gstd_cli__signals = FALSE;
-	gstd_cli__debug = FALSE;
 	_tmp0_ = NULL;
 	gstd_cli__remaining_args = (_vala_array_free (gstd_cli__remaining_args, _vala_array_length (gstd_cli__remaining_args), (GDestroyNotify) g_free), NULL);
 	gstd_cli__remaining_args = _tmp0_;
@@ -2459,7 +2456,7 @@ gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs
 		g_print ("Interpret script:\n");
 		if (remainingArgs_length1 != 1) {
 			g_print ("Please define the script file name.\n");
-			g_print ("Furthermore you may use the standard options (signal, debug, ...).\n");
+			g_print ("Furthermore you may use the standard options (signal, ...).\n");
 		}
 		_tmp4_ = fopen (remainingArgs[0], "r");
 		_tmp5_ = _tmp4_;
