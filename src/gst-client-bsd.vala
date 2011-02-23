@@ -79,6 +79,7 @@ public class GstdCli : GLib.Object
 		  "Creates a new pipeline and returns the dbus-path to access it"},
 		{ "destroy", "destroy", "Destroys the pipeline specified by_path(-p) or the"
 		  + " active pipeline"},
+		{ "destroy-all", "destroy-all", "Destroys all pipelines on the factory."},
 		{ "play", "play", "Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to play state"},
 		{ "ready", "ready", "Sets the pipeline specified by_path(-p) or the active "
@@ -773,7 +774,7 @@ public class GstdCli : GLib.Object
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
 				&& args[0].down () != "ping-pipe" && args[0].down () != "exit" 
 				&& args[0].down () != "sh" && args[0].down () != "strict" 
-				&& active_pipe == null)
+				&& args[0].down () != "destroy-all" && active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -831,7 +832,14 @@ public class GstdCli : GLib.Object
 				}
 				else
 					return pipeline_destroy (obj_path);
-
+			
+			case "destroy-all":
+				if(factory == null)
+					return false;
+	
+				active_pipe = null;
+				return factory.DestroyAll();
+				
 			case "play":
 				return pipeline_play (pipeline, true);
 
@@ -991,7 +999,7 @@ public class GstdCli : GLib.Object
 
 			/*Parse commands */
 			if (!cli.parse (_remaining_args))
-				return -1;
+				return 1;
 		}
 		catch (DBus.Error e)
 		{

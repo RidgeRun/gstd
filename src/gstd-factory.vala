@@ -97,6 +97,24 @@ public class Factory : GLib.Object
 		Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
 		return false;
 	}
+	
+	/**
+	   Destroy all pipelines
+	   @return true, if succeded
+	   @see PipelineId
+	 */
+	public bool DestroyAll ()
+	{
+		for (int index = 0; index < pipes.length; index++)
+		{
+			if (pipes[index] != null)
+			{
+				pipes[index] = null;
+			}
+		}
+		
+		return true;
+	}
 
 	/**
 	   List the existing pipelines

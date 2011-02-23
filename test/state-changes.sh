@@ -1,4 +1,4 @@
-#! gst-client --session
+#! ../src/gst-client-interpreter --session
 
 strict on
 

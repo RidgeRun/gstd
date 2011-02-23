@@ -60,6 +60,11 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="DestroyAll">
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
     <method name="List">
         <arg type="as" name ="paths" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
