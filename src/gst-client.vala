@@ -25,7 +25,7 @@ public class GstdCli : GLib.Object
 	/**
 	 * Used as reference in option parser
 	 */
-	static string obj_path;
+	static string obj_path; // Used in non cli mode
 	static bool _signals = false;
 	static bool _debug = false;
 	[CCode (array_length = false, array_null_terminated = true)]
@@ -98,6 +98,8 @@ public class GstdCli : GLib.Object
 		  "Execute a shell command using interactive console"},
 		{ "get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
 		  + " or the active pipeline"},
+		{ "get-elem-state", "get-elem-state", "Get the state of a specific element of"
+		  + "the active pipeline"},
 		{ "list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
 		  + "the existing pipelines"},
 		{ "ping", "ping", "Shows if gstd is alive"},
@@ -124,7 +126,6 @@ public class GstdCli : GLib.Object
 	public GstdCli (string[] args) throws DBus.Error, GLib.Error
 	{
 		parse_options(args);
-		isInteractive = !(_remaining_args.length == 1);
 
 		/*Getting a Gstd Factory proxy object */
 		conn = DBus.Bus.get ((useSessionBus) ? DBus.BusType.SESSION : DBus.BusType.SYSTEM);
@@ -142,7 +143,7 @@ public class GstdCli : GLib.Object
 		stdout.printf ("Error signal received\n");
 	}
 
-	public void Eos_cb ()
+	public void EoS_cb ()
 	{
 		stdout.printf ("End of Stream signal received\n");
 	}
@@ -500,17 +501,25 @@ public class GstdCli : GLib.Object
 
 	private bool pipeline_get_state (dynamic DBus.Object pipeline)
 	{
-		string state = pipeline.PipelineGetState ();
-		if (state == null)
+		State state = pipeline.PipelineGetState ();
+		print ("The pipeline state is: %s\n", state.to_string ());
+		return true;
+	}
+	
+	private bool element_get_state ( dynamic DBus.Object pipeline, string[] args)
+	{
+		if (args[1] == null)
 		{
-			stderr.printf ("Error:\nFailed to get the pipeline state\n");
+			stdout.printf ("Error:\nMissing element argument. Execute:'help element_get_state'\n");
 			return false;
 		}
 
-		stdout.printf ("The pipeline state is: %s\n", state);
-		stdout.printf ("Ok.\n");
+		string element = args[1];
+		State state = pipeline.ElementGetState (element);
+		print ("The state of %s is: %s\n", element, state.to_string ());
 		return true;
 	}
+
 
 	private bool pipeline_seek (dynamic DBus.Object pipeline, string[] args)
 	{
@@ -700,17 +709,14 @@ public class GstdCli : GLib.Object
 		/*Create a proxy-object of the pipeline */
 		pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
 		                            object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface");
-		try {
-			bool ret = pipeline.PipelineIsInitialized ();
-			if (!ret)
-				return false;
+		try 
+		{
+			return pipeline.PipelineIsInitialized ();
 		}
 		catch (Error e)
 		{
 			return false;
 		}
-
-		return true;
 	}
 
 	/*
@@ -740,6 +746,7 @@ public class GstdCli : GLib.Object
 
 		try {
 			opt.parse (ref args);
+			// Create a useful pipe name, if the used parameter form -p 0 --> /com/ridgerun/gstreamer/gstd/pipe0
 			if (obj_path != null && obj_path[0] != '/')
 				obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
 		}
@@ -756,8 +763,11 @@ public class GstdCli : GLib.Object
 	 */
 	public bool parse_cmd (string[] args) throws DBus.Error, GLib.Error
 	{
-		if (!create_proxypipe (obj_path))
+		bool success = create_proxypipe(obj_path); // May only be true in interactive none cli mode 
+		//print (@"Create proxy pipe $(success ? "succesful" : "failed").\n");
+		if (!success)
 		{
+			// Test: In cli mode the active_pipe must be set.
 			if (args[0].down () != "create" && args[0].down () != "help"
 			    && args[0].down () != "active" && args[0].down () != "quit"
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
@@ -772,18 +782,26 @@ public class GstdCli : GLib.Object
 				return false;
 			}
 		}
-		else if (_signals)
+		
+		/**
+		* Remark 02/23/11 RuH
+		* Disabled signal subscription beause
+		* - There is no mainloop which could receive incoming events.
+		* - There is no mechanism which prevent repeated subscription.
+		* - How must DBus signal parameters in Vala be handled?
+		* 
+		if (false && _signals && (null != pipeline))
 		{
-			/*Enable the reception of signals, if _signals flag was activated */
-			stdout.printf ("Signals need to be fixed! \n");
+			//Enable the reception of signals, if _signals flag was activated 
+			//print ("Signals need to be fixed! \n");
 			if (args[0].down () != "create" && args[0].down () != "help")
 			{
-				stdout.printf ("Signals, activated\n");
+				print ("Activate signals:\n");
 				pipeline.Error.connect(this.Error_cb);
-				pipeline.Eos.connect(this.Eos_cb);
+				pipeline.EoS.connect( this.EoS_cb);
 				pipeline.StateChanged.connect(this.StateChanged_cb);
 			}
-		}
+		}*/
 
 		switch (args[0].down ())
 		{
@@ -851,6 +869,9 @@ public class GstdCli : GLib.Object
 
 			case "get-state":
 				return pipeline_get_state (pipeline);
+			
+			case "get-elem-state":
+				return element_get_state (pipeline, args);
 
 			case "sh":
 				string[] command;
@@ -991,25 +1012,33 @@ public class GstdCli : GLib.Object
 	 * Parse entry arguments
 	 * If there are no arguments,enable interactive console.
 	 */
-	public bool parse (string[] args) throws DBus.Error, GLib.Error
+	public bool parse (string[] remainingArgs) throws DBus.Error, GLib.Error
 	{
 		if (isInteractive)
 		{
-			if (args.length > 0)
+			if (remainingArgs.length > 0)
 			{
 				/*Parse single command */
-				return parse_cmd (args);
+				print("Parse single command interactive:\n");
+				return parse_cmd (remainingArgs);
 			}
 			else
 			{
-				/*Execute interactive console */
+				print("Interactive console execution:\n");
 				cli_enable = true;
 				return cli ();
 			}
 		}
 		else
 		{
-			Readline.instream = FileStream.open(_remaining_args[_remaining_args.length - 1], "r");
+			print("Interpret script:\n");
+			if(remainingArgs.length != 1)
+			{
+				print ("Please define the script file name.\n");
+				print ("Furthermore you may use the standard options (signal, debug, ...).\n");
+			}
+			// Let the command line interpreter read from the script file.
+			Readline.instream = FileStream.open(remainingArgs[0], "r");
 			Readline.outstream = FileStream.open("/dev/null", "w");
 			cli_enable = true;
 			return cli ();
@@ -1019,6 +1048,19 @@ public class GstdCli : GLib.Object
 	static int main (string[] args)
 	{
 		try {
+			if(args.length == 0)
+				return 1;
+			
+			print("args:\n");
+			foreach(string arg in args)
+			{
+				print(arg);
+				print("\n");
+			}
+			
+			// Script execution? 
+			isInteractive = !("interpreter" in args[0]);
+			
 			obj_path = null;
 			GstdCli cli = new GstdCli (args);
 

@@ -27,7 +27,7 @@ public class Pipeline : GLib.Object
 	private ulong windowId = 0;
 
 	public signal void EoS (uint64 pipe_id);
-	public signal void StateChanged (uint64 pipe_id, string old_state, string new_state, string src);
+	public signal void StateChanged (uint64 pipe_id, State old_state, State new_state, string src);
 	public signal void Error (uint64 pipe_id, string err_message);
 	public signal void QoS (uint64 pipe_id,
                                 bool live, 
@@ -164,7 +164,7 @@ public class Pipeline : GLib.Object
 					              oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
-				StateChanged (PipelineGetId(), oldstate.to_string (), newstate.to_string (), src);
+				StateChanged (PipelineGetId(), oldstate, newstate, src);
 				break;
 
 			/*case MessageType.INFO:
@@ -217,7 +217,7 @@ public class Pipeline : GLib.Object
 
 		/* Wait until state change is done */
 		State current, pending;
-		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE));
+		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		if (current != state)
 		{
 			if (debug)
@@ -288,13 +288,11 @@ public class Pipeline : GLib.Object
 	/**
 	   Gets the pipeline state
 	 */
-	public string PipelineGetState ()
+	public int PipelineGetState ()
 	{
 		State current, pending;
-
-		pipeline.get_state (out current, out pending,
-		                    (Gst.ClockTime) 2000000000u);
-		return current.to_string ();
+		pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		return current;
 	}
 
 	/**
@@ -559,6 +557,29 @@ public class Pipeline : GLib.Object
 
 		e.get (property, &val, null);
 		return true;
+	}
+	
+	/**
+	   Gets an element's state value of a specific pipeline
+	   @param element, whose property value wants to be known
+	   @param val value of the property
+	 */
+	public int ElementGetState (string element)
+	{
+		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
+
+		Element e = pipe.get_child_by_name (element) as Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline %s", element, pipe.get_name());
+			return State.NULL;
+		}
+		
+		// Simply return the current state. Ignore possible state changes
+		State current, pending;
+		e.get_state ( out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		return current;
 	}
 
 	/**

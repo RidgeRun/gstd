@@ -64,38 +64,6 @@
         <arg type="i" name = "state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
-  <!--   <method name="PipelinePlay">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
-    </method>
-    <method name="PipelinePause">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
-    </method>
-    <method name="PipelineReady">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
-    </method>
-    <method name="PipelineNull">
-        <arg type="b" name ="success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
-    </method>
-    <method name="PipelineAsyncPlay">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>
-    <method name="PipelineAsyncReady">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>
-    <method name="PipelineAsyncPause">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>
-    <method name="PipelineAsyncNull">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>-->
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -202,7 +170,13 @@
         <arg type="x" name ="ipos_ns" direction = "in" />
     </method>
     <method name="PipelineGetState">
-        <arg type="s" name ="state" direction = "out" >
+        <arg type="i" name ="state" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="ElementGetState">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="i" name ="state" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
@@ -221,8 +195,8 @@
     </signal>
     <signal name="StateChanged">
         <arg type="t" name="pipe_id"/>
-        <arg type="s" name="old_state"/>
-        <arg type="s" name="new_state"/>
+        <arg type="i" name="old_state"/>
+        <arg type="i" name="new_state"/>
         <arg type="s" name="src"/>
     </signal>
     <signal name="QoS">

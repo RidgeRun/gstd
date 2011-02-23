@@ -6,6 +6,8 @@
  *
  * Command line utility for sending D-Bus messages to GStreamer daemon.
  *
+ * BSD License
+ *
  * Copyright (c) 2010, RidgeRun
  * All rights reserved.
  *

@@ -425,7 +425,7 @@ gchar* factory_Create (Factory* self, const gchar* description, gboolean debug) 
 		if (!(self->priv->pipes[next_id] != NULL)) {
 			break;
 		}
-		next_id = (next_id + 1) % 20;
+		next_id = (next_id + 1) % self->priv->pipes_length1;
 		if (next_id == 0) {
 			gchar* _tmp0_;
 			_tmp0_ = g_strdup ("");

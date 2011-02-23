@@ -7,9 +7,8 @@
  * All rights reserved.
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
- */using Gst;
-
-using DBus;
+ */
+using Gst;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface", signals = "Alive")]
 
@@ -49,13 +48,13 @@ public class Factory : GLib.Object
 	   @param debug, flag to enable debug information
 	   @return the dbus-path of the pipeline, or null if out of resources
 	 */
-	public string ? Create (string description, bool debug)
+	public string Create (string description, bool debug)
 	{
 		/* Create our pipeline */
 		int next_id = 0;
 		while (pipes[next_id] != null)
 		{
-			next_id = (next_id + 1) % 20;
+			next_id = (next_id + 1) % pipes.length;
 			if (next_id == 0)
 			{
 				return "";
