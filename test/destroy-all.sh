@@ -4,6 +4,7 @@ strict on
 
 sh "echo Test destroy all."
 sh "echo -------------------------"
+list-pipes
 sh "echo Destroy all pipes"
 destroy-all
 sh "echo Create first pipe"
@@ -17,6 +18,7 @@ create "videotestsrc name=src ! ffmpegcolorspace ! videoscale ! xvimagesink name
 list-pipes
 sh "echo Destroy all pipes"
 destroy-all
+list-pipes
 
 
 

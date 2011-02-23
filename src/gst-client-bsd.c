@@ -1561,8 +1561,8 @@ static gboolean gstd_cli_pipeline_list (GstdCli* self) {
 		return FALSE;
 	}
 	if (paths_length1 == 0) {
-		fprintf (stderr, "Error:\nThere is no pipelines on factory!\n");
-		result = FALSE;
+		fprintf (stdout, "There are no pipelines on factory!\n");
+		result = TRUE;
 		paths = (_vala_array_free (paths, paths_length1, (GDestroyNotify) g_free), NULL);
 		return result;
 	}

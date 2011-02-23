@@ -663,9 +663,10 @@ public class GstdCli : GLib.Object
 
 		if (paths.length == 0)
 		{
-			stderr.printf ("Error:\nThere is no pipelines on factory!\n");
-			return false;
+			stdout.printf ("There are no pipelines on factory!\n");
+			return true;
 		}
+		
 		stdout.printf ("The actual pipelines are:\n");
 		for (int index = 0; index < paths.length; ++index)
 		{
