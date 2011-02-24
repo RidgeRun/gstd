@@ -125,7 +125,16 @@ public class GstdCli : GLib.Object
 		  "\t\t* rate<1.0: slow-forward playback,\n" +
 		  "\t\t* rate=1.0: normal speed.\n" +
 		  "\t\tNegative rate causes reverse playback."},
+		{ "step", "step [number of frames]", "Step the number of frames, if no number is provided, 1 is assumed"},
 		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
+		{ "send-custom-event", "send-custom-event <custom type> <name of event>", 
+		  "Send a custom event on the pipeline. The event type can be:\n" +
+		  "\t\t* UPSTREAM\n" +
+		  "\t\t* DOWNSTREAM\n" +
+		  "\t\t* DOWNSTREAM_OOB\n" +
+		  "\t\t* BOTH\n" +
+		  "\t\t* BOTH_OOB\n"
+		},
 		{ "element-set-state", "element-set-state <element_name> <state>",
 		  "Sets the element state" +
 		  "\t\tSupported <state>s include: null, ready, paused, playing"},
@@ -620,6 +629,38 @@ public class GstdCli : GLib.Object
 		return true;
 	}
 
+	private bool pipeline_step (dynamic DBus.Object pipeline, string[] args)
+	{
+		uint64 nframes = 1;
+
+		if (args[1] != null) {
+			nframes = args[1].to_uint64 ();
+		}
+
+	    pipeline.PipelineStep (nframes);
+		stdout.printf ("Ok.\n");
+		return true;
+	}
+
+	private bool pipeline_send_custom_event (dynamic DBus.Object pipeline, string[] args)
+	{
+		bool ret;
+
+		if (args[1] == null || args[2] == null)
+		{
+			stdout.printf ("Error:\nMissing argument.Execute:'help send-custom-event'\n");
+			return false;
+		}
+
+		ret = pipeline.PipelineSendCustomEvent(args[1],args[2]);
+		if (!ret)
+		{
+			stderr.printf ("Error:\nUnknown custom event type\n");
+			return false;
+		}
+		stdout.printf ("Ok.\n");
+		return true;
+	}
 	private int string_to_state (string state)
 	{
 		switch (state.down ())
@@ -825,10 +866,11 @@ public class GstdCli : GLib.Object
 		opt.set_help_enabled (true);
 		opt.add_main_entries (options, null);
 
-		try {
+		try
+		{
 			opt.parse (ref args);
 			// Create a useful pipe name, if the used parameter form -p 0 --> /com/ridgerun/gstreamer/gstd/pipe0
-			if (obj_path != null && obj_path[0] != '/')
+			if (obj_path != null && obj_path.length >= 1 && (obj_path[0] != '/'))
 				obj_path = "/com/ridgerun/gstreamer/gstd/pipe" + obj_path;
 		}
 		catch (GLib.OptionError e)
@@ -978,8 +1020,14 @@ public class GstdCli : GLib.Object
 			case "speed":
 				return pipeline_speed (pipeline, args);
 
+			case "step":
+				return pipeline_step (pipeline, args);
+
 			case "send-eos":
 				return pipeline_send_eos (pipeline, args);
+
+			case "send-custom-event":
+				return pipeline_send_custom_event (pipeline, args);
 
 			case "list-pipes":
 				return pipeline_list ();

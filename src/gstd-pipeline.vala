@@ -738,6 +738,40 @@ public class Pipeline : GLib.Object
 		pipeline.send_event(new Event.eos());
 	}
 
+	public void PipelineStep (uint64 frames)
+	{
+		PipelineSetState (State.PAUSED);
+		pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
+	}
+
+	public bool PipelineSendCustomEvent(string stype, string name)
+	{
+		EventType type;
+
+		switch (stype.down () ) {
+			case "upstream":
+				type = EventType.CUSTOM_UPSTREAM;
+				break;
+			case "downstream":
+				type = EventType.CUSTOM_DOWNSTREAM;
+				break;
+			case "downstream_oob":
+				type = EventType.CUSTOM_DOWNSTREAM_OOB;
+				break;
+			case "both":
+				type = EventType.CUSTOM_BOTH;
+				break;
+			case "both_oob":
+				type = EventType.CUSTOM_BOTH_OOB;
+				break;
+			default:
+				return false;
+		}
+		pipeline.send_event(new Event.custom(type,
+			new Structure.empty(name)));
+		return true;
+	}
+
 	/*public void SendNewCounterEvent(uint counter) {
 	   Posix.syslog (Posix.LOG_DEBUG, "Send keep alive event ...");
 	   Gst.Structure st = new Gst.Structure("keepalive", "counter", typeof(uint), counter, null);

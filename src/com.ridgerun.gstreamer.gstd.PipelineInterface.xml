@@ -165,6 +165,9 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="PipelineStep">
+        <arg type="t" name ="frames" direction = "in" />
+    </method>
     <method name="PipelineAsyncSeek">
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <arg type="x" name ="ipos_ns" direction = "in" />
@@ -181,6 +184,13 @@
         </arg>
     </method>
     <method name="PipelineSendEoS"/>
+    <method name="PipelineSendCustomEvent">
+        <arg type="s" name ="type" direction = "in" />
+        <arg type="s" name ="name" direction = "in" />
+        <arg type="b" name ="success" direction = "out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
     <method name="SetWindowId">
         <arg type="t" name="winId" direction="in"/>
     </method>
