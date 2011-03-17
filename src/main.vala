@@ -16,10 +16,12 @@ public DBus.Connection conn = null;
 
 private bool useSystemBus = false;
 private bool useSessionBus = false;
+private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
 //private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
+	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
 	//{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
 	{null}
 };
@@ -41,6 +43,23 @@ public int main (string[] args)
 			Posix.syslog(Posix.LOG_ERR, "OptionError failure: %s", e.message);
 			return 1;
 		}
+
+		switch (debugLevel) {
+			case 0 :
+				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_ERR));
+				break;
+			case 1:
+				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_WARNING));
+				break;
+			case 2:
+				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_INFO));
+				break;
+			default:
+				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_DEBUG));
+				break;
+		}
+
+		Posix.syslog(Posix.LOG_DEBUG, "debug logging enabled");
 
 		if (useSystemBus && useSessionBus)
 		{
