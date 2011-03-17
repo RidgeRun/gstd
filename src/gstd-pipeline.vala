@@ -740,8 +740,12 @@ public class Pipeline : GLib.Object
 
 	public void PipelineStep (uint64 frames)
 	{
+#if GSTREAMER_SUPPORT_STEP
 		PipelineSetState (State.PAUSED);
 		pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
+#else
+		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
+#endif
 	}
 
 	public bool PipelineSendCustomEvent(string stype, string name)

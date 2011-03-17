@@ -40,13 +40,24 @@ GSTREAMER_MINOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/
 GSTREAMER_RELEASE=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
 AC_MSG_CHECKING(Checking if gstreamer version has support for QOS signals)
 if test $GSTREAMER_RELEASE -ge 29 ; then
-    GSTREAMER_SUPPORT_QOS_SIGNAL=true
+    GSTREAMER_SUPPORT_QOS_SIGNAL="-D GSTREAMER_SUPPORT_QOS_SIGNAL"
     AC_MSG_RESULT(yes)
 else
-    GSTREAMER_SUPPORT_QOS_SIGNAL=false
+    GSTREAMER_SUPPORT_QOS_SIGNAL=
     AC_MSG_RESULT(no)
 fi
 AC_SUBST(GSTREAMER_SUPPORT_QOS_SIGNAL)
+
+AC_MSG_CHECKING(Checking if gstreamer version has support for step)
+if test $GSTREAMER_RELEASE -ge 24 ; then
+    GSTREAMER_SUPPORT_STEP="-D GSTREAMER_SUPPORT_STEP"
+    AC_MSG_RESULT(yes)
+else
+    GSTREAMER_SUPPORT_STEP=
+    AC_MSG_RESULT(no)
+fi
+AC_SUBST(GSTREAMER_SUPPORT_STEP)
+
 
 dnl Now we're ready to ask for gstreamer-interfaces
 PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , HAVE_GSTREAMER_INTERFACES=yes, HAVE_GSTREAMER_INTERFACES=no)
