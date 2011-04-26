@@ -88,6 +88,10 @@ public class GstdCli : GLib.Object
 		{ "destroy-all", "destroy-all", "Destroys all pipelines on the factory."},
 		{ "play", "play", "Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to play state"},
+		{ "tplay", "temporized-play", "Sets the pipeline specified by_path (-p) or the active "
+		  + "pipeline to play state for a specifed duration"},
+		{ "abort-autostop", "abort-autostop", "Aborts the auto stop property in the pipeline "
+		  + "specified by_path (-p) or the active pipeline."},
 		{ "ready", "ready", "Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to ready state"},
 		{ "pause", "pause", "Sets the pipeline specified by_path(-p) or the active "
@@ -264,6 +268,43 @@ public class GstdCli : GLib.Object
 			stdout.printf ("Error:\n%s\n", e.message);
 			return false;
 		}
+	}
+
+	private bool pipeline_tplay (dynamic DBus.Object pipeline, int64 timeout)
+	{
+		try {
+			/* Setting the auto-stop property */
+			bool ret = pipeline.PipelineSetAutoStop(timeout);
+			if (!ret)
+			{
+				stdout.printf ("Error:\nThere is an auto-stop process running.\n");
+				return false;
+			}
+
+			/* Setting the pipeline to PLAY state */
+			ret = pipeline.PipelineSetState (State.PLAYING);
+			if (!ret)
+			{
+				stdout.printf ("Error:\nFailed to put the pipeline to play\n");
+				return false;
+			}
+
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
+			stdout.printf ("Error:\n%s\n", e.message);
+			return false;
+		}
+	}
+
+
+	private void pipeline_abort_autostop (dynamic DBus.Object pipeline)
+	{
+		/* Aborting the auto-stop */
+		pipeline.PipelineAbortAutoStop();
+		stdout.printf ("Ok.\n");
 	}
 
 	private bool pipeline_ready (dynamic DBus.Object pipeline, bool sync)
@@ -1005,6 +1046,13 @@ public class GstdCli : GLib.Object
 			case "play":
 				return pipeline_play (pipeline, true);
 
+			case "tplay":
+				return pipeline_tplay (pipeline, int64.parse(args[1]));
+
+			case "abort-autostop":
+				pipeline_abort_autostop(pipeline);
+				return true;
+
 			case "ready":
 				return pipeline_ready (pipeline, true);
 
@@ -1226,7 +1274,6 @@ public class GstdCli : GLib.Object
 		}
 		else
 		{
-			print("Interpret script:\n");
 			if(remainingArgs.length != 1)
 			{
 				stdout.printf ("Please define the script file name.\n");
