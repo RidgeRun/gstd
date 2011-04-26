@@ -9,7 +9,17 @@ AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES(gstd-1.0.pc:gstd-1.0.pc.in)
 AC_CONFIG_FILES(com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in)
 
-AM_PROG_VALAC([0.11])
+AM_PROG_VALAC([0.12])
+
+dnl Check for readline library
+AC_TRY_CPP([#include <readline/readline.h>],have_readline=yes, have_readline=no)
+AC_MSG_CHECKING([if readline is available])
+AM_CONDITIONAL([HAVE_READLINE], [test x$have_readline = xyes])
+AM_COND_IF([HAVE_READLINE],
+    AC_MSG_RESULT(yes);READLINE_SUPPORT="--pkg readline -D HAVE_READLINE";READLINE_LIBS="-lreadline -lncurses",
+    AC_MSG_RESULT(no))
+AC_SUBST([READLINE_SUPPORT])
+AC_SUBST([READLINE_LIBS])
 
 dnl Check for pkgconfig first
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
@@ -64,7 +74,7 @@ PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , H
 
 dnl Give error and exit if we don't have gstreamer
 if test "x$HAVE_GSTREAMER_INTERFACES" = "xno"; then
-  AC_MSG_ERROR([you need gstreamer-interfaces development packages installed !])
+  AC_MSG_ERROR([you need gst-plugins-base development packages installed !])
 fi
 
 dnl make GSTREAMER_INTERFACES_CFLAGS and GSTREAMER_INTERFACES_LIBS available
@@ -86,11 +96,6 @@ dnl make DBUS_GLIB_CFLAGS and DBUS_GLIB_LIBS available
 AC_SUBST(DBUS_GLIB_CFLAGS)
 AC_SUBST(DBUS_GLIB_LIBS)
 
-#AC_PROG_INTLTOOL([0.17])
-
-#GETTEXT_PACKAGE= gst-client
-#AC_SUBST(GETTEXT_PACKAGE)
-
 if test -z "$VAPIDIR"; then
   VAPIDIR=/usr/share/vala-0.12/vapi
 fi
@@ -104,6 +109,3 @@ AC_ARG_WITH(vapidir,
 )
 
 AC_OUTPUT
-
-
-

@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-bin_PROGRAMS = gstd gst-client gst-client-bsd
+bin_PROGRAMS = gstd gst-client
 
 gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala
 gstd_VALAFLAGS = --vapidir=@VAPIDIR@ \
@@ -10,14 +10,11 @@ gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS
 gstd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
 
 gst_client_SOURCES = gst-client.vala
-gst_client_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1 --pkg readline -X -lreadline
+gst_client_VALAFLAGS = --vapidir=@VAPIDIR@ \
+    --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1 \
+    @READLINE_SUPPORT@
 gst_client_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
-gst_client_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@ -lreadline -lncurses
-
-gst_client_bsd_SOURCES = gst-client-bsd.vala
-gst_client_bsd_VALAFLAGS = --vapidir=@VAPIDIR@ --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1
-gst_client_bsd_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@ -DGETTEXT_PACKAGE=\"gst-client\"
-gst_client_bsd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
+gst_client_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@ @READLINE_LIBS@
 
 interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
  com.ridgerun.gstreamer.gstd.PipelineInterface.xml

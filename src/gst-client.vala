@@ -2,13 +2,32 @@
  * gstd/src/gst-client.vala
  *
  * Command line utility for sending D-Bus messages to GStreamer daemon with 
-*  interactive support.
+ *  interactive support.
  *
+ * BSD License*
  * Copyright (c) 2010, RidgeRun
  * All rights reserved.
  *
- * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for 
-*  complete text.
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided
+ * that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *    following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *    the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of RidgeRun LLC nor the names of its contributors may be used to endorse or
+ *    promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 using GLib;
@@ -30,10 +49,12 @@ public class GstdCli : GLib.Object
 	[CCode (array_length = false, array_null_terminated = true)]
 	static string[] _remaining_args;
 	static bool useSessionBus = false;
+#if HAVE_READLINE
 	// true: This client is used by an interactive shell. false: This client is used as an interpreter of a script
 	static bool isInteractive;
 	// true: If a command fails, the client process exits. Prefered for script execution.
 	static bool isStrict = false;
+#endif
 
 	/**
 	 * Application command line options
@@ -126,8 +147,10 @@ public class GstdCli : GLib.Object
 		{ "element-async-set-state", "element-async-set-state <element_name> <state>",
 		  "Sets the element state, it does not wait the change to be done"},
 		{ "exit", "exit", "Exit/quit active console"},
-		{ "quit", "quit", "Exit/quit active console"},
-		{ "strict", "strict", "Enable/disable strict execution mode."}
+		{ "quit", "quit", "Exit/quit active console"}
+#if HAVE_READLINE
+		,{ "strict", "strict", "Enable/disable strict execution mode."}
+#endif
 	};
 
 	/*
@@ -450,21 +473,21 @@ public class GstdCli : GLib.Object
 		switch (args[3].down ())
 		{
 			case "boolean":
-				bool boolean_v = args[4].down ().to_bool ();
+				bool boolean_v = bool.parse(args[4].down());
 				stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
 				               property, element, boolean_v ? "true" : "false");
 				ret = pipeline.ElementSetPropertyBoolean (element, property, boolean_v);
 				break;
 
 			case "integer":
-				int integer_v = args[4].to_int ();
+				int integer_v = int.parse(args[4]);
 				stdout.printf ("Trying to set '%s' on element '%s' to the value:%d\n",
 				               property, element, integer_v);
 				ret = pipeline.ElementSetPropertyInt (element, property, integer_v);
 				break;
 
 			case "int64":
-				int64 int64_v = args[4].to_int64 ();
+				int64 int64_v = int64.parse(args[4]);
 				stdout.printf ("Trying to set '%s' on element '%s' to the value:%lld\n",
 				               property, element, int64_v);
 				ret = pipeline.ElementSetPropertyInt64 (element, property, int64_v);
@@ -530,7 +553,7 @@ public class GstdCli : GLib.Object
 	private bool pipeline_get_state (dynamic DBus.Object pipeline)
 	{
 		State state = pipeline.PipelineGetState ();
-		stdout.printf ("The pipeline state is: %s\n", state.to_string ());
+		stdout.printf ("The pipeline state is: %s\n", state.to_string());
 		return true;
 	}
 	
@@ -557,7 +580,7 @@ public class GstdCli : GLib.Object
 			return false;
 		}
 
-		int64 pos_ms = args[1].to_int ();
+		int64 pos_ms = int.parse(args[1]);
 		pos_ms *= 1000000;
 		bool ret = pipeline.PipelineSeek (pos_ms);
 		if (!ret)
@@ -577,7 +600,7 @@ public class GstdCli : GLib.Object
 			return false;
 		}
 
-		int64 period_ms = args[1].to_int ();
+		int64 period_ms = int.parse(args[1]);
 		period_ms *= 1000000;
 		bool ret = pipeline.PipelineSkip (period_ms);
 		if (!ret)
@@ -597,7 +620,7 @@ public class GstdCli : GLib.Object
 			return false;
 		}
 
-		double rate = args[1].to_double ();
+		double rate = double.parse(args[1]);
 		bool ret = pipeline.PipelineSpeed (rate);
 		if (!ret)
 		{
@@ -620,7 +643,7 @@ public class GstdCli : GLib.Object
 		uint64 nframes = 1;
 
 		if (args[1] != null) {
-			nframes = args[1].to_uint64 ();
+			nframes = uint64.parse(args[1]);
 		}
 
 	    pipeline.PipelineStep (nframes);
@@ -809,6 +832,7 @@ public class GstdCli : GLib.Object
 		return false;
 	}
 	
+#if HAVE_READLINE
 	private bool set_strict (string[] args)
 	{
 		if(args.length < 2)
@@ -835,6 +859,7 @@ public class GstdCli : GLib.Object
 		
 		return true;
 	}
+#endif
 
 	/*
 	   *Create a proxy-object of the pipeline
@@ -1077,8 +1102,10 @@ public class GstdCli : GLib.Object
 				cli_enable = false;
 				return true;
 				
+#if HAVE_READLINE
 			case "strict":
 				return set_strict(args);
+#endif
 
 			case "help":
 				int id = 0;
@@ -1123,6 +1150,7 @@ public class GstdCli : GLib.Object
 		return true;
 	}
 
+#if HAVE_READLINE
 	/*
 	   *Interactive Console management
 	 */
@@ -1166,6 +1194,7 @@ public class GstdCli : GLib.Object
 		Readline.History.write (home + "/.gst-client_history");
 		return true;
 	}
+#endif
 
 	/*
 	 * Parse entry arguments
@@ -1173,6 +1202,7 @@ public class GstdCli : GLib.Object
 	 */
 	public bool parse (string[] remainingArgs) throws DBus.Error, GLib.Error
 	{
+#if HAVE_READLINE
 		if (isInteractive)
 		{
 			if (remainingArgs.length > 0)
@@ -1202,11 +1232,22 @@ public class GstdCli : GLib.Object
 			cli_enable = true;
 			return cli ();
 		}
+#else
+		if (remainingArgs.length > 0)
+		{
+			/*Parse single command */
+			return parse_cmd (remainingArgs);
+		} else {
+			stderr.printf("No parameters found\n");
+		}
+		return false;
+#endif
 	}
 
 	static int main (string[] args)
 	{
 		try {
+#if HAVE_READLINE
 			if(args.length == 0)
 				return 1;
 			
@@ -1219,7 +1260,7 @@ public class GstdCli : GLib.Object
 			
 			// Script execution? 
 			isInteractive = !("interpreter" in args[0]);
-			
+#endif
 			obj_path = null;
 			GstdCli cli = new GstdCli (args);
 
