@@ -1,4 +1,4 @@
-AC_INIT([gstd],[1.0],[gstd-devel@lists.sourceforge.net])
+AC_INIT([gstd],[1.1.0],[gstd-devel@lists.sourceforge.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])

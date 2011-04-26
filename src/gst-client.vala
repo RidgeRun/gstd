@@ -147,10 +147,11 @@ public class GstdCli : GLib.Object
 		{ "element-async-set-state", "element-async-set-state <element_name> <state>",
 		  "Sets the element state, it does not wait the change to be done"},
 		{ "exit", "exit", "Exit/quit active console"},
-		{ "quit", "quit", "Exit/quit active console"}
+		{ "quit", "quit", "Exit/quit active console"},
 #if HAVE_READLINE
-		,{ "strict", "strict", "Enable/disable strict execution mode."}
+		{ "strict", "strict", "Enable/disable strict execution mode."},
 #endif
+		{ "version", "version", "Show gst-client version."}
 	};
 
 	/*
@@ -932,9 +933,10 @@ public class GstdCli : GLib.Object
 			if (args[0].down () != "create" && args[0].down () != "help"
 			    && args[0].down () != "active" && args[0].down () != "quit"
 			    && args[0].down () != "list-pipes" && args[0].down () != "ping"
-				&& args[0].down () != "ping-pipe" && args[0].down () != "exit" 
-				&& args[0].down () != "sh" && args[0].down () != "strict" 
-				&& args[0].down () != "destroy-all" && active_pipe == null)
+			    && args[0].down () != "ping-pipe" && args[0].down () != "exit"
+			    && args[0].down () != "ping-pipe" && args[0].down () != "version"
+			    && args[0].down () != "sh" && args[0].down () != "strict"
+			    && args[0].down () != "destroy-all" && active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -1106,6 +1108,10 @@ public class GstdCli : GLib.Object
 			case "strict":
 				return set_strict(args);
 #endif
+
+			case "version":
+				stdout.printf ("%s\n",Gstd.PACKAGE_VERSION);
+				return true;
 
 			case "help":
 				int id = 0;

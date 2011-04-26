@@ -43,6 +43,7 @@
 #include <gst/gst.h>
 #include <float.h>
 #include <math.h>
+#include <config.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -2098,43 +2099,44 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 	gboolean result = FALSE;
 	gboolean _tmp0_;
 	gboolean success;
-	gchar* _tmp35_ = NULL;
-	gchar* _tmp36_;
-	GQuark _tmp37_;
-	static GQuark _tmp37__label0 = 0;
-	static GQuark _tmp37__label1 = 0;
-	static GQuark _tmp37__label2 = 0;
-	static GQuark _tmp37__label3 = 0;
-	static GQuark _tmp37__label4 = 0;
-	static GQuark _tmp37__label5 = 0;
-	static GQuark _tmp37__label6 = 0;
-	static GQuark _tmp37__label7 = 0;
-	static GQuark _tmp37__label8 = 0;
-	static GQuark _tmp37__label9 = 0;
-	static GQuark _tmp37__label10 = 0;
-	static GQuark _tmp37__label11 = 0;
-	static GQuark _tmp37__label12 = 0;
-	static GQuark _tmp37__label13 = 0;
-	static GQuark _tmp37__label14 = 0;
-	static GQuark _tmp37__label15 = 0;
-	static GQuark _tmp37__label16 = 0;
-	static GQuark _tmp37__label17 = 0;
-	static GQuark _tmp37__label18 = 0;
-	static GQuark _tmp37__label19 = 0;
-	static GQuark _tmp37__label20 = 0;
-	static GQuark _tmp37__label21 = 0;
-	static GQuark _tmp37__label22 = 0;
-	static GQuark _tmp37__label23 = 0;
-	static GQuark _tmp37__label24 = 0;
-	static GQuark _tmp37__label25 = 0;
-	static GQuark _tmp37__label26 = 0;
-	static GQuark _tmp37__label27 = 0;
-	static GQuark _tmp37__label28 = 0;
-	static GQuark _tmp37__label29 = 0;
-	static GQuark _tmp37__label30 = 0;
-	static GQuark _tmp37__label31 = 0;
-	static GQuark _tmp37__label32 = 0;
-	static GQuark _tmp37__label33 = 0;
+	gchar* _tmp41_ = NULL;
+	gchar* _tmp42_;
+	GQuark _tmp43_;
+	static GQuark _tmp43__label0 = 0;
+	static GQuark _tmp43__label1 = 0;
+	static GQuark _tmp43__label2 = 0;
+	static GQuark _tmp43__label3 = 0;
+	static GQuark _tmp43__label4 = 0;
+	static GQuark _tmp43__label5 = 0;
+	static GQuark _tmp43__label6 = 0;
+	static GQuark _tmp43__label7 = 0;
+	static GQuark _tmp43__label8 = 0;
+	static GQuark _tmp43__label9 = 0;
+	static GQuark _tmp43__label10 = 0;
+	static GQuark _tmp43__label11 = 0;
+	static GQuark _tmp43__label12 = 0;
+	static GQuark _tmp43__label13 = 0;
+	static GQuark _tmp43__label14 = 0;
+	static GQuark _tmp43__label15 = 0;
+	static GQuark _tmp43__label16 = 0;
+	static GQuark _tmp43__label17 = 0;
+	static GQuark _tmp43__label18 = 0;
+	static GQuark _tmp43__label19 = 0;
+	static GQuark _tmp43__label20 = 0;
+	static GQuark _tmp43__label21 = 0;
+	static GQuark _tmp43__label22 = 0;
+	static GQuark _tmp43__label23 = 0;
+	static GQuark _tmp43__label24 = 0;
+	static GQuark _tmp43__label25 = 0;
+	static GQuark _tmp43__label26 = 0;
+	static GQuark _tmp43__label27 = 0;
+	static GQuark _tmp43__label28 = 0;
+	static GQuark _tmp43__label29 = 0;
+	static GQuark _tmp43__label30 = 0;
+	static GQuark _tmp43__label31 = 0;
+	static GQuark _tmp43__label32 = 0;
+	static GQuark _tmp43__label33 = 0;
+	static GQuark _tmp43__label34 = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = gstd_cli_create_proxypipe (self, gstd_cli_obj_path);
@@ -2151,110 +2153,132 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 		gboolean _tmp9_ = FALSE;
 		gboolean _tmp10_ = FALSE;
 		gboolean _tmp11_ = FALSE;
-		gchar* _tmp12_ = NULL;
-		gchar* _tmp13_;
-		gboolean _tmp14_;
-		_tmp12_ = g_utf8_strdown (args[0], (gssize) (-1));
-		_tmp13_ = _tmp12_;
-		_tmp14_ = g_strcmp0 (_tmp13_, "create") != 0;
-		_g_free0 (_tmp13_);
-		if (_tmp14_) {
-			gchar* _tmp15_ = NULL;
-			gchar* _tmp16_;
-			_tmp15_ = g_utf8_strdown (args[0], (gssize) (-1));
-			_tmp16_ = _tmp15_;
-			_tmp11_ = g_strcmp0 (_tmp16_, "help") != 0;
-			_g_free0 (_tmp16_);
-		} else {
-			_tmp11_ = FALSE;
-		}
-		if (_tmp11_) {
+		gboolean _tmp12_ = FALSE;
+		gboolean _tmp13_ = FALSE;
+		gchar* _tmp14_ = NULL;
+		gchar* _tmp15_;
+		gboolean _tmp16_;
+		_tmp14_ = g_utf8_strdown (args[0], (gssize) (-1));
+		_tmp15_ = _tmp14_;
+		_tmp16_ = g_strcmp0 (_tmp15_, "create") != 0;
+		_g_free0 (_tmp15_);
+		if (_tmp16_) {
 			gchar* _tmp17_ = NULL;
 			gchar* _tmp18_;
 			_tmp17_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp18_ = _tmp17_;
-			_tmp10_ = g_strcmp0 (_tmp18_, "active") != 0;
+			_tmp13_ = g_strcmp0 (_tmp18_, "help") != 0;
 			_g_free0 (_tmp18_);
 		} else {
-			_tmp10_ = FALSE;
+			_tmp13_ = FALSE;
 		}
-		if (_tmp10_) {
+		if (_tmp13_) {
 			gchar* _tmp19_ = NULL;
 			gchar* _tmp20_;
 			_tmp19_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp20_ = _tmp19_;
-			_tmp9_ = g_strcmp0 (_tmp20_, "quit") != 0;
+			_tmp12_ = g_strcmp0 (_tmp20_, "active") != 0;
 			_g_free0 (_tmp20_);
 		} else {
-			_tmp9_ = FALSE;
+			_tmp12_ = FALSE;
 		}
-		if (_tmp9_) {
+		if (_tmp12_) {
 			gchar* _tmp21_ = NULL;
 			gchar* _tmp22_;
 			_tmp21_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp22_ = _tmp21_;
-			_tmp8_ = g_strcmp0 (_tmp22_, "list-pipes") != 0;
+			_tmp11_ = g_strcmp0 (_tmp22_, "quit") != 0;
 			_g_free0 (_tmp22_);
 		} else {
-			_tmp8_ = FALSE;
+			_tmp11_ = FALSE;
 		}
-		if (_tmp8_) {
+		if (_tmp11_) {
 			gchar* _tmp23_ = NULL;
 			gchar* _tmp24_;
 			_tmp23_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp24_ = _tmp23_;
-			_tmp7_ = g_strcmp0 (_tmp24_, "ping") != 0;
+			_tmp10_ = g_strcmp0 (_tmp24_, "list-pipes") != 0;
 			_g_free0 (_tmp24_);
 		} else {
-			_tmp7_ = FALSE;
+			_tmp10_ = FALSE;
 		}
-		if (_tmp7_) {
+		if (_tmp10_) {
 			gchar* _tmp25_ = NULL;
 			gchar* _tmp26_;
 			_tmp25_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp26_ = _tmp25_;
-			_tmp6_ = g_strcmp0 (_tmp26_, "ping-pipe") != 0;
+			_tmp9_ = g_strcmp0 (_tmp26_, "ping") != 0;
 			_g_free0 (_tmp26_);
 		} else {
-			_tmp6_ = FALSE;
+			_tmp9_ = FALSE;
 		}
-		if (_tmp6_) {
+		if (_tmp9_) {
 			gchar* _tmp27_ = NULL;
 			gchar* _tmp28_;
 			_tmp27_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp28_ = _tmp27_;
-			_tmp5_ = g_strcmp0 (_tmp28_, "exit") != 0;
+			_tmp8_ = g_strcmp0 (_tmp28_, "ping-pipe") != 0;
 			_g_free0 (_tmp28_);
 		} else {
-			_tmp5_ = FALSE;
+			_tmp8_ = FALSE;
 		}
-		if (_tmp5_) {
+		if (_tmp8_) {
 			gchar* _tmp29_ = NULL;
 			gchar* _tmp30_;
 			_tmp29_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp30_ = _tmp29_;
-			_tmp4_ = g_strcmp0 (_tmp30_, "sh") != 0;
+			_tmp7_ = g_strcmp0 (_tmp30_, "exit") != 0;
 			_g_free0 (_tmp30_);
 		} else {
-			_tmp4_ = FALSE;
+			_tmp7_ = FALSE;
 		}
-		if (_tmp4_) {
+		if (_tmp7_) {
 			gchar* _tmp31_ = NULL;
 			gchar* _tmp32_;
 			_tmp31_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp32_ = _tmp31_;
-			_tmp3_ = g_strcmp0 (_tmp32_, "strict") != 0;
+			_tmp6_ = g_strcmp0 (_tmp32_, "ping-pipe") != 0;
 			_g_free0 (_tmp32_);
 		} else {
-			_tmp3_ = FALSE;
+			_tmp6_ = FALSE;
 		}
-		if (_tmp3_) {
+		if (_tmp6_) {
 			gchar* _tmp33_ = NULL;
 			gchar* _tmp34_;
 			_tmp33_ = g_utf8_strdown (args[0], (gssize) (-1));
 			_tmp34_ = _tmp33_;
-			_tmp2_ = g_strcmp0 (_tmp34_, "destroy-all") != 0;
+			_tmp5_ = g_strcmp0 (_tmp34_, "version") != 0;
 			_g_free0 (_tmp34_);
+		} else {
+			_tmp5_ = FALSE;
+		}
+		if (_tmp5_) {
+			gchar* _tmp35_ = NULL;
+			gchar* _tmp36_;
+			_tmp35_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp36_ = _tmp35_;
+			_tmp4_ = g_strcmp0 (_tmp36_, "sh") != 0;
+			_g_free0 (_tmp36_);
+		} else {
+			_tmp4_ = FALSE;
+		}
+		if (_tmp4_) {
+			gchar* _tmp37_ = NULL;
+			gchar* _tmp38_;
+			_tmp37_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp38_ = _tmp37_;
+			_tmp3_ = g_strcmp0 (_tmp38_, "strict") != 0;
+			_g_free0 (_tmp38_);
+		} else {
+			_tmp3_ = FALSE;
+		}
+		if (_tmp3_) {
+			gchar* _tmp39_ = NULL;
+			gchar* _tmp40_;
+			_tmp39_ = g_utf8_strdown (args[0], (gssize) (-1));
+			_tmp40_ = _tmp39_;
+			_tmp2_ = g_strcmp0 (_tmp40_, "destroy-all") != 0;
+			_g_free0 (_tmp40_);
 		} else {
 			_tmp2_ = FALSE;
 		}
@@ -2273,51 +2297,51 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 			return result;
 		}
 	}
-	_tmp35_ = g_utf8_strdown (args[0], (gssize) (-1));
-	_tmp36_ = _tmp35_;
-	_tmp37_ = (NULL == _tmp36_) ? 0 : g_quark_from_string (_tmp36_);
-	g_free (_tmp36_);
-	if (_tmp37_ == ((0 != _tmp37__label0) ? _tmp37__label0 : (_tmp37__label0 = g_quark_from_static_string ("create")))) {
+	_tmp41_ = g_utf8_strdown (args[0], (gssize) (-1));
+	_tmp42_ = _tmp41_;
+	_tmp43_ = (NULL == _tmp42_) ? 0 : g_quark_from_string (_tmp42_);
+	g_free (_tmp42_);
+	if (_tmp43_ == ((0 != _tmp43__label0) ? _tmp43__label0 : (_tmp43__label0 = g_quark_from_static_string ("create")))) {
 		switch (0) {
 			default:
 			{
-				gboolean _tmp43_;
+				gboolean _tmp49_;
 				if (self->priv->cli_enable) {
 					gchar** description = NULL;
 					gint description_length1 = 0;
 					gint _description_size_ = 0;
-					gchar* _tmp38_ = NULL;
-					gchar* _tmp39_;
-					gchar** _tmp40_;
-					gchar** _tmp41_ = NULL;
-					gboolean _tmp42_;
-					_tmp38_ = g_strjoinv (" ", args);
-					_tmp39_ = _tmp38_;
-					_tmp41_ = _tmp40_ = g_strsplit (_tmp39_, "\"", -1);
+					gchar* _tmp44_ = NULL;
+					gchar* _tmp45_;
+					gchar** _tmp46_;
+					gchar** _tmp47_ = NULL;
+					gboolean _tmp48_;
+					_tmp44_ = g_strjoinv (" ", args);
+					_tmp45_ = _tmp44_;
+					_tmp47_ = _tmp46_ = g_strsplit (_tmp45_, "\"", -1);
 					description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL);
-					description = _tmp41_;
-					description_length1 = _vala_array_length (_tmp40_);
-					_description_size_ = _vala_array_length (_tmp40_);
-					_g_free0 (_tmp39_);
-					_tmp42_ = gstd_cli_pipeline_create (self, description[1]);
-					result = _tmp42_;
+					description = _tmp47_;
+					description_length1 = _vala_array_length (_tmp46_);
+					_description_size_ = _vala_array_length (_tmp46_);
+					_g_free0 (_tmp45_);
+					_tmp48_ = gstd_cli_pipeline_create (self, description[1]);
+					result = _tmp48_;
 					description = (_vala_array_free (description, description_length1, (GDestroyNotify) g_free), NULL);
 					return result;
 				}
-				_tmp43_ = gstd_cli_pipeline_create (self, args[1]);
-				result = _tmp43_;
+				_tmp49_ = gstd_cli_pipeline_create (self, args[1]);
+				result = _tmp49_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label1) ? _tmp37__label1 : (_tmp37__label1 = g_quark_from_static_string ("destroy")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label1) ? _tmp43__label1 : (_tmp43__label1 = g_quark_from_static_string ("destroy")))) {
 		switch (0) {
 			default:
 			{
 				if (self->priv->cli_enable) {
-					gboolean _tmp44_;
+					gboolean _tmp50_;
 					gboolean ret;
-					_tmp44_ = gstd_cli_pipeline_destroy (self, self->priv->active_pipe);
-					ret = _tmp44_;
+					_tmp50_ = gstd_cli_pipeline_destroy (self, self->priv->active_pipe);
+					ret = _tmp50_;
 					if (ret) {
 						_g_free0 (self->priv->active_pipe);
 						self->priv->active_pipe = NULL;
@@ -2328,357 +2352,366 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 						return result;
 					}
 				} else {
-					gboolean _tmp45_;
-					_tmp45_ = gstd_cli_pipeline_destroy (self, gstd_cli_obj_path);
-					result = _tmp45_;
+					gboolean _tmp51_;
+					_tmp51_ = gstd_cli_pipeline_destroy (self, gstd_cli_obj_path);
+					result = _tmp51_;
 					return result;
 				}
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label2) ? _tmp37__label2 : (_tmp37__label2 = g_quark_from_static_string ("destroy-all")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label2) ? _tmp43__label2 : (_tmp43__label2 = g_quark_from_static_string ("destroy-all")))) {
 		switch (0) {
 			default:
 			{
-				gboolean _tmp46_;
-				gboolean _tmp47_;
+				gboolean _tmp52_;
+				gboolean _tmp53_;
 				if (self->priv->factory == NULL) {
 					result = FALSE;
 					return result;
 				}
 				_g_free0 (self->priv->active_pipe);
 				self->priv->active_pipe = NULL;
-				_tmp46_ = _dynamic_DestroyAll34 (self->priv->factory, &_inner_error_);
-				_tmp47_ = _tmp46_;
+				_tmp52_ = _dynamic_DestroyAll34 (self->priv->factory, &_inner_error_);
+				_tmp53_ = _tmp52_;
 				if (_inner_error_ != NULL) {
 					g_propagate_error (error, _inner_error_);
 					return FALSE;
 				}
-				result = _tmp47_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label3) ? _tmp37__label3 : (_tmp37__label3 = g_quark_from_static_string ("play")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp48_;
-				_tmp48_ = gstd_cli_pipeline_play (self, self->priv->pipeline, TRUE);
-				result = _tmp48_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label4) ? _tmp37__label4 : (_tmp37__label4 = g_quark_from_static_string ("ready")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp49_;
-				_tmp49_ = gstd_cli_pipeline_ready (self, self->priv->pipeline, TRUE);
-				result = _tmp49_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label5) ? _tmp37__label5 : (_tmp37__label5 = g_quark_from_static_string ("pause")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp50_;
-				_tmp50_ = gstd_cli_pipeline_pause (self, self->priv->pipeline, TRUE);
-				result = _tmp50_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label6) ? _tmp37__label6 : (_tmp37__label6 = g_quark_from_static_string ("null")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp51_;
-				_tmp51_ = gstd_cli_pipeline_null (self, self->priv->pipeline, TRUE);
-				result = _tmp51_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label7) ? _tmp37__label7 : (_tmp37__label7 = g_quark_from_static_string ("aplay")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp52_;
-				_tmp52_ = gstd_cli_pipeline_play (self, self->priv->pipeline, FALSE);
-				result = _tmp52_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label8) ? _tmp37__label8 : (_tmp37__label8 = g_quark_from_static_string ("aready")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp53_;
-				_tmp53_ = gstd_cli_pipeline_ready (self, self->priv->pipeline, FALSE);
 				result = _tmp53_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label9) ? _tmp37__label9 : (_tmp37__label9 = g_quark_from_static_string ("apause")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label3) ? _tmp43__label3 : (_tmp43__label3 = g_quark_from_static_string ("play")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp54_;
-				_tmp54_ = gstd_cli_pipeline_pause (self, self->priv->pipeline, FALSE);
+				_tmp54_ = gstd_cli_pipeline_play (self, self->priv->pipeline, TRUE);
 				result = _tmp54_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label10) ? _tmp37__label10 : (_tmp37__label10 = g_quark_from_static_string ("anull")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label4) ? _tmp43__label4 : (_tmp43__label4 = g_quark_from_static_string ("ready")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp55_;
-				_tmp55_ = gstd_cli_pipeline_null (self, self->priv->pipeline, FALSE);
+				_tmp55_ = gstd_cli_pipeline_ready (self, self->priv->pipeline, TRUE);
 				result = _tmp55_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label11) ? _tmp37__label11 : (_tmp37__label11 = g_quark_from_static_string ("set")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label5) ? _tmp43__label5 : (_tmp43__label5 = g_quark_from_static_string ("pause")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp56_;
-				_tmp56_ = gstd_cli_pipeline_set_property (self, self->priv->pipeline, args, args_length1);
+				_tmp56_ = gstd_cli_pipeline_pause (self, self->priv->pipeline, TRUE);
 				result = _tmp56_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label12) ? _tmp37__label12 : (_tmp37__label12 = g_quark_from_static_string ("get")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label6) ? _tmp43__label6 : (_tmp43__label6 = g_quark_from_static_string ("null")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp57_;
-				_tmp57_ = gstd_cli_pipeline_get_property (self, self->priv->pipeline, args, args_length1);
+				_tmp57_ = gstd_cli_pipeline_null (self, self->priv->pipeline, TRUE);
 				result = _tmp57_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label13) ? _tmp37__label13 : (_tmp37__label13 = g_quark_from_static_string ("get-duration")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label7) ? _tmp43__label7 : (_tmp43__label7 = g_quark_from_static_string ("aplay")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp58_;
-				_tmp58_ = gstd_cli_pipeline_get_duration (self, self->priv->pipeline);
+				_tmp58_ = gstd_cli_pipeline_play (self, self->priv->pipeline, FALSE);
 				result = _tmp58_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label14) ? _tmp37__label14 : (_tmp37__label14 = g_quark_from_static_string ("get-position")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label8) ? _tmp43__label8 : (_tmp43__label8 = g_quark_from_static_string ("aready")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp59_;
-				_tmp59_ = gstd_cli_pipeline_get_position (self, self->priv->pipeline);
+				_tmp59_ = gstd_cli_pipeline_ready (self, self->priv->pipeline, FALSE);
 				result = _tmp59_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label15) ? _tmp37__label15 : (_tmp37__label15 = g_quark_from_static_string ("get-state")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label9) ? _tmp43__label9 : (_tmp43__label9 = g_quark_from_static_string ("apause")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp60_;
-				_tmp60_ = gstd_cli_pipeline_get_state (self, self->priv->pipeline);
+				_tmp60_ = gstd_cli_pipeline_pause (self, self->priv->pipeline, FALSE);
 				result = _tmp60_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label16) ? _tmp37__label16 : (_tmp37__label16 = g_quark_from_static_string ("get-elem-state")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label10) ? _tmp43__label10 : (_tmp43__label10 = g_quark_from_static_string ("anull")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp61_;
-				_tmp61_ = gstd_cli_element_get_state (self, self->priv->pipeline, args, args_length1);
+				_tmp61_ = gstd_cli_pipeline_null (self, self->priv->pipeline, FALSE);
 				result = _tmp61_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label17) ? _tmp37__label17 : (_tmp37__label17 = g_quark_from_static_string ("sh")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label11) ? _tmp43__label11 : (_tmp43__label11 = g_quark_from_static_string ("set")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp62_;
+				_tmp62_ = gstd_cli_pipeline_set_property (self, self->priv->pipeline, args, args_length1);
+				result = _tmp62_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label12) ? _tmp43__label12 : (_tmp43__label12 = g_quark_from_static_string ("get")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp63_;
+				_tmp63_ = gstd_cli_pipeline_get_property (self, self->priv->pipeline, args, args_length1);
+				result = _tmp63_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label13) ? _tmp43__label13 : (_tmp43__label13 = g_quark_from_static_string ("get-duration")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp64_;
+				_tmp64_ = gstd_cli_pipeline_get_duration (self, self->priv->pipeline);
+				result = _tmp64_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label14) ? _tmp43__label14 : (_tmp43__label14 = g_quark_from_static_string ("get-position")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp65_;
+				_tmp65_ = gstd_cli_pipeline_get_position (self, self->priv->pipeline);
+				result = _tmp65_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label15) ? _tmp43__label15 : (_tmp43__label15 = g_quark_from_static_string ("get-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp66_;
+				_tmp66_ = gstd_cli_pipeline_get_state (self, self->priv->pipeline);
+				result = _tmp66_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label16) ? _tmp43__label16 : (_tmp43__label16 = g_quark_from_static_string ("get-elem-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp67_;
+				_tmp67_ = gstd_cli_element_get_state (self, self->priv->pipeline, args, args_length1);
+				result = _tmp67_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label17) ? _tmp43__label17 : (_tmp43__label17 = g_quark_from_static_string ("sh")))) {
 		switch (0) {
 			default:
 			{
 				gchar** command = NULL;
 				gint command_length1 = 0;
 				gint _command_size_ = 0;
-				gchar* _tmp62_ = NULL;
-				gchar* _tmp63_;
-				gchar** _tmp64_;
-				gchar** _tmp65_ = NULL;
-				gboolean _tmp66_;
-				_tmp62_ = g_strjoinv (" ", args);
-				_tmp63_ = _tmp62_;
-				_tmp65_ = _tmp64_ = g_strsplit (_tmp63_, "\"", -1);
-				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
-				command = _tmp65_;
-				command_length1 = _vala_array_length (_tmp64_);
-				_command_size_ = _vala_array_length (_tmp64_);
-				_g_free0 (_tmp63_);
-				_tmp66_ = gstd_cli_shell (self, command[1]);
-				result = _tmp66_;
-				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label18) ? _tmp37__label18 : (_tmp37__label18 = g_quark_from_static_string ("seek")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp67_;
-				_tmp67_ = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
-				result = _tmp67_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label19) ? _tmp37__label19 : (_tmp37__label19 = g_quark_from_static_string ("skip")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp68_;
-				_tmp68_ = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
-				result = _tmp68_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label20) ? _tmp37__label20 : (_tmp37__label20 = g_quark_from_static_string ("speed")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp69_;
-				_tmp69_ = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
-				result = _tmp69_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label21) ? _tmp37__label21 : (_tmp37__label21 = g_quark_from_static_string ("step")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp70_;
-				_tmp70_ = gstd_cli_pipeline_step (self, self->priv->pipeline, args, args_length1);
-				result = _tmp70_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label22) ? _tmp37__label22 : (_tmp37__label22 = g_quark_from_static_string ("send-eos")))) {
-		switch (0) {
-			default:
-			{
-				gboolean _tmp71_;
-				_tmp71_ = gstd_cli_pipeline_send_eos (self, self->priv->pipeline, args, args_length1);
-				result = _tmp71_;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label23) ? _tmp37__label23 : (_tmp37__label23 = g_quark_from_static_string ("send-custom-event")))) {
-		switch (0) {
-			default:
-			{
+				gchar* _tmp68_ = NULL;
+				gchar* _tmp69_;
+				gchar** _tmp70_;
+				gchar** _tmp71_ = NULL;
 				gboolean _tmp72_;
-				_tmp72_ = gstd_cli_pipeline_send_custom_event (self, self->priv->pipeline, args, args_length1);
+				_tmp68_ = g_strjoinv (" ", args);
+				_tmp69_ = _tmp68_;
+				_tmp71_ = _tmp70_ = g_strsplit (_tmp69_, "\"", -1);
+				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
+				command = _tmp71_;
+				command_length1 = _vala_array_length (_tmp70_);
+				_command_size_ = _vala_array_length (_tmp70_);
+				_g_free0 (_tmp69_);
+				_tmp72_ = gstd_cli_shell (self, command[1]);
 				result = _tmp72_;
+				command = (_vala_array_free (command, command_length1, (GDestroyNotify) g_free), NULL);
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label24) ? _tmp37__label24 : (_tmp37__label24 = g_quark_from_static_string ("list-pipes")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label18) ? _tmp43__label18 : (_tmp43__label18 = g_quark_from_static_string ("seek")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp73_;
-				_tmp73_ = gstd_cli_pipeline_list (self);
+				_tmp73_ = gstd_cli_pipeline_seek (self, self->priv->pipeline, args, args_length1);
 				result = _tmp73_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label25) ? _tmp37__label25 : (_tmp37__label25 = g_quark_from_static_string ("ping")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label19) ? _tmp43__label19 : (_tmp43__label19 = g_quark_from_static_string ("skip")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp74_;
-				_tmp74_ = gstd_cli_gstd_ping (self);
+				_tmp74_ = gstd_cli_pipeline_skip (self, self->priv->pipeline, args, args_length1);
 				result = _tmp74_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label26) ? _tmp37__label26 : (_tmp37__label26 = g_quark_from_static_string ("ping-pipe")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label20) ? _tmp43__label20 : (_tmp43__label20 = g_quark_from_static_string ("speed")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp75_;
-				_tmp75_ = gstd_cli_pipeline_ping (self);
+				_tmp75_ = gstd_cli_pipeline_speed (self, self->priv->pipeline, args, args_length1);
 				result = _tmp75_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label27) ? _tmp37__label27 : (_tmp37__label27 = g_quark_from_static_string ("active")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label21) ? _tmp43__label21 : (_tmp43__label21 = g_quark_from_static_string ("step")))) {
 		switch (0) {
 			default:
 			{
-				if (args[1] == NULL) {
-					gboolean _tmp76_;
-					_tmp76_ = gstd_cli_get_active (self);
-					result = _tmp76_;
-					return result;
-				} else {
-					gboolean _tmp77_;
-					_tmp77_ = gstd_cli_set_active (self, args[1]);
-					result = _tmp77_;
-					return result;
-				}
+				gboolean _tmp76_;
+				_tmp76_ = gstd_cli_pipeline_step (self, self->priv->pipeline, args, args_length1);
+				result = _tmp76_;
+				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label28) ? _tmp37__label28 : (_tmp37__label28 = g_quark_from_static_string ("element-set-state")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label22) ? _tmp43__label22 : (_tmp43__label22 = g_quark_from_static_string ("send-eos")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp77_;
+				_tmp77_ = gstd_cli_pipeline_send_eos (self, self->priv->pipeline, args, args_length1);
+				result = _tmp77_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label23) ? _tmp43__label23 : (_tmp43__label23 = g_quark_from_static_string ("send-custom-event")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp78_;
-				_tmp78_ = gstd_cli_element_set_state (self, self->priv->pipeline, args, args_length1);
+				_tmp78_ = gstd_cli_pipeline_send_custom_event (self, self->priv->pipeline, args, args_length1);
 				result = _tmp78_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label29) ? _tmp37__label29 : (_tmp37__label29 = g_quark_from_static_string ("element-async-set-state")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label24) ? _tmp43__label24 : (_tmp43__label24 = g_quark_from_static_string ("list-pipes")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp79_;
-				_tmp79_ = gstd_cli_element_async_set_state (self, self->priv->pipeline, args, args_length1);
+				_tmp79_ = gstd_cli_pipeline_list (self);
 				result = _tmp79_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label30) ? _tmp37__label30 : (_tmp37__label30 = g_quark_from_static_string ("quit")))) {
-		switch (0) {
-			default:
-			{
-				self->priv->cli_enable = FALSE;
-				result = TRUE;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label31) ? _tmp37__label31 : (_tmp37__label31 = g_quark_from_static_string ("exit")))) {
-		switch (0) {
-			default:
-			{
-				self->priv->cli_enable = FALSE;
-				result = TRUE;
-				return result;
-			}
-		}
-	} else if (_tmp37_ == ((0 != _tmp37__label32) ? _tmp37__label32 : (_tmp37__label32 = g_quark_from_static_string ("strict")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label25) ? _tmp43__label25 : (_tmp43__label25 = g_quark_from_static_string ("ping")))) {
 		switch (0) {
 			default:
 			{
 				gboolean _tmp80_;
-				_tmp80_ = gstd_cli_set_strict (self, args, args_length1);
+				_tmp80_ = gstd_cli_gstd_ping (self);
 				result = _tmp80_;
 				return result;
 			}
 		}
-	} else if (_tmp37_ == ((0 != _tmp37__label33) ? _tmp37__label33 : (_tmp37__label33 = g_quark_from_static_string ("help")))) {
+	} else if (_tmp43_ == ((0 != _tmp43__label26) ? _tmp43__label26 : (_tmp43__label26 = g_quark_from_static_string ("ping-pipe")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp81_;
+				_tmp81_ = gstd_cli_pipeline_ping (self);
+				result = _tmp81_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label27) ? _tmp43__label27 : (_tmp43__label27 = g_quark_from_static_string ("active")))) {
+		switch (0) {
+			default:
+			{
+				if (args[1] == NULL) {
+					gboolean _tmp82_;
+					_tmp82_ = gstd_cli_get_active (self);
+					result = _tmp82_;
+					return result;
+				} else {
+					gboolean _tmp83_;
+					_tmp83_ = gstd_cli_set_active (self, args[1]);
+					result = _tmp83_;
+					return result;
+				}
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label28) ? _tmp43__label28 : (_tmp43__label28 = g_quark_from_static_string ("element-set-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp84_;
+				_tmp84_ = gstd_cli_element_set_state (self, self->priv->pipeline, args, args_length1);
+				result = _tmp84_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label29) ? _tmp43__label29 : (_tmp43__label29 = g_quark_from_static_string ("element-async-set-state")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp85_;
+				_tmp85_ = gstd_cli_element_async_set_state (self, self->priv->pipeline, args, args_length1);
+				result = _tmp85_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label30) ? _tmp43__label30 : (_tmp43__label30 = g_quark_from_static_string ("quit")))) {
+		switch (0) {
+			default:
+			{
+				self->priv->cli_enable = FALSE;
+				result = TRUE;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label31) ? _tmp43__label31 : (_tmp43__label31 = g_quark_from_static_string ("exit")))) {
+		switch (0) {
+			default:
+			{
+				self->priv->cli_enable = FALSE;
+				result = TRUE;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label32) ? _tmp43__label32 : (_tmp43__label32 = g_quark_from_static_string ("strict")))) {
+		switch (0) {
+			default:
+			{
+				gboolean _tmp86_;
+				_tmp86_ = gstd_cli_set_strict (self, args, args_length1);
+				result = _tmp86_;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label33) ? _tmp43__label33 : (_tmp43__label33 = g_quark_from_static_string ("version")))) {
+		switch (0) {
+			default:
+			{
+				fprintf (stdout, "%s\n", PACKAGE_VERSION);
+				result = TRUE;
+				return result;
+			}
+		}
+	} else if (_tmp43_ == ((0 != _tmp43__label34) ? _tmp43__label34 : (_tmp43__label34 = g_quark_from_static_string ("help")))) {
 		switch (0) {
 			default:
 			{
@@ -2704,18 +2737,18 @@ gboolean gstd_cli_parse_cmd (GstdCli* self, gchar** args, int args_length1, GErr
 				} else {
 					fprintf (stdout, "%s", "Request the syntax of an specific command with " "\"help <command>\".\n" "This is the list of supported commands:\n");
 					while (TRUE) {
-						const gchar* _tmp81_ = NULL;
-						gint _tmp82_;
+						const gchar* _tmp87_ = NULL;
+						gint _tmp88_;
 						if (!(self->priv->cmds[(id * self->priv->cmds_length2) + 0] != NULL)) {
 							break;
 						}
-						_tmp82_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
-						if (_tmp82_ < 6) {
-							_tmp81_ = "\t\t";
+						_tmp88_ = strlen (self->priv->cmds[(id * self->priv->cmds_length2) + 0]);
+						if (_tmp88_ < 6) {
+							_tmp87_ = "\t\t";
 						} else {
-							_tmp81_ = "\t";
+							_tmp87_ = "\t";
 						}
-						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp81_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
+						fprintf (stdout, " %s:%s%s\n", self->priv->cmds[(id * self->priv->cmds_length2) + 0], _tmp87_, self->priv->cmds[(id * self->priv->cmds_length2) + 2]);
 						id++;
 					}
 					fprintf (stdout, "\n");
@@ -3135,7 +3168,10 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	gchar* _tmp96_;
 	gchar* _tmp97_;
 	gchar* _tmp98_;
-	gchar** _tmp99_ = NULL;
+	gchar* _tmp99_;
+	gchar* _tmp100_;
+	gchar* _tmp101_;
+	gchar** _tmp102_ = NULL;
 	self->priv = GSTD_CLI_GET_PRIVATE (self);
 	self->priv->active_pipe = NULL;
 	self->priv->cli_enable = FALSE;
@@ -3239,108 +3275,114 @@ static void gstd_cli_instance_init (GstdCli * self) {
 	_tmp96_ = g_strdup ("strict");
 	_tmp97_ = g_strdup ("strict");
 	_tmp98_ = g_strdup ("Enable/disable strict execution mode.");
-	_tmp99_ = g_new0 (gchar*, (33 * 3) + 1);
-	_tmp99_[0] = _tmp0_;
-	_tmp99_[1] = _tmp1_;
-	_tmp99_[2] = _tmp2_;
-	_tmp99_[3] = _tmp3_;
-	_tmp99_[4] = _tmp4_;
-	_tmp99_[5] = _tmp5_;
-	_tmp99_[6] = _tmp6_;
-	_tmp99_[7] = _tmp7_;
-	_tmp99_[8] = _tmp8_;
-	_tmp99_[9] = _tmp9_;
-	_tmp99_[10] = _tmp10_;
-	_tmp99_[11] = _tmp11_;
-	_tmp99_[12] = _tmp12_;
-	_tmp99_[13] = _tmp13_;
-	_tmp99_[14] = _tmp14_;
-	_tmp99_[15] = _tmp15_;
-	_tmp99_[16] = _tmp16_;
-	_tmp99_[17] = _tmp17_;
-	_tmp99_[18] = _tmp18_;
-	_tmp99_[19] = _tmp19_;
-	_tmp99_[20] = _tmp20_;
-	_tmp99_[21] = _tmp21_;
-	_tmp99_[22] = _tmp22_;
-	_tmp99_[23] = _tmp23_;
-	_tmp99_[24] = _tmp24_;
-	_tmp99_[25] = _tmp25_;
-	_tmp99_[26] = _tmp26_;
-	_tmp99_[27] = _tmp27_;
-	_tmp99_[28] = _tmp28_;
-	_tmp99_[29] = _tmp29_;
-	_tmp99_[30] = _tmp30_;
-	_tmp99_[31] = _tmp31_;
-	_tmp99_[32] = _tmp32_;
-	_tmp99_[33] = _tmp33_;
-	_tmp99_[34] = _tmp34_;
-	_tmp99_[35] = _tmp35_;
-	_tmp99_[36] = _tmp36_;
-	_tmp99_[37] = _tmp37_;
-	_tmp99_[38] = _tmp38_;
-	_tmp99_[39] = _tmp39_;
-	_tmp99_[40] = _tmp40_;
-	_tmp99_[41] = _tmp41_;
-	_tmp99_[42] = _tmp42_;
-	_tmp99_[43] = _tmp43_;
-	_tmp99_[44] = _tmp44_;
-	_tmp99_[45] = _tmp45_;
-	_tmp99_[46] = _tmp46_;
-	_tmp99_[47] = _tmp47_;
-	_tmp99_[48] = _tmp48_;
-	_tmp99_[49] = _tmp49_;
-	_tmp99_[50] = _tmp50_;
-	_tmp99_[51] = _tmp51_;
-	_tmp99_[52] = _tmp52_;
-	_tmp99_[53] = _tmp53_;
-	_tmp99_[54] = _tmp54_;
-	_tmp99_[55] = _tmp55_;
-	_tmp99_[56] = _tmp56_;
-	_tmp99_[57] = _tmp57_;
-	_tmp99_[58] = _tmp58_;
-	_tmp99_[59] = _tmp59_;
-	_tmp99_[60] = _tmp60_;
-	_tmp99_[61] = _tmp61_;
-	_tmp99_[62] = _tmp62_;
-	_tmp99_[63] = _tmp63_;
-	_tmp99_[64] = _tmp64_;
-	_tmp99_[65] = _tmp65_;
-	_tmp99_[66] = _tmp66_;
-	_tmp99_[67] = _tmp67_;
-	_tmp99_[68] = _tmp68_;
-	_tmp99_[69] = _tmp69_;
-	_tmp99_[70] = _tmp70_;
-	_tmp99_[71] = _tmp71_;
-	_tmp99_[72] = _tmp72_;
-	_tmp99_[73] = _tmp73_;
-	_tmp99_[74] = _tmp74_;
-	_tmp99_[75] = _tmp75_;
-	_tmp99_[76] = _tmp76_;
-	_tmp99_[77] = _tmp77_;
-	_tmp99_[78] = _tmp78_;
-	_tmp99_[79] = _tmp79_;
-	_tmp99_[80] = _tmp80_;
-	_tmp99_[81] = _tmp81_;
-	_tmp99_[82] = _tmp82_;
-	_tmp99_[83] = _tmp83_;
-	_tmp99_[84] = _tmp84_;
-	_tmp99_[85] = _tmp85_;
-	_tmp99_[86] = _tmp86_;
-	_tmp99_[87] = _tmp87_;
-	_tmp99_[88] = _tmp88_;
-	_tmp99_[89] = _tmp89_;
-	_tmp99_[90] = _tmp90_;
-	_tmp99_[91] = _tmp91_;
-	_tmp99_[92] = _tmp92_;
-	_tmp99_[93] = _tmp93_;
-	_tmp99_[94] = _tmp94_;
-	_tmp99_[95] = _tmp95_;
-	_tmp99_[96] = _tmp96_;
-	_tmp99_[97] = _tmp97_;
-	_tmp99_[98] = _tmp98_;
-	self->priv->cmds = _tmp99_;
-	self->priv->cmds_length1 = 33;
+	_tmp99_ = g_strdup ("version");
+	_tmp100_ = g_strdup ("version");
+	_tmp101_ = g_strdup ("Show gst-client version.");
+	_tmp102_ = g_new0 (gchar*, (34 * 3) + 1);
+	_tmp102_[0] = _tmp0_;
+	_tmp102_[1] = _tmp1_;
+	_tmp102_[2] = _tmp2_;
+	_tmp102_[3] = _tmp3_;
+	_tmp102_[4] = _tmp4_;
+	_tmp102_[5] = _tmp5_;
+	_tmp102_[6] = _tmp6_;
+	_tmp102_[7] = _tmp7_;
+	_tmp102_[8] = _tmp8_;
+	_tmp102_[9] = _tmp9_;
+	_tmp102_[10] = _tmp10_;
+	_tmp102_[11] = _tmp11_;
+	_tmp102_[12] = _tmp12_;
+	_tmp102_[13] = _tmp13_;
+	_tmp102_[14] = _tmp14_;
+	_tmp102_[15] = _tmp15_;
+	_tmp102_[16] = _tmp16_;
+	_tmp102_[17] = _tmp17_;
+	_tmp102_[18] = _tmp18_;
+	_tmp102_[19] = _tmp19_;
+	_tmp102_[20] = _tmp20_;
+	_tmp102_[21] = _tmp21_;
+	_tmp102_[22] = _tmp22_;
+	_tmp102_[23] = _tmp23_;
+	_tmp102_[24] = _tmp24_;
+	_tmp102_[25] = _tmp25_;
+	_tmp102_[26] = _tmp26_;
+	_tmp102_[27] = _tmp27_;
+	_tmp102_[28] = _tmp28_;
+	_tmp102_[29] = _tmp29_;
+	_tmp102_[30] = _tmp30_;
+	_tmp102_[31] = _tmp31_;
+	_tmp102_[32] = _tmp32_;
+	_tmp102_[33] = _tmp33_;
+	_tmp102_[34] = _tmp34_;
+	_tmp102_[35] = _tmp35_;
+	_tmp102_[36] = _tmp36_;
+	_tmp102_[37] = _tmp37_;
+	_tmp102_[38] = _tmp38_;
+	_tmp102_[39] = _tmp39_;
+	_tmp102_[40] = _tmp40_;
+	_tmp102_[41] = _tmp41_;
+	_tmp102_[42] = _tmp42_;
+	_tmp102_[43] = _tmp43_;
+	_tmp102_[44] = _tmp44_;
+	_tmp102_[45] = _tmp45_;
+	_tmp102_[46] = _tmp46_;
+	_tmp102_[47] = _tmp47_;
+	_tmp102_[48] = _tmp48_;
+	_tmp102_[49] = _tmp49_;
+	_tmp102_[50] = _tmp50_;
+	_tmp102_[51] = _tmp51_;
+	_tmp102_[52] = _tmp52_;
+	_tmp102_[53] = _tmp53_;
+	_tmp102_[54] = _tmp54_;
+	_tmp102_[55] = _tmp55_;
+	_tmp102_[56] = _tmp56_;
+	_tmp102_[57] = _tmp57_;
+	_tmp102_[58] = _tmp58_;
+	_tmp102_[59] = _tmp59_;
+	_tmp102_[60] = _tmp60_;
+	_tmp102_[61] = _tmp61_;
+	_tmp102_[62] = _tmp62_;
+	_tmp102_[63] = _tmp63_;
+	_tmp102_[64] = _tmp64_;
+	_tmp102_[65] = _tmp65_;
+	_tmp102_[66] = _tmp66_;
+	_tmp102_[67] = _tmp67_;
+	_tmp102_[68] = _tmp68_;
+	_tmp102_[69] = _tmp69_;
+	_tmp102_[70] = _tmp70_;
+	_tmp102_[71] = _tmp71_;
+	_tmp102_[72] = _tmp72_;
+	_tmp102_[73] = _tmp73_;
+	_tmp102_[74] = _tmp74_;
+	_tmp102_[75] = _tmp75_;
+	_tmp102_[76] = _tmp76_;
+	_tmp102_[77] = _tmp77_;
+	_tmp102_[78] = _tmp78_;
+	_tmp102_[79] = _tmp79_;
+	_tmp102_[80] = _tmp80_;
+	_tmp102_[81] = _tmp81_;
+	_tmp102_[82] = _tmp82_;
+	_tmp102_[83] = _tmp83_;
+	_tmp102_[84] = _tmp84_;
+	_tmp102_[85] = _tmp85_;
+	_tmp102_[86] = _tmp86_;
+	_tmp102_[87] = _tmp87_;
+	_tmp102_[88] = _tmp88_;
+	_tmp102_[89] = _tmp89_;
+	_tmp102_[90] = _tmp90_;
+	_tmp102_[91] = _tmp91_;
+	_tmp102_[92] = _tmp92_;
+	_tmp102_[93] = _tmp93_;
+	_tmp102_[94] = _tmp94_;
+	_tmp102_[95] = _tmp95_;
+	_tmp102_[96] = _tmp96_;
+	_tmp102_[97] = _tmp97_;
+	_tmp102_[98] = _tmp98_;
+	_tmp102_[99] = _tmp99_;
+	_tmp102_[100] = _tmp100_;
+	_tmp102_[101] = _tmp101_;
+	self->priv->cmds = _tmp102_;
+	self->priv->cmds_length1 = 34;
 	self->priv->cmds_length2 = 3;
 }
 
