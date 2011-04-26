@@ -16,6 +16,9 @@ gst_client_VALAFLAGS = --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
 gst_client_CFLAGS = @GSTREAMER_CFLAGS@ @DBUS_GLIB_CFLAGS@
 gst_client_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@ @READLINE_LIBS@
 
+install-data-hook:
+	cd $(bindir) ; rm -f gst-client-interpreter ; $(LN_S) gst-client gst-client-interpreter
+
 interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
  com.ridgerun.gstreamer.gstd.PipelineInterface.xml
 
