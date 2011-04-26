@@ -1,0 +1,10 @@
+*.o
+.deps
+config.log
+config.status
+*.pc
+config.h
+Makefile
+stamp-h1
+autom4te.cache
+com.ridgerun.gstreamer.gstd.service
