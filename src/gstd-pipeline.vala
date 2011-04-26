@@ -22,11 +22,10 @@ public class Pipeline : GLib.Object
 	private bool initialized = false;
 	private string path = "";
 	private double rate = 1.0;
-	private int64 autostop_time_ms = 0;			
+	private int64 autostop_time_ms = 0;
 	private bool autostop_thread_running = false;
 	private bool trigger_autostop = false;
-	private Cond autostop_sleep_cond;
-	private Mutex autostop_sleep_mutex;
+	private ClockID autostop_clkid;
 	private Cond autostop_eos_cond;
 	private Mutex autostop_eos_mutex;
 	//private uint _counter = 0;
@@ -72,8 +71,6 @@ public class Pipeline : GLib.Object
 
 			/* Set pipeline state to initialized */
 			initialized = true;
-			autostop_sleep_cond = new Cond();
-			autostop_sleep_mutex = new Mutex();
 			autostop_eos_cond = new Cond();
 			autostop_eos_mutex = new Mutex();
 
@@ -259,13 +256,11 @@ public class Pipeline : GLib.Object
 	 */
 	public void PipelineAbortAutoStop()
 	{
-		autostop_sleep_mutex.lock();
 		if (!autostop_thread_running) {
 			trigger_autostop = false;
 		} else {
-		    autostop_sleep_cond.signal();
+		    autostop_clkid.unschedule();
 		}
-		autostop_sleep_mutex.unlock();
 	}
 
 	/* Thread to track elapsed time when using tplay. Sends eos to pipeline
@@ -274,31 +269,27 @@ public class Pipeline : GLib.Object
 	 */
 	private void* AutoStopThread()
 	{
-		TimeVal timeout = {0,0};
+		ClockTime time;
 
-		timeout.get_current_time();
-		timeout.add((long)(autostop_time_ms * 1000));
-		
-		autostop_sleep_mutex.lock();
+		time = (ClockTime)((uint64) autostop_time_ms) * 1000000;
+		time += pipeline.get_clock().get_time();
+		autostop_clkid = new ClockID.single_shot(pipeline.get_clock(),time);
 
 		Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer activated for %llu mseconds.\n", autostop_time_ms);
 
-		if (autostop_sleep_cond.timed_wait(autostop_sleep_mutex,timeout))
+		autostop_thread_running = true;
+		if ( autostop_clkid.wait(null) == ClockReturn.UNSCHEDULED )
 		{
 			/* We were aborted */
-			autostop_thread_running = false;
 			Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer aborted.\n");
-			autostop_sleep_mutex.unlock();
+			autostop_thread_running = false;
+			autostop_clkid = null;
 			return null;
 		}
 
-		autostop_sleep_mutex.unlock();
-
 		/* OK, we timed out our wait, let's do our job */
 		autostop_eos_mutex.lock();
-
 		PipelineSendEoS ();
-
 		/* Waiting until EOS signal have been emitted */
 		autostop_eos_cond.wait(autostop_eos_mutex);
 		autostop_eos_mutex.unlock();
@@ -308,10 +299,12 @@ public class Pipeline : GLib.Object
 		{
 			Posix.syslog (Posix.LOG_DEBUG,"ERROR trying to set pipeline state to NULL.\n");
 			autostop_thread_running = false;
+			autostop_clkid = null;
 			return null;
 		}
 		Posix.syslog (Posix.LOG_DEBUG,"Pipeline %s auto-stopped.\n", this.path);
 		autostop_thread_running = false;
+		autostop_clkid = null;
 		return null;
 	}
 
@@ -325,7 +318,6 @@ public class Pipeline : GLib.Object
 			return false;
 		}
 		
-		autostop_sleep_mutex.lock();
 		/* Init timer thread */
 		try {
 			Thread.create<void*>(AutoStopThread, false);
@@ -333,9 +325,6 @@ public class Pipeline : GLib.Object
 			return false;
 		}
 
-		/* Since the thread was executed correctly we set the flag */
-		autostop_thread_running = true;
-		autostop_sleep_mutex.unlock();
 
 		return true;
 	}

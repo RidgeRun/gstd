@@ -3069,7 +3069,6 @@ gboolean gstd_cli_parse (GstdCli* self, gchar** remainingArgs, int remainingArgs
 		FILE* _tmp5_ = NULL;
 		gboolean _tmp6_;
 		gboolean _tmp7_;
-		g_print ("Interpret script:\n");
 		if (remainingArgs_length1 != 1) {
 			fprintf (stdout, "Please define the script file name.\n");
 			fprintf (stdout, "Furthermore you may use the standard options (signal, ...).\n");

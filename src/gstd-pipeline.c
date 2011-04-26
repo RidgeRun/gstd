@@ -38,6 +38,7 @@ typedef struct _PipelineClass PipelineClass;
 typedef struct _PipelinePrivate PipelinePrivate;
 #define _gst_object_unref0(var) ((var == NULL) ? NULL : (var = (gst_object_unref (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
+#define _gst_clock_id_unref0(var) ((var == NULL) ? NULL : (var = (gst_clock_id_unref (var), NULL)))
 #define _g_cond_free0(var) ((var == NULL) ? NULL : (var = (g_cond_free (var), NULL)))
 #define _g_mutex_free0(var) ((var == NULL) ? NULL : (var = (g_mutex_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
@@ -63,8 +64,7 @@ struct _PipelinePrivate {
 	gint64 autostop_time_ms;
 	gboolean autostop_thread_running;
 	gboolean trigger_autostop;
-	GCond* autostop_sleep_cond;
-	GMutex* autostop_sleep_mutex;
+	GstClockID* autostop_clkid;
 	GCond* autostop_eos_cond;
 	GMutex* autostop_eos_mutex;
 	gulong windowId;
@@ -208,9 +208,7 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	GstBus* bus;
 	GCond* _tmp4_ = NULL;
 	GMutex* _tmp5_ = NULL;
-	GCond* _tmp6_ = NULL;
-	GMutex* _tmp7_ = NULL;
-	gboolean _tmp8_;
+	gboolean _tmp6_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (description != NULL, NULL);
 	self = (Pipeline*) g_object_new (object_type, NULL);
@@ -229,19 +227,13 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	g_object_unref (self);
 	self->priv->initialized = TRUE;
 	_tmp4_ = g_cond_new ();
-	_g_cond_free0 (self->priv->autostop_sleep_cond);
-	self->priv->autostop_sleep_cond = _tmp4_;
-	_tmp5_ = g_mutex_new ();
-	_g_mutex_free0 (self->priv->autostop_sleep_mutex);
-	self->priv->autostop_sleep_mutex = _tmp5_;
-	_tmp6_ = g_cond_new ();
 	_g_cond_free0 (self->priv->autostop_eos_cond);
-	self->priv->autostop_eos_cond = _tmp6_;
-	_tmp7_ = g_mutex_new ();
+	self->priv->autostop_eos_cond = _tmp4_;
+	_tmp5_ = g_mutex_new ();
 	_g_mutex_free0 (self->priv->autostop_eos_mutex);
-	self->priv->autostop_eos_mutex = _tmp7_;
-	_tmp8_ = pipeline_PipelineIsInitialized (self);
-	if (_tmp8_) {
+	self->priv->autostop_eos_mutex = _tmp5_;
+	_tmp6_ = pipeline_PipelineIsInitialized (self);
+	if (_tmp6_) {
 		syslog (LOG_NOTICE, "Pipeline created, %s", description, NULL);
 	} else {
 		syslog (LOG_ERR, "Pipeline could not be initialized", NULL);
@@ -469,52 +461,66 @@ gboolean pipeline_PipelineSetAutoStop (Pipeline* self, gint64 timeout_ms) {
  */
 void pipeline_PipelineAbortAutoStop (Pipeline* self) {
 	g_return_if_fail (self != NULL);
-	g_mutex_lock (self->priv->autostop_sleep_mutex);
 	if (!self->priv->autostop_thread_running) {
 		self->priv->trigger_autostop = FALSE;
 	} else {
-		g_cond_signal (self->priv->autostop_sleep_cond);
+		gst_clock_id_unschedule (self->priv->autostop_clkid);
 	}
-	g_mutex_unlock (self->priv->autostop_sleep_mutex);
 }
 
 
 static void* pipeline_AutoStopThread (Pipeline* self) {
 	void* result = NULL;
-	GTimeVal _tmp0_ = {0};
-	GTimeVal timeout;
-	gboolean _tmp1_;
-	gboolean _tmp2_;
+	GstClockTime time = 0ULL;
+	GstClock* _tmp0_ = NULL;
+	GstClock* _tmp1_;
+	GstClockTime _tmp2_;
+	GstClock* _tmp3_ = NULL;
+	GstClock* _tmp4_;
+	GstClockID* _tmp5_ = NULL;
+	GstClockReturn _tmp6_;
+	gboolean _tmp7_;
 	g_return_val_if_fail (self != NULL, NULL);
-	_tmp0_.tv_sec = (glong) 0;
-	_tmp0_.tv_usec = (glong) 0;
-	timeout = _tmp0_;
-	g_get_current_time (&timeout);
-	g_time_val_add (&timeout, (glong) (self->priv->autostop_time_ms * 1000));
-	g_mutex_lock (self->priv->autostop_sleep_mutex);
+	time = (GstClockTime) (((GstClockTime) ((guint64) self->priv->autostop_time_ms)) * 1000000);
+	_tmp0_ = gst_element_get_clock (self->priv->pipeline);
+	_tmp1_ = _tmp0_;
+	_tmp2_ = gst_clock_get_time (_tmp1_);
+	time = time + _tmp2_;
+	_gst_object_unref0 (_tmp1_);
+	_tmp3_ = gst_element_get_clock (self->priv->pipeline);
+	_tmp4_ = _tmp3_;
+	_tmp5_ = gst_clock_new_single_shot_id (_tmp4_, time);
+	_gst_clock_id_unref0 (self->priv->autostop_clkid);
+	self->priv->autostop_clkid = _tmp5_;
+	_gst_object_unref0 (_tmp4_);
 	syslog (LOG_DEBUG, "Auto stop timer activated for %llu mseconds.\n", self->priv->autostop_time_ms, NULL);
-	_tmp1_ = g_cond_timed_wait (self->priv->autostop_sleep_cond, self->priv->autostop_sleep_mutex, &timeout);
-	if (_tmp1_) {
-		self->priv->autostop_thread_running = FALSE;
+	self->priv->autostop_thread_running = TRUE;
+	_tmp6_ = gst_clock_id_wait (self->priv->autostop_clkid, NULL);
+	if (_tmp6_ == GST_CLOCK_UNSCHEDULED) {
 		syslog (LOG_DEBUG, "Auto stop timer aborted.\n", NULL);
-		g_mutex_unlock (self->priv->autostop_sleep_mutex);
+		self->priv->autostop_thread_running = FALSE;
+		_gst_clock_id_unref0 (self->priv->autostop_clkid);
+		self->priv->autostop_clkid = NULL;
 		result = NULL;
 		return result;
 	}
-	g_mutex_unlock (self->priv->autostop_sleep_mutex);
 	g_mutex_lock (self->priv->autostop_eos_mutex);
 	pipeline_PipelineSendEoS (self);
 	g_cond_wait (self->priv->autostop_eos_cond, self->priv->autostop_eos_mutex);
 	g_mutex_unlock (self->priv->autostop_eos_mutex);
-	_tmp2_ = pipeline_PipelineSetState (self, (gint) GST_STATE_NULL);
-	if (!_tmp2_) {
+	_tmp7_ = pipeline_PipelineSetState (self, (gint) GST_STATE_NULL);
+	if (!_tmp7_) {
 		syslog (LOG_DEBUG, "ERROR trying to set pipeline state to NULL.\n", NULL);
 		self->priv->autostop_thread_running = FALSE;
+		_gst_clock_id_unref0 (self->priv->autostop_clkid);
+		self->priv->autostop_clkid = NULL;
 		result = NULL;
 		return result;
 	}
 	syslog (LOG_DEBUG, "Pipeline %s auto-stopped.\n", self->priv->path, NULL);
 	self->priv->autostop_thread_running = FALSE;
+	_gst_clock_id_unref0 (self->priv->autostop_clkid);
+	self->priv->autostop_clkid = NULL;
 	result = NULL;
 	return result;
 }
@@ -538,7 +544,6 @@ static gboolean pipeline_StartAutoStop (Pipeline* self) {
 		result = FALSE;
 		return result;
 	}
-	g_mutex_lock (self->priv->autostop_sleep_mutex);
 	g_thread_create (_pipeline_AutoStopThread_gthread_func, self, FALSE, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == G_THREAD_ERROR) {
@@ -564,8 +569,6 @@ static gboolean pipeline_StartAutoStop (Pipeline* self) {
 		g_clear_error (&_inner_error_);
 		return FALSE;
 	}
-	self->priv->autostop_thread_running = TRUE;
-	g_mutex_unlock (self->priv->autostop_sleep_mutex);
 	result = TRUE;
 	return result;
 }
@@ -576,10 +579,11 @@ gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
 	gboolean _tmp0_ = FALSE;
 	gboolean _tmp1_ = FALSE;
 	gboolean _tmp2_ = FALSE;
-	gboolean _tmp3_;
+	gboolean _tmp3_ = FALSE;
+	gboolean _tmp4_;
 	gboolean ret;
-	gboolean _tmp4_ = FALSE;
 	gboolean _tmp5_ = FALSE;
+	gboolean _tmp6_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (self->priv->trigger_autostop) {
 		_tmp1_ = state == GST_STATE_PLAYING;
@@ -598,6 +602,11 @@ gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
 		return result;
 	}
 	if (state != GST_STATE_PLAYING) {
+		_tmp3_ = state != GST_STATE_PAUSED;
+	} else {
+		_tmp3_ = FALSE;
+	}
+	if (_tmp3_) {
 		_tmp2_ = self->priv->autostop_thread_running;
 	} else {
 		_tmp2_ = FALSE;
@@ -605,19 +614,19 @@ gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
 	if (_tmp2_) {
 		pipeline_PipelineAbortAutoStop (self);
 	}
-	_tmp3_ = pipeline_PipelineSetStateImpl (self, (GstState) state);
-	ret = _tmp3_;
+	_tmp4_ = pipeline_PipelineSetStateImpl (self, (GstState) state);
+	ret = _tmp4_;
 	if (self->priv->trigger_autostop) {
-		_tmp5_ = state == GST_STATE_PLAYING;
+		_tmp6_ = state == GST_STATE_PLAYING;
+	} else {
+		_tmp6_ = FALSE;
+	}
+	if (_tmp6_) {
+		_tmp5_ = ret;
 	} else {
 		_tmp5_ = FALSE;
 	}
 	if (_tmp5_) {
-		_tmp4_ = ret;
-	} else {
-		_tmp4_ = FALSE;
-	}
-	if (_tmp4_) {
 		self->priv->trigger_autostop = FALSE;
 		pipeline_StartAutoStop (self);
 	}
@@ -1902,8 +1911,7 @@ static void pipeline_finalize (GObject* obj) {
 	}
 	_gst_object_unref0 (self->priv->pipeline);
 	_g_free0 (self->priv->path);
-	_g_cond_free0 (self->priv->autostop_sleep_cond);
-	_g_mutex_free0 (self->priv->autostop_sleep_mutex);
+	_gst_clock_id_unref0 (self->priv->autostop_clkid);
 	_g_cond_free0 (self->priv->autostop_eos_cond);
 	_g_mutex_free0 (self->priv->autostop_eos_mutex);
 	G_OBJECT_CLASS (pipeline_parent_class)->finalize (obj);
