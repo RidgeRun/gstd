@@ -8,3 +8,4 @@ Makefile
 stamp-h1
 autom4te.cache
 com.ridgerun.gstreamer.gstd.service
+*~
