@@ -59,6 +59,12 @@ typedef struct _Factory Factory;
 typedef struct _FactoryClass FactoryClass;
 typedef struct _DBusObjectVTable _DBusObjectVTable;
 
+typedef enum  {
+	ERROR_GSTD_OPTION,
+	ERROR_GSTD_BUS,
+	ERROR_GSTD_SERVICE_OWNERSHIP
+} ErrorGstd;
+#define ERROR_GSTD error_gstd_quark ()
 struct _DBusObjectVTable {
 	void (*register_object) (DBusConnection*, const char*, void*);
 };
@@ -79,6 +85,7 @@ gint signalPollRate = 0;
 extern gboolean enableWatchdog;
 gboolean enableWatchdog = FALSE;
 
+GQuark error_gstd_quark (void);
 gint _vala_main (gchar** args, int args_length1);
 GType gstd_signals_get_type (void) G_GNUC_CONST;
 GType watchdog_get_type (void) G_GNUC_CONST;
@@ -95,6 +102,11 @@ Watchdog* watchdog_construct (GType object_type, guint timeoutInSec);
 
 const GOptionEntry options[5] = {{"system", '\0', 0, G_OPTION_ARG_NONE, &useSystemBus, "Use system bus", NULL}, {"session", '\0', 0, G_OPTION_ARG_NONE, &useSessionBus, "Use session bus", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &debugLevel, "Set debug level (0..3: error, warning, info, debug)", NULL}, {"signals", 's', 0, G_OPTION_ARG_INT, &signalPollRate, "Enable running thread to catch Posix signals and set poll rate in mill" \
 "iseconds (--signals=1000)", NULL}, {NULL}};
+
+GQuark error_gstd_quark (void) {
+	return g_quark_from_static_string ("error_gstd-quark");
+}
+
 
 static guint _dynamic_request_name0 (DBusGProxy* self, const gchar* param1, guint param2, GError** error) {
 	guint result;
@@ -131,22 +143,22 @@ gint _vala_main (gchar** args, int args_length1) {
 	Watchdog* wd;
 	GOptionContext* _tmp0_ = NULL;
 	GOptionContext* opt;
-	gboolean _tmp5_ = FALSE;
-	GMainLoop* _tmp6_ = NULL;
-	DBusBusType _tmp7_ = 0;
-	DBusGConnection* _tmp9_ = NULL;
-	DBusGConnection* _tmp10_;
-	DBusGProxy* _tmp11_ = NULL;
+	gboolean _tmp6_ = FALSE;
+	GMainLoop* _tmp8_ = NULL;
+	DBusBusType _tmp9_ = 0;
+	DBusGConnection* _tmp11_ = NULL;
+	DBusGConnection* _tmp12_;
+	DBusGProxy* _tmp13_ = NULL;
 	DBusGProxy* bus;
-	guint _tmp12_;
+	guint _tmp14_;
 	guint request_name_result;
-	Factory* _tmp13_ = NULL;
+	Factory* _tmp16_ = NULL;
 	Factory* factory;
 	GError * _inner_error_ = NULL;
 	signal_processor = NULL;
 	wd = NULL;
 	openlog ("gstd", LOG_PID, LOG_USER);
-	syslog (LOG_ERR, "started", NULL);
+	syslog (LOG_ERR, "Started", NULL);
 	_tmp0_ = g_option_context_new ("");
 	opt = _tmp0_;
 	g_option_context_add_main_entries (opt, options, NULL);
@@ -166,15 +178,13 @@ gint _vala_main (gchar** args, int args_length1) {
 	__catch1_g_option_error:
 	{
 		GError * e;
+		GError* _tmp1_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		syslog (LOG_ERR, "OptionError failure: %s", e->message, NULL);
-		result = 1;
+		_tmp1_ = g_error_new (ERROR_GSTD, ERROR_GSTD_OPTION, "OptionError failure: %s", e->message);
+		_inner_error_ = _tmp1_;
 		_g_error_free0 (e);
-		_g_option_context_free0 (opt);
-		_g_object_unref0 (wd);
-		_g_object_unref0 (signal_processor);
-		return result;
+		goto __finally1;
 	}
 	__finally1:
 	if (_inner_error_ != NULL) {
@@ -184,96 +194,94 @@ gint _vala_main (gchar** args, int args_length1) {
 	switch (debugLevel) {
 		case 0:
 		{
-			gint _tmp1_;
-			_tmp1_ = LOG_UPTO (LOG_ERR);
-			setlogmask (_tmp1_);
+			gint _tmp2_;
+			_tmp2_ = LOG_UPTO (LOG_ERR);
+			setlogmask (_tmp2_);
 			break;
 		}
 		case 1:
 		{
-			gint _tmp2_;
-			_tmp2_ = LOG_UPTO (LOG_WARNING);
-			setlogmask (_tmp2_);
+			gint _tmp3_;
+			_tmp3_ = LOG_UPTO (LOG_WARNING);
+			setlogmask (_tmp3_);
 			break;
 		}
 		case 2:
 		{
-			gint _tmp3_;
-			_tmp3_ = LOG_UPTO (LOG_INFO);
-			setlogmask (_tmp3_);
+			gint _tmp4_;
+			_tmp4_ = LOG_UPTO (LOG_INFO);
+			setlogmask (_tmp4_);
 			break;
 		}
 		default:
 		{
-			gint _tmp4_;
-			_tmp4_ = LOG_UPTO (LOG_DEBUG);
-			setlogmask (_tmp4_);
+			gint _tmp5_;
+			_tmp5_ = LOG_UPTO (LOG_DEBUG);
+			setlogmask (_tmp5_);
 			break;
 		}
 	}
-	syslog (LOG_DEBUG, "debug logging enabled", NULL);
+	syslog (LOG_DEBUG, "Debug logging enabled", NULL);
 	if (useSystemBus) {
-		_tmp5_ = useSessionBus;
+		_tmp6_ = useSessionBus;
 	} else {
-		_tmp5_ = FALSE;
+		_tmp6_ = FALSE;
 	}
-	if (_tmp5_) {
-		syslog (LOG_ERR, "you have to choose: system or session bus", NULL);
-		result = 1;
+	if (_tmp6_) {
+		GError* _tmp7_ = NULL;
+		_tmp7_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_BUS, "you have to choose: system or session bus");
+		_inner_error_ = _tmp7_;
 		_g_option_context_free0 (opt);
-		_g_object_unref0 (wd);
-		_g_object_unref0 (signal_processor);
-		return result;
+		goto __catch0_g_error;
 	}
 	gst_init (&args_length1, &args);
-	_tmp6_ = g_main_loop_new (NULL, FALSE);
+	_tmp8_ = g_main_loop_new (NULL, FALSE);
 	_g_main_loop_unref0 (loop);
-	loop = _tmp6_;
+	loop = _tmp8_;
 	if (useSystemBus) {
-		_tmp7_ = DBUS_BUS_SYSTEM;
+		_tmp9_ = DBUS_BUS_SYSTEM;
 	} else {
-		DBusBusType _tmp8_ = 0;
+		DBusBusType _tmp10_ = 0;
 		if (useSessionBus) {
-			_tmp8_ = DBUS_BUS_SESSION;
+			_tmp10_ = DBUS_BUS_SESSION;
 		} else {
-			_tmp8_ = DBUS_BUS_STARTER;
+			_tmp10_ = DBUS_BUS_STARTER;
 		}
-		_tmp7_ = _tmp8_;
+		_tmp9_ = _tmp10_;
 	}
-	_tmp9_ = dbus_g_bus_get (_tmp7_, &_inner_error_);
-	_tmp10_ = _tmp9_;
+	_tmp11_ = dbus_g_bus_get (_tmp9_, &_inner_error_);
+	_tmp12_ = _tmp11_;
 	if (_inner_error_ != NULL) {
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
 	_dbus_g_connection_unref0 (conn);
-	conn = _tmp10_;
-	_tmp11_ = dbus_g_proxy_new_for_name (conn, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-	bus = _tmp11_;
-	_tmp12_ = _dynamic_request_name0 (bus, "com.ridgerun.gstreamer.gstd", (guint) 0, &_inner_error_);
-	request_name_result = _tmp12_;
+	conn = _tmp12_;
+	_tmp13_ = dbus_g_proxy_new_for_name (conn, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
+	bus = _tmp13_;
+	_tmp14_ = _dynamic_request_name0 (bus, "com.ridgerun.gstreamer.gstd", (guint) 0, &_inner_error_);
+	request_name_result = _tmp14_;
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (bus);
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
 	if (request_name_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		syslog (LOG_ERR, "Failed to obtain primary ownership of " "the service. This usually means there is another instance of " "gstd already running", NULL);
-		result = 3;
+		GError* _tmp15_ = NULL;
+		_tmp15_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_SERVICE_OWNERSHIP, "Failed to obtain primary ownership of " "the service. This usually means there is another instance of " "gstd already running");
+		_inner_error_ = _tmp15_;
 		_g_object_unref0 (bus);
 		_g_option_context_free0 (opt);
-		_g_object_unref0 (wd);
-		_g_object_unref0 (signal_processor);
-		return result;
+		goto __catch0_g_error;
 	}
-	_tmp13_ = factory_new ();
-	factory = _tmp13_;
+	_tmp16_ = factory_new ();
+	factory = _tmp16_;
 	_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ridgerun/gstreamer/gstd/factory", (GObject*) factory);
 	if (signalPollRate > 0) {
-		GstdSignals* _tmp14_ = NULL;
-		GstdSignals* _tmp15_;
-		_tmp14_ = gstd_signals_new (loop, factory, (guint) signalPollRate, &_inner_error_);
-		_tmp15_ = _tmp14_;
+		GstdSignals* _tmp17_ = NULL;
+		GstdSignals* _tmp18_;
+		_tmp17_ = gstd_signals_new (loop, factory, (guint) signalPollRate, &_inner_error_);
+		_tmp18_ = _tmp17_;
 		if (_inner_error_ != NULL) {
 			_g_object_unref0 (factory);
 			_g_object_unref0 (bus);
@@ -281,22 +289,15 @@ gint _vala_main (gchar** args, int args_length1) {
 			goto __catch0_g_error;
 		}
 		_g_object_unref0 (signal_processor);
-		signal_processor = _tmp15_;
+		signal_processor = _tmp18_;
 	}
 	if (enableWatchdog) {
-		Watchdog* _tmp16_ = NULL;
-		_tmp16_ = watchdog_new ((guint) 1000);
+		Watchdog* _tmp19_ = NULL;
+		_tmp19_ = watchdog_new ((guint) 1000);
 		_g_object_unref0 (wd);
-		wd = _tmp16_;
+		wd = _tmp19_;
 	}
 	g_main_loop_run (loop);
-	result = 0;
-	_g_object_unref0 (factory);
-	_g_object_unref0 (bus);
-	_g_option_context_free0 (opt);
-	_g_object_unref0 (wd);
-	_g_object_unref0 (signal_processor);
-	return result;
 	_g_object_unref0 (factory);
 	_g_object_unref0 (bus);
 	_g_option_context_free0 (opt);
@@ -307,18 +308,21 @@ gint _vala_main (gchar** args, int args_length1) {
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		syslog (LOG_ERR, "Error: %s", e->message, NULL);
-		result = 2;
 		_g_error_free0 (e);
-		_g_object_unref0 (wd);
-		_g_object_unref0 (signal_processor);
-		return result;
 	}
 	__finally0:
+	if (_inner_error_ != NULL) {
+		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return 0;
+	}
+	syslog (LOG_ERR, "Ended", NULL);
+	result = 0;
 	_g_object_unref0 (wd);
 	_g_object_unref0 (signal_processor);
-	g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-	g_clear_error (&_inner_error_);
-	return 0;
+	return result;
 }
 
 

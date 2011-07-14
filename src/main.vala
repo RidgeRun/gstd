@@ -32,6 +32,13 @@ private const GLib.OptionEntry[] options = {
 	{null}
 };
 
+public errordomain ErrorGstd
+{
+	OPTION,
+	BUS,
+	SERVICE_OWNERSHIP,
+}
+
 public int main (string[] args)
 {
 	GstdSignals signal_processor = null;
@@ -39,7 +46,7 @@ public int main (string[] args)
 
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
-		Posix.syslog(Posix.LOG_ERR, "started");
+		Posix.syslog(Posix.LOG_ERR, "Started");
 
 		var opt = new GLib.OptionContext ("");
 		opt.add_main_entries (options, null);
@@ -49,8 +56,7 @@ public int main (string[] args)
 		}
 		catch (GLib.OptionError e)
 		{
-			Posix.syslog(Posix.LOG_ERR, "OptionError failure: %s", e.message);
-			return 1;
+			throw new ErrorGstd.OPTION("OptionError failure: %s", e.message);
 		}
 
 		switch (debugLevel) {
@@ -68,12 +74,11 @@ public int main (string[] args)
 				break;
 		}
 
-		Posix.syslog(Posix.LOG_DEBUG, "debug logging enabled");
+		Posix.syslog(Posix.LOG_DEBUG, "Debug logging enabled");
 
 		if (useSystemBus && useSessionBus)
 		{
-			Posix.syslog(Posix.LOG_ERR, "you have to choose: system or session bus");
-			return 1;
+			throw new ErrorGstd.BUS("you have to choose: system or session bus");
 		}
 
 		/* Initializing GStreamer */
@@ -98,10 +103,9 @@ public int main (string[] args)
 
 		if (request_name_result != DBus.RequestNameReply.PRIMARY_OWNER)
 		{
-			Posix.syslog (Posix.LOG_ERR, "Failed to obtain primary ownership of " +
+			throw new ErrorGstd.SERVICE_OWNERSHIP("Failed to obtain primary ownership of " +
 			              "the service. This usually means there is another instance of " +
 			              "gstd already running");
-			return 3;
 		}
 
 		/* Create our factory */
@@ -115,13 +119,13 @@ public int main (string[] args)
 		if (enableWatchdog)
 			wd = new Watchdog (1000);
 
-		   loop.run ();
-
-		return 0;
+		loop.run ();
 	}
 	catch (Error e)
 	{
 		Posix.syslog (Posix.LOG_ERR, "Error: %s", e.message);
-		return 2;
 	}
+
+	Posix.syslog(Posix.LOG_ERR, "Ended");
+	return 0;
 }
