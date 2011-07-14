@@ -37,7 +37,7 @@ bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in gst-client.c \
 	gst_client_vala.stamp gstd-factory.c gstd-pipeline.c \
-	gstd-watchdog.c gstd_vala.stamp main.c
+	gstd-signals.c gstd-watchdog.c gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -54,7 +54,8 @@ gst_client_DEPENDENCIES =
 gst_client_LINK = $(CCLD) $(gst_client_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
-	gstd-gstd-pipeline.$(OBJEXT) gstd-gstd-watchdog.$(OBJEXT)
+	gstd-gstd-pipeline.$(OBJEXT) gstd-gstd-watchdog.$(OBJEXT) \
+	gstd-gstd-signals.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
 gstd_DEPENDENCIES =
 gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -134,6 +135,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
+GSTD_SUPPORT_SIGNALS = @GSTD_SUPPORT_SIGNALS@
 GSTD_SUPPORT_WATCHDOG = @GSTD_SUPPORT_WATCHDOG@
 GSTREAMER_CFLAGS = @GSTREAMER_CFLAGS@
 GSTREAMER_INTERFACES_CFLAGS = @GSTREAMER_INTERFACES_CFLAGS@
@@ -217,10 +219,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala
+gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala gstd-signals.vala
 gstd_VALAFLAGS = --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
     --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1 \
-    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @GSTD_SUPPORT_WATCHDOG@
+    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @GSTD_SUPPORT_WATCHDOG@ @GSTD_SUPPORT_SIGNALS@
 
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS@
 gstd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
@@ -324,6 +326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gst_client-gst-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-factory.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-pipeline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-watchdog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
 
@@ -422,6 +425,22 @@ gstd-gstd-watchdog.obj: gstd-watchdog.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-watchdog.c' object='gstd-gstd-watchdog.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-watchdog.obj `if test -f 'gstd-watchdog.c'; then $(CYGPATH_W) 'gstd-watchdog.c'; else $(CYGPATH_W) '$(srcdir)/gstd-watchdog.c'; fi`
+
+gstd-gstd-signals.o: gstd-signals.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-signals.o -MD -MP -MF $(DEPDIR)/gstd-gstd-signals.Tpo -c -o gstd-gstd-signals.o `test -f 'gstd-signals.c' || echo '$(srcdir)/'`gstd-signals.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-signals.Tpo $(DEPDIR)/gstd-gstd-signals.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-signals.c' object='gstd-gstd-signals.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-signals.o `test -f 'gstd-signals.c' || echo '$(srcdir)/'`gstd-signals.c
+
+gstd-gstd-signals.obj: gstd-signals.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-signals.obj -MD -MP -MF $(DEPDIR)/gstd-gstd-signals.Tpo -c -o gstd-gstd-signals.obj `if test -f 'gstd-signals.c'; then $(CYGPATH_W) 'gstd-signals.c'; else $(CYGPATH_W) '$(srcdir)/gstd-signals.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-signals.Tpo $(DEPDIR)/gstd-gstd-signals.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-signals.c' object='gstd-gstd-signals.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-signals.obj `if test -f 'gstd-signals.c'; then $(CYGPATH_W) 'gstd-signals.c'; else $(CYGPATH_W) '$(srcdir)/gstd-signals.c'; fi`
 $(srcdir)/main.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
@@ -438,6 +457,11 @@ $(srcdir)/gstd-pipeline.c: $(srcdir)/gstd_vala.stamp
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
 	fi
 $(srcdir)/gstd-watchdog.c: $(srcdir)/gstd_vala.stamp
+	@if test -f $@; then :; else \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
+	fi
+$(srcdir)/gstd-signals.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
 	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
@@ -592,6 +616,7 @@ maintainer-clean-generic:
 	-rm -f gst_client_vala.stamp
 	-rm -f gstd-factory.c
 	-rm -f gstd-pipeline.c
+	-rm -f gstd-signals.c
 	-rm -f gstd-watchdog.c
 	-rm -f gstd_vala.stamp
 	-rm -f main.c

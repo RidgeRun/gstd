@@ -17,11 +17,15 @@ public DBus.Connection conn = null;
 private bool useSystemBus = false;
 private bool useSessionBus = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
+private int signalPollRate = 0;
 private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
+#if GSTD_SUPPORT_SIGNALS
+	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
+#endif
 #if GSTD_SUPPORT_WATCHDOG
 	{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
 #endif
@@ -30,6 +34,7 @@ private const GLib.OptionEntry[] options = {
 
 public int main (string[] args)
 {
+	GstdSignals signal_processor = null;
 	Watchdog wd = null;
 
 	try {
@@ -103,6 +108,9 @@ public int main (string[] args)
 		var factory = new Factory ();
 
 		conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
+
+		if (signalPollRate > 0) 
+			signal_processor = new GstdSignals (loop, factory, signalPollRate);
 
 		if (enableWatchdog)
 			wd = new Watchdog (1000);

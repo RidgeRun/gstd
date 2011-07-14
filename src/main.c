@@ -23,6 +23,16 @@
 #include <dbus/dbus.h>
 
 
+#define TYPE_GSTD_SIGNALS (gstd_signals_get_type ())
+#define GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_GSTD_SIGNALS, GstdSignals))
+#define GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_GSTD_SIGNALS, GstdSignalsClass))
+#define IS_GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_GSTD_SIGNALS))
+#define IS_GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_GSTD_SIGNALS))
+#define GSTD_SIGNALS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_GSTD_SIGNALS, GstdSignalsClass))
+
+typedef struct _GstdSignals GstdSignals;
+typedef struct _GstdSignalsClass GstdSignalsClass;
+
 #define TYPE_WATCHDOG (watchdog_get_type ())
 #define WATCHDOG(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_WATCHDOG, Watchdog))
 #define WATCHDOG_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_WATCHDOG, WatchdogClass))
@@ -64,10 +74,13 @@ extern gboolean useSessionBus;
 gboolean useSessionBus = FALSE;
 extern gint debugLevel;
 gint debugLevel = 0;
+extern gint signalPollRate;
+gint signalPollRate = 0;
 extern gboolean enableWatchdog;
 gboolean enableWatchdog = FALSE;
 
 gint _vala_main (gchar** args, int args_length1);
+GType gstd_signals_get_type (void) G_GNUC_CONST;
 GType watchdog_get_type (void) G_GNUC_CONST;
 static guint _dynamic_request_name0 (DBusGProxy* self, const gchar* param1, guint param2, GError** error);
 Factory* factory_new (void);
@@ -75,10 +88,13 @@ Factory* factory_construct (GType object_type);
 GType factory_get_type (void) G_GNUC_CONST;
 static void _vala_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
+GstdSignals* gstd_signals_new (GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
+GstdSignals* gstd_signals_construct (GType object_type, GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
 Watchdog* watchdog_new (guint timeoutInSec);
 Watchdog* watchdog_construct (GType object_type, guint timeoutInSec);
 
-const GOptionEntry options[4] = {{"system", '\0', 0, G_OPTION_ARG_NONE, &useSystemBus, "Use system bus", NULL}, {"session", '\0', 0, G_OPTION_ARG_NONE, &useSessionBus, "Use session bus", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &debugLevel, "Set debug level (0..3: error, warning, info, debug)", NULL}, {NULL}};
+const GOptionEntry options[5] = {{"system", '\0', 0, G_OPTION_ARG_NONE, &useSystemBus, "Use system bus", NULL}, {"session", '\0', 0, G_OPTION_ARG_NONE, &useSessionBus, "Use session bus", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &debugLevel, "Set debug level (0..3: error, warning, info, debug)", NULL}, {"signals", 's', 0, G_OPTION_ARG_INT, &signalPollRate, "Enable running thread to catch Posix signals and set poll rate in mill" \
+"iseconds (--signals=1000)", NULL}, {NULL}};
 
 static guint _dynamic_request_name0 (DBusGProxy* self, const gchar* param1, guint param2, GError** error) {
 	guint result;
@@ -111,6 +127,7 @@ static void _vala_dbus_unregister_object (gpointer connection, GObject* object) 
 
 gint _vala_main (gchar** args, int args_length1) {
 	gint result = 0;
+	GstdSignals* signal_processor;
 	Watchdog* wd;
 	GOptionContext* _tmp0_ = NULL;
 	GOptionContext* opt;
@@ -126,6 +143,7 @@ gint _vala_main (gchar** args, int args_length1) {
 	Factory* _tmp13_ = NULL;
 	Factory* factory;
 	GError * _inner_error_ = NULL;
+	signal_processor = NULL;
 	wd = NULL;
 	openlog ("gstd", LOG_PID, LOG_USER);
 	syslog (LOG_ERR, "started", NULL);
@@ -139,6 +157,7 @@ gint _vala_main (gchar** args, int args_length1) {
 		}
 		_g_option_context_free0 (opt);
 		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
 		g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return 0;
@@ -154,6 +173,7 @@ gint _vala_main (gchar** args, int args_length1) {
 		_g_error_free0 (e);
 		_g_option_context_free0 (opt);
 		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
 		return result;
 	}
 	__finally1:
@@ -202,6 +222,7 @@ gint _vala_main (gchar** args, int args_length1) {
 		result = 1;
 		_g_option_context_free0 (opt);
 		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
 		return result;
 	}
 	gst_init (&args_length1, &args);
@@ -242,16 +263,31 @@ gint _vala_main (gchar** args, int args_length1) {
 		_g_object_unref0 (bus);
 		_g_option_context_free0 (opt);
 		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
 		return result;
 	}
 	_tmp13_ = factory_new ();
 	factory = _tmp13_;
 	_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ridgerun/gstreamer/gstd/factory", (GObject*) factory);
+	if (signalPollRate > 0) {
+		GstdSignals* _tmp14_ = NULL;
+		GstdSignals* _tmp15_;
+		_tmp14_ = gstd_signals_new (loop, factory, (guint) signalPollRate, &_inner_error_);
+		_tmp15_ = _tmp14_;
+		if (_inner_error_ != NULL) {
+			_g_object_unref0 (factory);
+			_g_object_unref0 (bus);
+			_g_option_context_free0 (opt);
+			goto __catch0_g_error;
+		}
+		_g_object_unref0 (signal_processor);
+		signal_processor = _tmp15_;
+	}
 	if (enableWatchdog) {
-		Watchdog* _tmp14_ = NULL;
-		_tmp14_ = watchdog_new ((guint) 1000);
+		Watchdog* _tmp16_ = NULL;
+		_tmp16_ = watchdog_new ((guint) 1000);
 		_g_object_unref0 (wd);
-		wd = _tmp14_;
+		wd = _tmp16_;
 	}
 	g_main_loop_run (loop);
 	result = 0;
@@ -259,6 +295,7 @@ gint _vala_main (gchar** args, int args_length1) {
 	_g_object_unref0 (bus);
 	_g_option_context_free0 (opt);
 	_g_object_unref0 (wd);
+	_g_object_unref0 (signal_processor);
 	return result;
 	_g_object_unref0 (factory);
 	_g_object_unref0 (bus);
@@ -273,10 +310,12 @@ gint _vala_main (gchar** args, int args_length1) {
 		result = 2;
 		_g_error_free0 (e);
 		_g_object_unref0 (wd);
+		_g_object_unref0 (signal_processor);
 		return result;
 	}
 	__finally0:
 	_g_object_unref0 (wd);
+	_g_object_unref0 (signal_processor);
 	g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 	g_clear_error (&_inner_error_);
 	return 0;

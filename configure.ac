@@ -120,4 +120,14 @@ dnl GSTD_SUPPORT_SIGNALS="-D GSTD_SUPPORT_WATCHDOG"
 ])
 AC_SUBST(GSTD_SUPPORT_WATCHDOG)
 
+dnl Build with extra thread for signal handling
+AC_ARG_ENABLE([signals],
+    AS_HELP_STRING([--enable-signals], [enable Posix signal handling]))
+
+AS_IF([test "x$enable_signals" = "xyes"], [
+AC_MSG_NOTICE([Enabling extra thread for Posix signal handling])
+ GSTD_SUPPORT_SIGNALS="-D GSTD_SUPPORT_SIGNALS"
+])
+AC_SUBST(GSTD_SUPPORT_SIGNALS)
+
 AC_OUTPUT
