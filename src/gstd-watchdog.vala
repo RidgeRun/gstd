@@ -1,8 +1,33 @@
-/*using GLib;
+/*
+ * gstd/src/gstd-watchdog.vala
+ *
+ * Watchdog monitor for GStreamer daemon
+ *
+ * Monitor the glib mainloop with simple periodic timer to ensure that gstd
+ * is able to react on DBUS requests.  Not that this does not ensure that a
+ * GStreamer pipe may have gotten stuck. To handle a stuck pipeline, a
+ * watchdog thread monitors all GStreamer threads by pushing 
+ * GST_EVENT_SINK_MESSAGE events into each running pipe (all source elements)
+ * and verifies the event arrives at each sink elements after a defined timeout.
+ * GST_EVENT_SINK_MESSAGE is an event that each pipeline sink turns into a
+ * message. GST_EVENT_SINK_MESSAGE is used to send messages that should be
+ * emitted in sync with rendering. GST_EVENT_SINK_MESSAGE has been in GStreamer
+ * since: 0.10.26.  However, at the time of this writing GstBaseTransform
+ * doesn't implement forwarding GST_EVENT_SINK_MESSAGE events, which caused
+ * this watchdog implementation to bark always.
+ *
+ * Copyright (c) 2011, RidgeRun
+ * All rights reserved.
+ *
+ * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
+ */
+
+using GLib;
 
    public class Watchdog :
     Object
    {
+#if GSTD_SUPPORT_WATCHDOG
    private unowned Thread _thread;
    private int _counterMax;
    private int _counterMin;
@@ -35,6 +60,9 @@
       return null;
     }, true);
     _thread.set_priority (ThreadPriority.URGENT);
+
+    factory.Alive.connect(() => {wd.Ping();});
+
    }
 
    ~Watchdog() {
@@ -66,4 +94,11 @@
     Posix.sleep(1);
     Posix.kill (Posix.getpid(), Posix.SIGKILL); //TODO abort(); ?
    }
-   }*/
+#else
+	public Watchdog (uint timeoutInSec) {
+	}
+
+  ~Watchdog() {	
+  }
+#endif
+}

@@ -5,7 +5,7 @@ bin_PROGRAMS = gstd gst-client
 gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala
 gstd_VALAFLAGS = --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
     --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1 \
-    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@
+    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @GSTD_SUPPORT_WATCHDOG@
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS@
 gstd_LDADD = @GSTREAMER_LIBS@ @GSTREAMER_INTERFACES_LIBS@ @DBUS_GLIB_LIBS@
 

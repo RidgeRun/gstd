@@ -17,17 +17,21 @@ public DBus.Connection conn = null;
 private bool useSystemBus = false;
 private bool useSessionBus = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
-//private bool enableWatchdog = false;
+private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
-	//{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
+#if GSTD_SUPPORT_WATCHDOG
+	{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
+#endif
 	{null}
 };
 
 public int main (string[] args)
 {
+	Watchdog wd = null;
+
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
 		Posix.syslog(Posix.LOG_ERR, "started");
@@ -100,16 +104,10 @@ public int main (string[] args)
 
 		conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
-		//monitor main loop with watchdog ?
-		/*if (enableWatchdog) {
-		   Watchdog wd = new Watchdog(1000);
-		   factory.Alive.connect(() => {wd.Ping();});
+		if (enableWatchdog)
+			wd = new Watchdog (1000);
 
 		   loop.run ();
-		   }
-		   else {*/
-		loop.run ();
-		//}
 
 		return 0;
 	}

@@ -110,4 +110,14 @@ AC_ARG_WITH(vapidir,
   ]
 )
 
+dnl Build with extra thread for watchdog
+AC_ARG_ENABLE([watchdog],
+    AS_HELP_STRING([--enable-watchdog], [enable watchdog]))
+
+AS_IF([test "x$enable_watchdog" = "xyes"], [
+AC_MSG_NOTICE([Not enabling extra thread for watchdog -- not fully implemented])
+dnl GSTD_SUPPORT_SIGNALS="-D GSTD_SUPPORT_WATCHDOG"
+])
+AC_SUBST(GSTD_SUPPORT_WATCHDOG)
+
 AC_OUTPUT
