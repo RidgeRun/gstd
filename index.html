@@ -1,0 +1,47 @@
+---
+layout: default
+title: GStreamer Daemon
+source: https://github.com/RidgeRun/gstd
+---
+
+<div id="blog">
+  <h1>Blog</h1>
+  {% for post in site.posts limit:3 %}
+  <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+  {{ post.content }}
+  <em>Posted on {{ post.date | date_to_long_string }}.</em>
+  {% endfor %}
+
+</div>
+
+<div id="sidebar">
+  <h1> Description </h1>
+  <p> GStreamer Daemon, also called gstd, is a GStreamer framework fore controlling
+  audio and video streaming using D-Bus messages. Qt applications, web interfaces,
+  and GStreamer element test suites show different ways the framework can be
+  utilized.</p>
+  <p>
+  GStreamer Daemon is gst-launch on steroids where you can create
+  a GStreamer pipeline, play, pause, change speed, skip around, and even change
+  element parameter settings all while the pipeline is active.
+  </p>
+
+  <h1>Documentation</h1>
+  <p>All the documentation is keep at the <a href="{{ page.source }}/wiki">wiki</a>.
+  </p>
+
+  <h1>Maintainers</h1>
+  <ul>
+   <li><a href="https://github.com/fischer">fischer</a>
+   <li><a href="https://github.com/ddompe">ddompe</a>
+  </ul>
+
+  <h1>Older posts</h1>
+  <ul>
+   {% for post in site.posts offset:3 %}
+    <li><span class="date">{{ post.date | date: "%b %d, %Y" }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+
+
+</div>

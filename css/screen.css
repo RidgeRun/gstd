@@ -1,0 +1,9 @@
+#blog {
+ float:left;
+ width:500px;
+}
+
+#sidebar {
+ float:right;
+ width:250px;
+}
