@@ -25,14 +25,8 @@ public class GstdSignals : Object {
 	private	sigset_t _sigset;    // fixme: should be local to constructor - throws error: use of possibly unassigned local variable
 	private	sigset_t old_sigset; // fixme: should be local to constructor
 
-	public GstdSignals (MainLoop loop, Factory factory, uint pollrate_ms) throws ThreadError {
+	public GstdSignals () throws ThreadError {
 		int err;
-		_loop = loop;
-		_factory = factory;
-
-		Posix.syslog (Posix.LOG_DEBUG, "Monitoring signals\n");
-		Timeout.add (pollrate_ms, check_interrupt);
-		GLib.assert (Thread.supported ());
 
 		sigfillset (_sigset);
 		err = sigprocmask (SIG_BLOCK, _sigset, old_sigset);
@@ -48,9 +42,22 @@ public class GstdSignals : Object {
 		     _thread.exit (null);
 	}
 
+	public void monitor(MainLoop loop, Factory factory, uint pollrate_ms) {
+		_loop = loop;
+		_factory = factory;
+
+		Posix.syslog (Posix.LOG_DEBUG, "Monitoring signals\n");
+		Timeout.add (pollrate_ms, check_interrupt);
+		GLib.assert (Thread.supported ());
+}
+
 	private bool check_interrupt () {
    		if (_caught_intr < 0)
       			return true;
+
+		if ((_loop == null) || (_factory == null)) {
+			Posix.syslog (Posix.LOG_DEBUG, "Delaying signal processing until gstd finishes initialization\n");
+		}
 
 		switch (_caught_intr) {
 			case SIGTERM:

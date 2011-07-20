@@ -20,8 +20,8 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <sys/select.h>
-#include <syslog.h>
 #include <signal.h>
+#include <syslog.h>
 
 
 #define TYPE_GSTD_SIGNALS (gstd_signals_get_type ())
@@ -74,14 +74,60 @@ GType factory_get_type (void) G_GNUC_CONST;
 enum  {
 	GSTD_SIGNALS_DUMMY_PROPERTY
 };
-GstdSignals* gstd_signals_new (GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
-GstdSignals* gstd_signals_construct (GType object_type, GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
-static gboolean gstd_signals_check_interrupt (GstdSignals* self);
-static gboolean _gstd_signals_check_interrupt_gsource_func (gpointer self);
+GstdSignals* gstd_signals_new (GError** error);
+GstdSignals* gstd_signals_construct (GType object_type, GError** error);
 static void* gstd_signals_sig_thread (GstdSignals* self);
 static gpointer _gstd_signals_sig_thread_gthread_func (gpointer self);
+void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms);
+static gboolean gstd_signals_check_interrupt (GstdSignals* self);
+static gboolean _gstd_signals_check_interrupt_gsource_func (gpointer self);
 gboolean factory_DestroyAll (Factory* self);
 static void gstd_signals_finalize (GObject* obj);
+
+
+static gpointer _gstd_signals_sig_thread_gthread_func (gpointer self) {
+	gpointer result;
+	result = gstd_signals_sig_thread (self);
+	return result;
+}
+
+
+GstdSignals* gstd_signals_construct (GType object_type, GError** error) {
+	GstdSignals * self = NULL;
+	gint err = 0;
+	gint _tmp0_;
+	GThread* _tmp1_ = NULL;
+	GThread* _tmp2_;
+	GError * _inner_error_ = NULL;
+	self = (GstdSignals*) g_object_new (object_type, NULL);
+	sigfillset (&self->priv->_sigset);
+	_tmp0_ = sigprocmask (SIG_BLOCK, &self->priv->_sigset, &self->priv->old_sigset);
+	err = _tmp0_;
+	if (err != 0) {
+		syslog (LOG_ERR, "sigprocmask returned an error\n", NULL);
+	}
+	_tmp1_ = g_thread_create (_gstd_signals_sig_thread_gthread_func, self, TRUE, &_inner_error_);
+	_tmp2_ = _tmp1_;
+	if (_inner_error_ != NULL) {
+		if (_inner_error_->domain == G_THREAD_ERROR) {
+			g_propagate_error (error, _inner_error_);
+			_g_object_unref0 (self);
+			return NULL;
+		} else {
+			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return NULL;
+		}
+	}
+	self->priv->_thread = _tmp2_;
+	g_thread_set_priority (self->priv->_thread, G_THREAD_PRIORITY_URGENT);
+	return self;
+}
+
+
+GstdSignals* gstd_signals_new (GError** error) {
+	return gstd_signals_construct (TYPE_GSTD_SIGNALS, error);
+}
 
 
 static gpointer _g_main_loop_ref0 (gpointer self) {
@@ -101,26 +147,13 @@ static gboolean _gstd_signals_check_interrupt_gsource_func (gpointer self) {
 }
 
 
-static gpointer _gstd_signals_sig_thread_gthread_func (gpointer self) {
-	gpointer result;
-	result = gstd_signals_sig_thread (self);
-	return result;
-}
-
-
-GstdSignals* gstd_signals_construct (GType object_type, GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error) {
-	GstdSignals * self = NULL;
-	gint err = 0;
+void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms) {
 	GMainLoop* _tmp0_;
 	Factory* _tmp1_;
 	gboolean _tmp2_;
-	gint _tmp3_;
-	GThread* _tmp4_ = NULL;
-	GThread* _tmp5_;
-	GError * _inner_error_ = NULL;
-	g_return_val_if_fail (loop != NULL, NULL);
-	g_return_val_if_fail (factory != NULL, NULL);
-	self = (GstdSignals*) g_object_new (object_type, NULL);
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (loop != NULL);
+	g_return_if_fail (factory != NULL);
 	_tmp0_ = _g_main_loop_ref0 (loop);
 	_g_main_loop_unref0 (self->priv->_loop);
 	self->priv->_loop = _tmp0_;
@@ -131,42 +164,24 @@ GstdSignals* gstd_signals_construct (GType object_type, GMainLoop* loop, Factory
 	g_timeout_add_full (G_PRIORITY_DEFAULT, pollrate_ms, _gstd_signals_check_interrupt_gsource_func, g_object_ref (self), g_object_unref);
 	_tmp2_ = g_thread_supported ();
 	g_assert (_tmp2_);
-	sigfillset (&self->priv->_sigset);
-	_tmp3_ = sigprocmask (SIG_BLOCK, &self->priv->_sigset, &self->priv->old_sigset);
-	err = _tmp3_;
-	if (err != 0) {
-		syslog (LOG_ERR, "sigprocmask returned an error\n", NULL);
-	}
-	_tmp4_ = g_thread_create (_gstd_signals_sig_thread_gthread_func, self, TRUE, &_inner_error_);
-	_tmp5_ = _tmp4_;
-	if (_inner_error_ != NULL) {
-		if (_inner_error_->domain == G_THREAD_ERROR) {
-			g_propagate_error (error, _inner_error_);
-			_g_object_unref0 (self);
-			return NULL;
-		} else {
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return NULL;
-		}
-	}
-	self->priv->_thread = _tmp5_;
-	g_thread_set_priority (self->priv->_thread, G_THREAD_PRIORITY_URGENT);
-	return self;
-}
-
-
-GstdSignals* gstd_signals_new (GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error) {
-	return gstd_signals_construct (TYPE_GSTD_SIGNALS, loop, factory, pollrate_ms, error);
 }
 
 
 static gboolean gstd_signals_check_interrupt (GstdSignals* self) {
 	gboolean result = FALSE;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	if (self->priv->_caught_intr < 0) {
 		result = TRUE;
 		return result;
+	}
+	if (self->priv->_loop == NULL) {
+		_tmp0_ = TRUE;
+	} else {
+		_tmp0_ = self->priv->_factory == NULL;
+	}
+	if (_tmp0_) {
+		syslog (LOG_DEBUG, "Delaying signal processing until gstd finishes initialization\n", NULL);
 	}
 	switch (self->priv->_caught_intr) {
 		case SIGTERM:

@@ -89,14 +89,15 @@ GQuark error_gstd_quark (void);
 gint _vala_main (gchar** args, int args_length1);
 GType gstd_signals_get_type (void) G_GNUC_CONST;
 GType watchdog_get_type (void) G_GNUC_CONST;
+GstdSignals* gstd_signals_new (GError** error);
+GstdSignals* gstd_signals_construct (GType object_type, GError** error);
 static guint _dynamic_request_name0 (DBusGProxy* self, const gchar* param1, guint param2, GError** error);
 Factory* factory_new (void);
 Factory* factory_construct (GType object_type);
 GType factory_get_type (void) G_GNUC_CONST;
 static void _vala_dbus_register_object (DBusConnection* connection, const char* path, void* object);
 static void _vala_dbus_unregister_object (gpointer connection, GObject* object);
-GstdSignals* gstd_signals_new (GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
-GstdSignals* gstd_signals_construct (GType object_type, GMainLoop* loop, Factory* factory, guint pollrate_ms, GError** error);
+void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms);
 Watchdog* watchdog_new (guint timeoutInSec);
 Watchdog* watchdog_construct (GType object_type, guint timeoutInSec);
 
@@ -143,16 +144,16 @@ gint _vala_main (gchar** args, int args_length1) {
 	Watchdog* wd;
 	GOptionContext* _tmp0_ = NULL;
 	GOptionContext* opt;
-	gboolean _tmp6_ = FALSE;
-	GMainLoop* _tmp8_ = NULL;
-	DBusBusType _tmp9_ = 0;
-	DBusGConnection* _tmp11_ = NULL;
-	DBusGConnection* _tmp12_;
-	DBusGProxy* _tmp13_ = NULL;
+	gboolean _tmp8_ = FALSE;
+	GMainLoop* _tmp10_ = NULL;
+	DBusBusType _tmp11_ = 0;
+	DBusGConnection* _tmp13_ = NULL;
+	DBusGConnection* _tmp14_;
+	DBusGProxy* _tmp15_ = NULL;
 	DBusGProxy* bus;
-	guint _tmp14_;
+	guint _tmp16_;
 	guint request_name_result;
-	Factory* _tmp16_ = NULL;
+	Factory* _tmp18_ = NULL;
 	Factory* factory;
 	GError * _inner_error_ = NULL;
 	signal_processor = NULL;
@@ -222,74 +223,75 @@ gint _vala_main (gchar** args, int args_length1) {
 		}
 	}
 	syslog (LOG_DEBUG, "Debug logging enabled", NULL);
-	if (useSystemBus) {
-		_tmp6_ = useSessionBus;
-	} else {
-		_tmp6_ = FALSE;
+	if (signalPollRate > 0) {
+		GstdSignals* _tmp6_ = NULL;
+		GstdSignals* _tmp7_;
+		_tmp6_ = gstd_signals_new (&_inner_error_);
+		_tmp7_ = _tmp6_;
+		if (_inner_error_ != NULL) {
+			_g_option_context_free0 (opt);
+			goto __catch0_g_error;
+		}
+		_g_object_unref0 (signal_processor);
+		signal_processor = _tmp7_;
 	}
-	if (_tmp6_) {
-		GError* _tmp7_ = NULL;
-		_tmp7_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_BUS, "you have to choose: system or session bus");
-		_inner_error_ = _tmp7_;
+	if (useSystemBus) {
+		_tmp8_ = useSessionBus;
+	} else {
+		_tmp8_ = FALSE;
+	}
+	if (_tmp8_) {
+		GError* _tmp9_ = NULL;
+		_tmp9_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_BUS, "you have to choose: system or session bus");
+		_inner_error_ = _tmp9_;
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
 	gst_init (&args_length1, &args);
-	_tmp8_ = g_main_loop_new (NULL, FALSE);
+	_tmp10_ = g_main_loop_new (NULL, FALSE);
 	_g_main_loop_unref0 (loop);
-	loop = _tmp8_;
+	loop = _tmp10_;
 	if (useSystemBus) {
-		_tmp9_ = DBUS_BUS_SYSTEM;
+		_tmp11_ = DBUS_BUS_SYSTEM;
 	} else {
-		DBusBusType _tmp10_ = 0;
+		DBusBusType _tmp12_ = 0;
 		if (useSessionBus) {
-			_tmp10_ = DBUS_BUS_SESSION;
+			_tmp12_ = DBUS_BUS_SESSION;
 		} else {
-			_tmp10_ = DBUS_BUS_STARTER;
+			_tmp12_ = DBUS_BUS_STARTER;
 		}
-		_tmp9_ = _tmp10_;
+		_tmp11_ = _tmp12_;
 	}
-	_tmp11_ = dbus_g_bus_get (_tmp9_, &_inner_error_);
-	_tmp12_ = _tmp11_;
+	_tmp13_ = dbus_g_bus_get (_tmp11_, &_inner_error_);
+	_tmp14_ = _tmp13_;
 	if (_inner_error_ != NULL) {
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
 	_dbus_g_connection_unref0 (conn);
-	conn = _tmp12_;
-	_tmp13_ = dbus_g_proxy_new_for_name (conn, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-	bus = _tmp13_;
-	_tmp14_ = _dynamic_request_name0 (bus, "com.ridgerun.gstreamer.gstd", (guint) 0, &_inner_error_);
-	request_name_result = _tmp14_;
+	conn = _tmp14_;
+	_tmp15_ = dbus_g_proxy_new_for_name (conn, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
+	bus = _tmp15_;
+	_tmp16_ = _dynamic_request_name0 (bus, "com.ridgerun.gstreamer.gstd", (guint) 0, &_inner_error_);
+	request_name_result = _tmp16_;
 	if (_inner_error_ != NULL) {
 		_g_object_unref0 (bus);
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
 	if (request_name_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		GError* _tmp15_ = NULL;
-		_tmp15_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_SERVICE_OWNERSHIP, "Failed to obtain primary ownership of " "the service. This usually means there is another instance of " "gstd already running");
-		_inner_error_ = _tmp15_;
+		GError* _tmp17_ = NULL;
+		_tmp17_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_SERVICE_OWNERSHIP, "Failed to obtain primary ownership of " "the service. This usually means there is another instance of " "gstd already running");
+		_inner_error_ = _tmp17_;
 		_g_object_unref0 (bus);
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
-	_tmp16_ = factory_new ();
-	factory = _tmp16_;
+	_tmp18_ = factory_new ();
+	factory = _tmp18_;
 	_vala_dbus_register_object (dbus_g_connection_get_connection (conn), "/com/ridgerun/gstreamer/gstd/factory", (GObject*) factory);
-	if (signalPollRate > 0) {
-		GstdSignals* _tmp17_ = NULL;
-		GstdSignals* _tmp18_;
-		_tmp17_ = gstd_signals_new (loop, factory, (guint) signalPollRate, &_inner_error_);
-		_tmp18_ = _tmp17_;
-		if (_inner_error_ != NULL) {
-			_g_object_unref0 (factory);
-			_g_object_unref0 (bus);
-			_g_option_context_free0 (opt);
-			goto __catch0_g_error;
-		}
-		_g_object_unref0 (signal_processor);
-		signal_processor = _tmp18_;
+	if (signal_processor != NULL) {
+		gstd_signals_monitor (signal_processor, loop, factory, (guint) signalPollRate);
 	}
 	if (enableWatchdog) {
 		Watchdog* _tmp19_ = NULL;

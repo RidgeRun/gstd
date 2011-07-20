@@ -76,6 +76,9 @@ public int main (string[] args)
 
 		Posix.syslog(Posix.LOG_DEBUG, "Debug logging enabled");
 
+		if (signalPollRate > 0) 
+			signal_processor = new GstdSignals ();
+
 		if (useSystemBus && useSessionBus)
 		{
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
@@ -113,8 +116,8 @@ public int main (string[] args)
 
 		conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
 
-		if (signalPollRate > 0) 
-			signal_processor = new GstdSignals (loop, factory, signalPollRate);
+		if (signal_processor != null) 
+			signal_processor.monitor (loop, factory, signalPollRate);
 
 		if (enableWatchdog)
 			wd = new Watchdog (1000);
