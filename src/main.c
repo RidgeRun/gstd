@@ -247,6 +247,7 @@ gint _vala_main (gchar** args, int args_length1) {
 		_g_option_context_free0 (opt);
 		goto __catch0_g_error;
 	}
+	dbus_g_thread_init ();
 	gst_init (&args_length1, &args);
 	_tmp10_ = g_main_loop_new (NULL, FALSE);
 	_g_main_loop_unref0 (loop);
@@ -329,6 +330,7 @@ gint _vala_main (gchar** args, int args_length1) {
 
 
 int main (int argc, char ** argv) {
+	g_thread_init (NULL);
 	g_type_init ();
 	return _vala_main (argv, argc);
 }

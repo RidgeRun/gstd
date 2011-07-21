@@ -84,6 +84,8 @@ public int main (string[] args)
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
 		}
 
+		DBus.thread_init ();
+
 		/* Initializing GStreamer */
 		Gst.init (ref args);
 
