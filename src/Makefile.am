@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 bin_PROGRAMS = gstd gst-client
 
 gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-watchdog.vala gstd-signals.vala
-gstd_VALAFLAGS = --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
+gstd_VALAFLAGS = --thread --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
     --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg dbus-glib-1 \
     @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @GSTD_SUPPORT_WATCHDOG@ @GSTD_SUPPORT_SIGNALS@
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @DBUS_GLIB_CFLAGS@
