@@ -36,10 +36,12 @@ public class GstdSignals : Object {
 
 		_thread = Thread.create<void*> (sig_thread, true);
 		_thread.set_priority (ThreadPriority.URGENT);
+		Posix.syslog (Posix.LOG_DEBUG, "Created signal monitor thread\n");
     	}
 
 	~GstdSignals () {
-		     _thread.exit (null);
+		Posix.syslog (Posix.LOG_DEBUG, "Destroying signal monitor thread\n");
+		_thread = null;
 	}
 
 	public void monitor(MainLoop loop, Factory factory, uint pollrate_ms) {
@@ -83,6 +85,8 @@ public class GstdSignals : Object {
 		do {
 			err = sigwait (_sigset, out sig);
 
+			Posix.syslog (Posix.LOG_DEBUG, "Signal monitor thread returned from sigwait()\n");
+
 			if (err != 0) {
 				Posix.syslog (Posix.LOG_ERR, "sigwait returned an error\n");
 				continue;
@@ -93,8 +97,11 @@ public class GstdSignals : Object {
 	}
 
 #else
-	public GstdSignals (MainLoop loop, Factory factory, uint pollrate_ms) {
+	public GstdSignals () {
     	}
+
+	public void monitor(MainLoop loop, Factory factory, uint pollrate_ms) {
+	}
 
 	~GstdSignals () {
    	}

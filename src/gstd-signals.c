@@ -20,8 +20,8 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <sys/select.h>
-#include <signal.h>
 #include <syslog.h>
+#include <signal.h>
 
 
 #define TYPE_GSTD_SIGNALS (gstd_signals_get_type ())
@@ -121,6 +121,7 @@ GstdSignals* gstd_signals_construct (GType object_type, GError** error) {
 	}
 	self->priv->_thread = _tmp2_;
 	g_thread_set_priority (self->priv->_thread, G_THREAD_PRIORITY_URGENT);
+	syslog (LOG_DEBUG, "Created signal monitor thread\n", NULL);
 	return self;
 }
 
@@ -215,6 +216,7 @@ static void* gstd_signals_sig_thread (GstdSignals* self) {
 		_tmp1_ = sigwait (&self->priv->_sigset, &_tmp0_);
 		sig = _tmp0_;
 		err = _tmp1_;
+		syslog (LOG_DEBUG, "Signal monitor thread returned from sigwait()\n", NULL);
 		if (err != 0) {
 			syslog (LOG_ERR, "sigwait returned an error\n", NULL);
 			continue;
@@ -243,7 +245,8 @@ static void gstd_signals_instance_init (GstdSignals * self) {
 static void gstd_signals_finalize (GObject* obj) {
 	GstdSignals * self;
 	self = GSTD_SIGNALS (obj);
-	g_thread_exit (NULL);
+	syslog (LOG_DEBUG, "Destroying signal monitor thread\n", NULL);
+	self->priv->_thread = NULL;
 	_g_object_unref0 (self->priv->_factory);
 	_g_main_loop_unref0 (self->priv->_loop);
 	G_OBJECT_CLASS (gstd_signals_parent_class)->finalize (obj);
