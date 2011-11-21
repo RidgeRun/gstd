@@ -621,7 +621,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 GSTD_SUPPORT_SIGNALS
-GSTD_SUPPORT_WATCHDOG
 VAPIDIR
 DBUS_GLIB_LIBS
 DBUS_GLIB_CFLAGS
@@ -727,7 +726,6 @@ enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
 with_vapidir
-enable_watchdog
 enable_signals
 '
       ac_precious_vars='build_alias
@@ -1369,7 +1367,6 @@ Optional Features:
   --disable-silent-rules         verbose build output (undo: `make V=0')
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
-  --enable-watchdog       enable watchdog
   --enable-signals        enable Posix signal handling
 
 Optional Packages:
@@ -4125,20 +4122,6 @@ $as_echo "$as_me: Setting the vapidir \"$withval\"" >&6;}
    VAPIDIR=$withval
 
 
-
-fi
-
-
-# Check whether --enable-watchdog was given.
-if test "${enable_watchdog+set}" = set; then :
-  enableval=$enable_watchdog;
-fi
-
-
-if test "x$enable_watchdog" = "xyes"; then :
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Not enabling extra thread for watchdog -- not fully implemented" >&5
-$as_echo "$as_me: Not enabling extra thread for watchdog -- not fully implemented" >&6;}
 
 fi
 

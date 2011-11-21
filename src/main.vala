@@ -18,16 +18,12 @@ private bool useSystemBus = false;
 private bool useSessionBus = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
 private int signalPollRate = 0;
-private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
 #if GSTD_SUPPORT_SIGNALS
 	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
-#endif
-#if GSTD_SUPPORT_WATCHDOG
-	{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
 #endif
 	{null}
 };
@@ -42,7 +38,6 @@ public errordomain ErrorGstd
 public int main (string[] args)
 {
 	GstdSignals signal_processor = null;
-	Watchdog wd = null;
 
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
@@ -120,9 +115,6 @@ public int main (string[] args)
 
 		if (signal_processor != null) 
 			signal_processor.monitor (loop, factory, signalPollRate);
-
-		if (enableWatchdog)
-			wd = new Watchdog (1000);
 
 		loop.run ();
 	}
