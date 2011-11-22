@@ -16,9 +16,6 @@ public class Factory : GLib.Object
 {
 	private Pipeline[] pipes;
 	private const int num_pipes = 20;
-	/*private TimeoutSource timer = null;
-	   private uint _txCounter = 0;
-	   private uint _rxCounter = 0;*/
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
@@ -26,19 +23,11 @@ public class Factory : GLib.Object
 	 */
 	public Factory ()
 	{
-		pipes = new Pipeline[num_pipes];
-		for (int ids = 0; ids < pipes.length; ids++)
+		this.pipes = new Pipeline[this.num_pipes];
+		for (int ids = 0; ids < this.pipes.length; ids++)
 		{
-			pipes[ids] = null;
+			this.pipes[ids] = null;
 		}
-
-		/*//signal alive every second
-		   timer = new TimeoutSource(1000);
-		   timer.set_callback(() => {
-		   CheckAlive();
-		   return true;
-		   });
-		   timer.attach(loop.get_context());*/
 	}
 
 	/**
@@ -52,25 +41,25 @@ public class Factory : GLib.Object
 	{
 		/* Create our pipeline */
 		int next_id = 0;
-		while (pipes[next_id] != null)
+		while (this.pipes[next_id] != null)
 		{
-			next_id = (next_id + 1) % pipes.length;
+			next_id = (next_id + 1) % this.pipes.length;
 			if (next_id == 0)
 			{
 				return "";
 			}
 		}
-		pipes[next_id] = new Pipeline (description);
+		this.pipes[next_id] = new Pipeline (description);
 
-		if (!pipes[next_id].PipelineIsInitialized ())
+		if (!this.pipes[next_id].PipelineIsInitialized ())
 		{
-			pipes[next_id] = null;
+			this.pipes[next_id] = null;
 			return "";
 		}
 		string objectpath =
 		    "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-		conn.register_object (objectpath, pipes[next_id]);
-		pipes[next_id].PipelineSetPath (objectpath);
+		conn.register_object (objectpath, this.pipes[next_id]);
+		this.pipes[next_id].PipelineSetPath (objectpath);
 		return objectpath;
 	}
 
@@ -82,13 +71,13 @@ public class Factory : GLib.Object
 	 */
 	public bool Destroy (string objectpath)
 	{
-		for (int index = 0; index < pipes.length; index++)
+		for (int index = 0; index < this.pipes.length; index++)
 		{
-			if (pipes[index] != null)
+			if (this.pipes[index] != null)
 			{
-				if (pipes[index].PipelineGetPath () == objectpath)
+				if (this.pipes[index].PipelineGetPath () == objectpath)
 				{
-					pipes[index] = null;
+					this.pipes[index] = null;
 					return true;
 				}
 			}
@@ -105,14 +94,13 @@ public class Factory : GLib.Object
 	 */
 	public bool DestroyAll ()
 	{
-		for (int index = 0; index < pipes.length; index++)
+		for (int index = 0; index < this.pipes.length; index++)
 		{
-			if (pipes[index] != null)
+			if (this.pipes[index] != null)
 			{
-				pipes[index] = null;
+				this.pipes[index] = null;
 			}
 		}
-		
 		return true;
 	}
 
@@ -124,11 +112,11 @@ public class Factory : GLib.Object
 	{
 		string[] paths = {};
 
-		for (int index = 0; index < pipes.length; ++index)
+		for (int index = 0; index < this.pipes.length; ++index)
 		{
-			if (pipes[index] != null)
+			if (this.pipes[index] != null)
 			{
-				paths += pipes[index].PipelineGetPath ();
+				paths += this.pipes[index].PipelineGetPath ();
 			}
 		}
 		return paths;
@@ -144,53 +132,4 @@ public class Factory : GLib.Object
 		/*Gstd received the Ping method call */
 		return true;
 	}
-
-	/*private void CheckAlive ()
-	   {
-	   //increment counter
-	   ++_txCounter;
-
-	   //push event into each pipe
-	   uint nrOfPipes = 0;
-	   for (int index = 0; index < pipes.length; ++index) {
-	    if (pipes[index] == null)
-	      continue;
-	    if (!pipes[index].PipelineIsInitialized())
-	      continue;
-
-	    if (pipes[index].GetCounter() == 0) {
-	      pipes[index].SetCounter(_txCounter);
-	    }
-	    else {
-	      pipes[index].SendNewCounterEvent(_txCounter);
-	    }
-	   ++nrOfPipes;
-	   }
-
-	   //no pipe, no cry
-	   if (nrOfPipes == 0) {
-	    Alive();
-	    return;
-	   }
-
-	   //find smallest counter
-	   uint minCounter = _txCounter;
-	   for (int index = 0; index < pipes.length; ++index) {
-	    if (pipes[index] == null)
-	      continue;
-	    if (!pipes[index].PipelineIsInitialized())
-	      continue;
-	    uint counter = pipes[index].GetCounter();
-	    if (counter < minCounter)
-	        minCounter = counter;
-	   }
-
-	   if (_rxCounter != minCounter)
-	   {
-	    _rxCounter = minCounter;
-	    Alive();
-	   }
-	   }*/
-
-	//public signal void Alive();
 }
