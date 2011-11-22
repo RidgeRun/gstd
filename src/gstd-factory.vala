@@ -10,8 +10,7 @@
  */
 using Gst;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface", signals = "Alive")]
-
+[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface")]
 public class Factory : GLib.Object
 {
 	private Pipeline[] pipes;

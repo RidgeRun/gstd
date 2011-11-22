@@ -13,7 +13,6 @@ using Gst, Posix;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EoS",
        signals = "StateChanged", signals = "Error", signals = "QoS")]
-
 public class Pipeline : GLib.Object
 {
 	/* Private data */
