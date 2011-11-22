@@ -23,7 +23,7 @@ public class Factory : GLib.Object
 	public Factory ()
 	{
 		this.pipes = new Pipeline[this.num_pipes];
-		for (int ids = 0; ids < this.pipes.length; ids++)
+		for (int ids = 0; ids < this.pipes.length; ++ids)
 		{
 			this.pipes[ids] = null;
 		}
@@ -70,7 +70,7 @@ public class Factory : GLib.Object
 	 */
 	public bool Destroy (string objectpath)
 	{
-		for (int index = 0; index < this.pipes.length; index++)
+		for (int index = 0; index < this.pipes.length; ++index)
 		{
 			if (this.pipes[index] != null)
 			{
@@ -93,7 +93,7 @@ public class Factory : GLib.Object
 	 */
 	public bool DestroyAll ()
 	{
-		for (int index = 0; index < this.pipes.length; index++)
+		for (int index = 0; index < this.pipes.length; ++index)
 		{
 			if (this.pipes[index] != null)
 			{

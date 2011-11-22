@@ -130,7 +130,7 @@ Factory* factory_construct (GType object_type) {
 			while (TRUE) {
 				Pipeline* _tmp2_;
 				if (!_tmp1_) {
-					ids++;
+					ids = ids + 1;
 				}
 				_tmp1_ = FALSE;
 				if (!(ids < self->priv->pipes_length1)) {
@@ -249,7 +249,7 @@ gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
 			_tmp0_ = TRUE;
 			while (TRUE) {
 				if (!_tmp0_) {
-					index++;
+					index = index + 1;
 				}
 				_tmp0_ = FALSE;
 				if (!(index < self->priv->pipes_length1)) {
@@ -297,7 +297,7 @@ gboolean factory_DestroyAll (Factory* self) {
 			_tmp0_ = TRUE;
 			while (TRUE) {
 				if (!_tmp0_) {
-					index++;
+					index = index + 1;
 				}
 				_tmp0_ = FALSE;
 				if (!(index < self->priv->pipes_length1)) {
