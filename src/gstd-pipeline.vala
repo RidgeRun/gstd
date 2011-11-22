@@ -77,7 +77,7 @@ public class Pipeline : GLib.Object
 	~Pipeline ()
 	{
 		/* Destroy the pipeline */
-		if (this.PipelineIsInitialized())
+		if (this.initialized)
 		{
 			if (!PipelineSetStateImpl (State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");

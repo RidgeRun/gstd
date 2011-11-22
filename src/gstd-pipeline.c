@@ -73,7 +73,6 @@ GType pipeline_get_type (void) G_GNUC_CONST;
 enum  {
 	PIPELINE_DUMMY_PROPERTY
 };
-gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state);
 Pipeline* pipeline_new (const gchar* description);
 Pipeline* pipeline_construct (GType object_type, const gchar* description);
@@ -85,6 +84,7 @@ guint64 pipeline_PipelineGetId (Pipeline* self);
 gboolean pipeline_PipelineSetState (Pipeline* self, gint state);
 static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state);
 void pipeline_PipelineAsyncSetState (Pipeline* self, gint state);
+gboolean pipeline_PipelineIsInitialized (Pipeline* self);
 void pipeline_PipelineSetId (Pipeline* self, guint64 id);
 gchar* pipeline_PipelineGetPath (Pipeline* self);
 gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath);
@@ -1719,13 +1719,11 @@ static void pipeline_instance_init (Pipeline * self) {
 
 static void pipeline_finalize (GObject* obj) {
 	Pipeline * self;
-	gboolean _tmp0_;
 	self = PIPELINE (obj);
-	_tmp0_ = pipeline_PipelineIsInitialized (self);
-	if (_tmp0_) {
-		gboolean _tmp1_;
-		_tmp1_ = pipeline_PipelineSetStateImpl (self, GST_STATE_NULL);
-		if (!_tmp1_) {
+	if (self->priv->initialized) {
+		gboolean _tmp0_;
+		_tmp0_ = pipeline_PipelineSetStateImpl (self, GST_STATE_NULL);
+		if (!_tmp0_) {
 			syslog (LOG_ERR, "Failed to destroy pipeline", NULL);
 		}
 	}
