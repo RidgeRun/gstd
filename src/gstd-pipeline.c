@@ -190,7 +190,6 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	GstElement* _tmp2_;
 	GstBus* _tmp3_ = NULL;
 	GstBus* bus;
-	gboolean _tmp4_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (description != NULL, NULL);
 	self = (Pipeline*) g_object_new (object_type, NULL);
@@ -208,12 +207,7 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
 	g_object_unref ((GObject*) self);
 	self->priv->initialized = TRUE;
-	_tmp4_ = pipeline_PipelineIsInitialized (self);
-	if (_tmp4_) {
-		syslog (LOG_NOTICE, "Pipeline created, %s", description, NULL);
-	} else {
-		syslog (LOG_ERR, "Pipeline could not be initialized", NULL);
-	}
+	syslog (LOG_NOTICE, "Pipeline created, %s", description, NULL);
 	_gst_object_unref0 (bus);
 	goto __finally2;
 	__catch2_g_error:

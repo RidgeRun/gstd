@@ -63,11 +63,7 @@ public class Pipeline : GLib.Object
 
 			/* Set pipeline state to initialized */
 			this.initialized = true;
-
-			if (this.PipelineIsInitialized ())
-				Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
-			else
-				Posix.syslog (Posix.LOG_ERR, "Pipeline could not be initialized");
+			Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
 		}
 		catch (GLib.Error e)
 		{
