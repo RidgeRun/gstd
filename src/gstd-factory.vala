@@ -132,3 +132,4 @@ public class Factory : GLib.Object
 		return true;
 	}
 }
+

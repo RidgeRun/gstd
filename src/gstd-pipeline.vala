@@ -788,3 +788,4 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 }
+
