@@ -210,6 +210,7 @@ public class Pipeline : GLib.Object
 		this.pipeline.set_state (state);
 	}
 	
+	[DBus (no_reply = true)]
 	public void PipelineAsyncSetState(int state)
 	{
 		PipelineAsyncSetStateImpl((State)(state));
@@ -632,6 +633,7 @@ public class Pipeline : GLib.Object
 	   Data in the pipeline is flushed.
 	   @param ipos_ms, absolute position in milliseconds
 	 */
+	[DBus (no_reply = true)]
 	public void PipelineAsyncSeek (int64 ipos_ms)
 	{
 		PipelineSeek(ipos_ms);
@@ -763,6 +765,7 @@ public class Pipeline : GLib.Object
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
+	[DBus (no_reply = true)]
 	public void ElementAsyncSetState (string element, int state)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;

@@ -2367,21 +2367,11 @@ static void _dbus_pipeline_PipelineAsyncSetState (Pipeline* self, GVariant* para
 	GVariantIter _arguments_iter;
 	gint state = 0;
 	GVariant* _tmp6_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
 	g_variant_iter_init (&_arguments_iter, parameters);
 	_tmp6_ = g_variant_iter_next_value (&_arguments_iter);
 	state = g_variant_get_int32 (_tmp6_);
 	g_variant_unref (_tmp6_);
 	pipeline_PipelineAsyncSetState (self, state);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
 }
 
 
@@ -2945,21 +2935,11 @@ static void _dbus_pipeline_PipelineAsyncSeek (Pipeline* self, GVariant* paramete
 	GVariantIter _arguments_iter;
 	gint64 ipos_ms = 0LL;
 	GVariant* _tmp36_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
 	g_variant_iter_init (&_arguments_iter, parameters);
 	_tmp36_ = g_variant_iter_next_value (&_arguments_iter);
 	ipos_ms = g_variant_get_int64 (_tmp36_);
 	g_variant_unref (_tmp36_);
 	pipeline_PipelineAsyncSeek (self, ipos_ms);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
 }
 
 
@@ -3124,9 +3104,6 @@ static void _dbus_pipeline_ElementAsyncSetState (Pipeline* self, GVariant* param
 	GVariant* _tmp44_;
 	gint state = 0;
 	GVariant* _tmp45_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
 	g_variant_iter_init (&_arguments_iter, parameters);
 	_tmp44_ = g_variant_iter_next_value (&_arguments_iter);
 	element = g_variant_dup_string (_tmp44_, NULL);
@@ -3135,14 +3112,7 @@ static void _dbus_pipeline_ElementAsyncSetState (Pipeline* self, GVariant* param
 	state = g_variant_get_int32 (_tmp45_);
 	g_variant_unref (_tmp45_);
 	pipeline_ElementAsyncSetState (self, element, state);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
 	_g_free0 (element);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
 }
 
 

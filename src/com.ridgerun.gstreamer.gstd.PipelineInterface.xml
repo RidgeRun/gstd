@@ -63,6 +63,7 @@
     <method name="PipelineAsyncSetState">
         <arg type="i" name = "state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -169,8 +170,9 @@
         <arg type="t" name ="frames" direction = "in" />
     </method>
     <method name="PipelineAsyncSeek">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <arg type="x" name ="ipos_ns" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="PipelineGetState">
         <arg type="i" name ="state" direction = "out" >
@@ -210,6 +212,7 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="i" name ="state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
 
     <!-- Signals definitions -->
