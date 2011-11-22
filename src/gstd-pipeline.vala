@@ -23,6 +23,7 @@ public class Pipeline : GLib.Object
 	private double rate = 1.0;
 	private ulong windowId = 0;
 
+	/* Signals */
 	public signal void EoS (uint64 pipe_id);
 	public signal void StateChanged (uint64 pipe_id, State old_state, State new_state, string src);
 	public signal void Error (uint64 pipe_id, string err_message);
