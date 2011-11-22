@@ -5,4 +5,4 @@ libdir=@libdir@
 Name: Gstreamer Daemon
 Description: Streaming Media Server
 Version: @VERSION@
-Requires: dbus-glib-1
+

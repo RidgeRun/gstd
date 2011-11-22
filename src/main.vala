@@ -8,12 +8,8 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
-using Gst;
 
 /*Global Variable*/
-public MainLoop loop = null;
-public DBus.Connection conn = null;
-
 private bool useSystemBus = false;
 private bool useSessionBus = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
@@ -79,43 +75,51 @@ public int main (string[] args)
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
 		}
 
-		DBus.thread_init ();
-
 		/* Initializing GStreamer */
 		Gst.init (ref args);
 
 		/* Creating a GLib main loop with a default context */
-		loop = new MainLoop (null, false);
+		MainLoop loop = new MainLoop (null, false);
 
-		conn = DBus.Bus.get ((useSystemBus) ?
-		                     DBus.BusType.SYSTEM :
-		                     (useSessionBus) ?
-		                     DBus.BusType.SESSION :
-		                     DBus.BusType.STARTER);
+		/* Connect to DBus */
+		GLib.DBusConnection connection = GLib.Bus.get_sync((useSystemBus) ?
+		                                               GLib.BusType.SYSTEM :
+		                                               (useSessionBus) ?
+		                                                 GLib.BusType.SESSION :
+		                                                 GLib.BusType.STARTER);
 
-		dynamic DBus.Object bus = conn.get_object ("org.freedesktop.DBus",
-		                                           "/org/freedesktop/DBus",
-		                                           "org.freedesktop.DBus");
+		/* Create the factory */
+		Factory factory = new Factory (connection);
 
-		/* Try to register service in session bus */
-		uint request_name_result =
-		    bus.request_name ("com.ridgerun.gstreamer.gstd", (uint)0);
+		/* Register factory to DBus */
+		GLib.Bus.own_name_on_connection (
+			connection,
+			"com.ridgerun.gstreamer.gstd",
+			GLib.BusNameOwnerFlags.NONE,
+			(connection, name) =>
+			{
+				try
+				{
+					connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
+				}
+				catch (IOError e)
+				{
+					Posix.syslog(Posix.LOG_ERR, "Could not register service");
+					loop.quit();
+				}
+			},
+			(connection, name) => 
+			{
+				Posix.syslog(Posix.LOG_ERR, "Lost bus name");
+				loop.quit();
+			}
+		);
 
-		if (request_name_result != DBus.RequestNameReply.PRIMARY_OWNER)
-		{
-			throw new ErrorGstd.SERVICE_OWNERSHIP("Failed to obtain primary ownership of " +
-			              "the service. This usually means there is another instance of " +
-			              "gstd already running");
-		}
-
-		/* Create our factory */
-		var factory = new Factory ();
-
-		conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
-
+		/* Start signal processor */
 		if (signal_processor != null) 
 			signal_processor.monitor (loop, factory, signalPollRate);
 
+		/* Run main loop */
 		loop.run ();
 	}
 	catch (Error e)

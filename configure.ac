@@ -83,20 +83,17 @@ dnl make GSTREAMER_INTERFACES_CFLAGS and GSTREAMER_INTERFACES_LIBS available
 AC_SUBST(GSTREAMER_INTERFACES_CFLAGS)
 AC_SUBST(GSTREAMER_INTERFACES_LIBS)
 
-dnl Now we're ready to ask for dbus-glib
-PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1 >= 0.80 , HAVE_DBUS_GLIB=yes, HAVE_DBUS_GLIB=no)
+dnl Now we're ready to ask for gio-2.0
+PKG_CHECK_MODULES(GIO, gio-2.0 >= 2.0 , HAVE_GIO=yes, HAVE_GIO=no)
 
-dnl Give error and exit if we don't have dbus-glib
-if test "x$HAVE_DBUS_GLIB" = "xno"; then
-  AC_MSG_ERROR([you need dbus-glib-1 development packages installed >= 0.80 !])
+dnl Give error and exit if we don't have gio-2.0
+if test "x$HAVE_GIO" = "xno"; then
+  AC_MSG_ERROR([you need gio-2.0 development packages installed >= 2.0 !])
 fi
 
-dnl append DBUS_GLIB_ERROR cflags to DBUS_GLIB_CFLAGS
-DBUS_GLIB_CFLAGS="$DBUS_GLIB_CFLAGS $DBUS_GLIB_ERROR"
-
-dnl make DBUS_GLIB_CFLAGS and DBUS_GLIB_LIBS available
-AC_SUBST(DBUS_GLIB_CFLAGS)
-AC_SUBST(DBUS_GLIB_LIBS)
+dnl make GIO_CFLAGS and GIO_LIBS available
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
 
 if test -z "$VAPIDIR"; then
   VAPIDIR=/usr/share/vala-0.12/vapi

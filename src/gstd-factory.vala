@@ -8,11 +8,11 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
-using Gst;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface")]
 public class Factory : GLib.Object
 {
+	private GLib.DBusConnection conn;
 	private Pipeline[] pipes;
 	private static const int num_pipes = 20;
 
@@ -20,8 +20,9 @@ public class Factory : GLib.Object
 	   Create a new instance of a factory server to process D-Bus
 	   factory messages
 	 */
-	public Factory ()
+	public Factory (GLib.DBusConnection conn)
 	{
+		this.conn = conn;
 		this.pipes = new Pipeline[this.num_pipes];
 		for (int ids = 0; ids < this.pipes.length; ++ids)
 		{
@@ -38,28 +39,34 @@ public class Factory : GLib.Object
 	 */
 	public string Create (string description)
 	{
-		/* Create our pipeline */
-		int next_id = 0;
-		while (this.pipes[next_id] != null)
+		try
 		{
-			next_id = (next_id + 1) % this.pipes.length;
-			if (next_id == 0)
+			/* Create our pipeline */
+			int next_id = 0;
+			while (this.pipes[next_id] != null)
 			{
+				next_id = (next_id + 1) % this.pipes.length;
+				if (next_id == 0)
+				{
+					return "";
+				}
+			}
+			this.pipes[next_id] = new Pipeline (description);
+
+			if (!this.pipes[next_id].PipelineIsInitialized ())
+			{
+				this.pipes[next_id] = null;
 				return "";
 			}
+			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
+			this.conn.register_object(objectpath, this.pipes[next_id]);
+			this.pipes[next_id].PipelineSetPath(objectpath);
+			return objectpath;
 		}
-		this.pipes[next_id] = new Pipeline (description);
-
-		if (!this.pipes[next_id].PipelineIsInitialized ())
+		catch (GLib.IOError error)
 		{
-			this.pipes[next_id] = null;
 			return "";
 		}
-		string objectpath =
-		    "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-		conn.register_object (objectpath, this.pipes[next_id]);
-		this.pipes[next_id].PipelineSetPath (objectpath);
-		return objectpath;
 	}
 
 	/**
