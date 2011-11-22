@@ -22,13 +22,6 @@ public class Pipeline : GLib.Object
 	private bool initialized = false;
 	private string path = "";
 	private double rate = 1.0;
-	private int64 autostop_time_ms = 0;
-	private bool autostop_thread_running = false;
-	private bool trigger_autostop = false;
-	private ClockID autostop_clkid;
-	private Cond autostop_eos_cond;
-	private Mutex autostop_eos_mutex;
-	//private uint _counter = 0;
 	private ulong windowId = 0;
 
 	public signal void EoS (uint64 pipe_id);
@@ -71,8 +64,6 @@ public class Pipeline : GLib.Object
 
 			/* Set pipeline state to initialized */
 			initialized = true;
-			autostop_eos_cond = new Cond();
-			autostop_eos_mutex = new Mutex();
 
 			if (this.PipelineIsInitialized ())
 				Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
@@ -93,7 +84,6 @@ public class Pipeline : GLib.Object
 		/* Destroy the pipeline */
 		if (this.PipelineIsInitialized())
 		{
-			PipelineAbortAutoStop();
 			if (!PipelineSetStateImpl (State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
 		}
@@ -149,12 +139,6 @@ public class Pipeline : GLib.Object
 
 				/*Sending Eos Signal */
 				EoS (PipelineGetId());
-
-				/* In case we are in autostop, notify we completed the EOS */
-				autostop_eos_mutex.lock();
-				autostop_eos_cond.signal();
-				autostop_eos_mutex.unlock();
-
 				break;
 
 			case MessageType.STATE_CHANGED:
@@ -232,134 +216,9 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	/**
-	   Set the pipeline to autostop after a certain amount of time has elapsed.
-	   The pipeline will receive an EOS when at that time.
-	   @param timeout_ms, timeout in mseconds
-	   @return true if timer set, false if timer is already running (need to abort the current timer first)
-	 */
-	public bool PipelineSetAutoStop(int64 timeout_ms)
-	{
-		if (!autostop_thread_running) {
-			autostop_time_ms = timeout_ms;
-			trigger_autostop = true;
-		} else {
-			Posix.syslog (Posix.LOG_ERR, "Can't set the autostop timer if the timer is already running");
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	   Abort the autostop timer
-	 */
-	public void PipelineAbortAutoStop()
-	{
-		if (!autostop_thread_running) {
-			trigger_autostop = false;
-		} else {
-		    autostop_clkid.unschedule();
-		}
-	}
-
-	/* Thread to track elapsed time when using tplay. Sends eos to pipeline
-	 * after the time specified has expired, and sets pipeline to NULL state
-	 * after eos has been processed.
-	 */
-	private void* AutoStopThread()
-	{
-		ClockTime time;
-
-		time = (ClockTime)((uint64) autostop_time_ms) * 1000000;
-		time += pipeline.get_clock().get_time();
-		autostop_clkid = new ClockID.single_shot(pipeline.get_clock(),time);
-
-		Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer activated for %llu mseconds.\n", autostop_time_ms);
-
-		autostop_thread_running = true;
-		if ( autostop_clkid.wait(null) == ClockReturn.UNSCHEDULED )
-		{
-			/* We were aborted */
-			Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer aborted.\n");
-			autostop_thread_running = false;
-			autostop_clkid = null;
-			return null;
-		}
-
-		/* OK, we timed out our wait, let's do our job */
-		autostop_eos_mutex.lock();
-		PipelineSendEoS ();
-		/* Waiting until EOS signal have been emitted */
-		autostop_eos_cond.wait(autostop_eos_mutex);
-		autostop_eos_mutex.unlock();
-
-		/* Set pipeline state to NULL */
-		if( !PipelineSetState(State.NULL) )
-		{
-			Posix.syslog (Posix.LOG_DEBUG,"ERROR trying to set pipeline state to NULL.\n");
-			autostop_thread_running = false;
-			autostop_clkid = null;
-			return null;
-		}
-		Posix.syslog (Posix.LOG_DEBUG,"Pipeline %s auto-stopped.\n", this.path);
-		autostop_thread_running = false;
-		autostop_clkid = null;
-		return null;
-	}
-
-	/* Ensure system supports threads and spawn the
-	 * auto-stop thread */
-	private bool StartAutoStop()
-	{
-		/* Be sure threads are supported */
-		if (!Thread.supported()) {
-			Posix.syslog (Posix.LOG_DEBUG,"Cannot run without threads.\n");
-			return false;
-		}
-		
-		/* Init timer thread */
-		try {
-			Thread.create<void*>(AutoStopThread, false);
-		} catch (ThreadError e) {
-			return false;
-		}
-
-
-		return true;
-	}
-
 	public bool PipelineSetState (int state)
 	{
-		/* If auto-stop will be used, check the time value is valid */
-		if(trigger_autostop && state == State.PLAYING
-		   && autostop_time_ms <= 0 )
-		{
-			Posix.syslog (Posix.LOG_DEBUG,"Invalid time value. Timeout value must be > 0.\n");
-			trigger_autostop = false;
-			return false;
-		}
-		
-		/* If the state requested is different of PLAY then abort any
-		 * auto-stop process
-		 */
-		if(state != State.PLAYING && autostop_thread_running)
-		{
-			PipelineAbortAutoStop();
-		}
-
-		bool ret = PipelineSetStateImpl((State)(state));
-
-		/* If we are going to use the auto-stop property and the pipeline
-		 * was executed correctly, then start the auto-stop function
-		 */
-		if(trigger_autostop && state == State.PLAYING && ret)
-		{
-			trigger_autostop = false;
-			StartAutoStop();
-		}
-
-		return ret;
+		return PipelineSetStateImpl((State)(state));
 	}
 
 	private void PipelineAsyncSetStateImpl(State state)
