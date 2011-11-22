@@ -206,7 +206,7 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 	bus = _tmp3_;
 	gst_bus_set_sync_handler (bus, _pipeline_bus_sync_callback_gst_bus_sync_handler, self);
 	gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
-	g_object_unref (self);
+	g_object_unref ((GObject*) self);
 	self->priv->initialized = TRUE;
 	_tmp4_ = pipeline_PipelineIsInitialized (self);
 	if (_tmp4_) {

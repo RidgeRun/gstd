@@ -59,7 +59,7 @@ public class Pipeline : GLib.Object
 			 * ourselfs in order to provide properly release behavior of this
 			 * object
 			 */
-			g_object_unref (this);
+			unref();
 
 			/* Set pipeline state to initialized */
 			this.initialized = true;
