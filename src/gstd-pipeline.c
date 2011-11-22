@@ -457,11 +457,8 @@ gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
 
 
 static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state) {
-	const gchar* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
 	gst_element_set_state (self->priv->pipeline, state);
-	_tmp0_ = gst_element_state_get_name (state);
-	syslog (LOG_DEBUG, "Asynchronous state change to %s", _tmp0_, NULL);
 }
 
 
@@ -562,53 +559,49 @@ static gpointer _g_param_spec_ref0 (gpointer self) {
 
 gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* element, const gchar* property, gboolean val) {
 	gboolean result = FALSE;
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
-	GParamSpec* spec = NULL;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
 	GObjectClass* _tmp4_ = NULL;
 	GParamSpec* _tmp5_ = NULL;
 	GParamSpec* _tmp6_;
+	GParamSpec* spec;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
-		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	_tmp4_ = G_OBJECT_GET_CLASS ((GObject*) e);
 	_tmp5_ = g_object_class_find_property (_tmp4_, property);
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
-	_g_param_spec_unref0 (spec);
 	spec = _tmp6_;
 	if (spec == NULL) {
 		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	g_object_set ((GObject*) e, property, val, NULL, NULL);
 	result = TRUE;
 	_g_param_spec_unref0 (spec);
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -621,53 +614,49 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* elemen
  */
 gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, const gchar* property, gint val) {
 	gboolean result = FALSE;
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
-	GParamSpec* spec = NULL;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
 	GObjectClass* _tmp4_ = NULL;
 	GParamSpec* _tmp5_ = NULL;
 	GParamSpec* _tmp6_;
+	GParamSpec* spec;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
-		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	_tmp4_ = G_OBJECT_GET_CLASS ((GObject*) e);
 	_tmp5_ = g_object_class_find_property (_tmp4_, property);
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
-	_g_param_spec_unref0 (spec);
 	spec = _tmp6_;
 	if (spec == NULL) {
 		syslog (LOG_WARNING, "Gstd: Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	g_object_set ((GObject*) e, property, val, NULL, NULL);
 	result = TRUE;
 	_g_param_spec_unref0 (spec);
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -679,53 +668,49 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, c
    @param val, long property value     */
 gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element, const gchar* property, gint64 val) {
 	gboolean result = FALSE;
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
-	GParamSpec* spec = NULL;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
 	GObjectClass* _tmp4_ = NULL;
 	GParamSpec* _tmp5_ = NULL;
 	GParamSpec* _tmp6_;
+	GParamSpec* spec;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
-		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	_tmp4_ = G_OBJECT_GET_CLASS ((GObject*) e);
 	_tmp5_ = g_object_class_find_property (_tmp4_, property);
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
-	_g_param_spec_unref0 (spec);
 	spec = _tmp6_;
 	if (spec == NULL) {
 		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	g_object_set ((GObject*) e, property, val, NULL, NULL);
 	result = TRUE;
 	_g_param_spec_unref0 (spec);
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -738,54 +723,50 @@ gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element,
  */
 gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element, const gchar* property, const gchar* val) {
 	gboolean result = FALSE;
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
-	GParamSpec* spec = NULL;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
 	GObjectClass* _tmp4_ = NULL;
 	GParamSpec* _tmp5_ = NULL;
 	GParamSpec* _tmp6_;
+	GParamSpec* spec;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	g_return_val_if_fail (val != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
-		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	_tmp4_ = G_OBJECT_GET_CLASS ((GObject*) e);
 	_tmp5_ = g_object_class_find_property (_tmp4_, property);
 	_tmp6_ = _g_param_spec_ref0 (_tmp5_);
-	_g_param_spec_unref0 (spec);
 	spec = _tmp6_;
 	if (spec == NULL) {
 		syslog (LOG_WARNING, "Element %s does not have the property %s", element, property, NULL);
 		result = FALSE;
 		_g_param_spec_unref0 (spec);
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	g_object_set ((GObject*) e, property, val, NULL, NULL);
 	result = TRUE;
 	_g_param_spec_unref0 (spec);
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -1347,23 +1328,14 @@ void pipeline_PipelineAsyncSeek (Pipeline* self, gint64 ipos_ms) {
 gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
 	gboolean result = FALSE;
 	GstFormat format;
-	GstSeekFlags flag;
-	GstSeekType cur_type;
-	GstSeekType stp_type;
-	gint64 stp_pos_ns;
 	gint64 cur_pos_ns;
-	gint64 seek_ns;
 	gint64 _tmp0_;
 	gboolean _tmp1_;
+	gint64 seek_ns;
 	gboolean _tmp2_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	format = GST_FORMAT_TIME;
-	flag = GST_SEEK_FLAG_FLUSH;
-	cur_type = GST_SEEK_TYPE_SET;
-	stp_type = GST_SEEK_TYPE_NONE;
-	stp_pos_ns = (gint64) GST_CLOCK_TIME_NONE;
 	cur_pos_ns = (gint64) 0;
-	seek_ns = (gint64) 0;
 	_tmp1_ = gst_element_query_position (self->priv->pipeline, &format, &_tmp0_);
 	cur_pos_ns = _tmp0_;
 	if (!_tmp1_) {
@@ -1371,7 +1343,7 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
 		return result;
 	}
 	seek_ns = cur_pos_ns + period_ns;
-	_tmp2_ = gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, cur_type, seek_ns, stp_type, stp_pos_ns);
+	_tmp2_ = gst_element_seek (self->priv->pipeline, self->priv->rate, format, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, seek_ns, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
 	if (!_tmp2_) {
 		syslog (LOG_WARNING, "Media type not seekable", NULL);
 		result = FALSE;
@@ -1391,18 +1363,10 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
  */
 gboolean pipeline_PipelineSpeed (Pipeline* self, gdouble new_rate) {
 	gboolean result = FALSE;
-	GstFormat format;
-	GstSeekFlags flag;
-	GstSeekType type;
-	gint64 pos_ns;
 	gboolean _tmp0_;
 	g_return_val_if_fail (self != NULL, FALSE);
-	format = GST_FORMAT_TIME;
-	flag = GST_SEEK_FLAG_SKIP | GST_SEEK_FLAG_FLUSH;
-	type = GST_SEEK_TYPE_NONE;
-	pos_ns = (gint64) GST_CLOCK_TIME_NONE;
 	self->priv->rate = new_rate;
-	_tmp0_ = gst_element_seek (self->priv->pipeline, self->priv->rate, format, flag, type, pos_ns, type, pos_ns);
+	_tmp0_ = gst_element_seek (self->priv->pipeline, self->priv->rate, GST_FORMAT_TIME, GST_SEEK_FLAG_SKIP | GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
 	if (!_tmp0_) {
 		syslog (LOG_WARNING, "Speed could not be changed", NULL);
 		result = FALSE;
@@ -1424,7 +1388,7 @@ void pipeline_PipelineSendEoS (Pipeline* self) {
 void pipeline_PipelineStep (Pipeline* self, guint64 frames) {
 	GstEvent* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
-	pipeline_PipelineSetState (self, (gint) GST_STATE_PAUSED);
+	pipeline_PipelineSetStateImpl (self, GST_STATE_PAUSED);
 	_tmp0_ = gst_event_new_step (GST_FORMAT_BUFFERS, frames, 1.0, TRUE, FALSE);
 	gst_element_send_event (self->priv->pipeline, _tmp0_);
 }
@@ -1514,57 +1478,50 @@ gboolean pipeline_PipelineSendCustomEvent (Pipeline* self, const gchar* stype, c
  */
 gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint state) {
 	gboolean result = FALSE;
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
-	GstState current = 0;
-	GstState pending = 0;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
+	GstState current = 0;
+	GstState pending = 0;
 	GstState _tmp4_;
 	GstState _tmp5_;
-	GstState _tmp6_;
-	GstState _tmp7_;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 		result = FALSE;
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	gst_element_set_state (e, (GstState) state);
-	gst_element_get_state (e, &_tmp4_, &_tmp5_, (GstClockTime) 4000000000U);
+	gst_element_get_state (e, &_tmp4_, &_tmp5_, (GstClockTime) GST_CLOCK_TIME_NONE);
 	current = _tmp4_;
 	pending = _tmp5_;
-	gst_element_get_state (e, &_tmp6_, &_tmp7_, (GstClockTime) 4000000000U);
-	current = _tmp6_;
-	pending = _tmp7_;
 	if (current != state) {
-		gchar* _tmp8_ = NULL;
-		gchar* _tmp9_;
-		_tmp8_ = g_strdup_printf ("%i", state);
-		_tmp9_ = _tmp8_;
-		syslog (LOG_ERR, "Element, failed to change state %s", _tmp9_, NULL);
-		_g_free0 (_tmp9_);
+		gchar* _tmp6_ = NULL;
+		gchar* _tmp7_;
+		_tmp6_ = g_strdup_printf ("%i", state);
+		_tmp7_ = _tmp6_;
+		syslog (LOG_ERR, "Element, failed to change state %s", _tmp7_, NULL);
+		_g_free0 (_tmp7_);
 		result = FALSE;
-		_gst_object_unref0 (pipe);
 		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
 		return result;
 	}
 	result = TRUE;
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 	return result;
 }
 
@@ -1575,28 +1532,26 @@ gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint st
    @param state, desired element state
  */
 void pipeline_ElementAsyncSetState (Pipeline* self, const gchar* element, gint state) {
-	GstElement* e = NULL;
-	GstPipeline* pipe = NULL;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
 	GstObject* _tmp2_ = NULL;
 	GstObject* _tmp3_;
+	GstElement* e;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (element != NULL);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	_gst_object_unref0 (pipe);
 	pipe = _tmp1_;
 	_tmp2_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) pipe, element);
 	_tmp3_ = _tmp2_;
-	_gst_object_unref0 (e);
 	e = GST_IS_ELEMENT (_tmp3_) ? ((GstElement*) _tmp3_) : NULL;
 	if (e == NULL) {
 		syslog (LOG_WARNING, "Element %s not found on pipeline", element, NULL);
 	}
 	gst_element_set_state (e, (GstState) state);
-	_gst_object_unref0 (pipe);
 	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
 }
 
 

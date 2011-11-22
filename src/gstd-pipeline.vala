@@ -206,8 +206,8 @@ public class Pipeline : GLib.Object
 
 	private void PipelineAsyncSetStateImpl(State state)
 	{
+		//Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
 		this.pipeline.set_state (state);
-		Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
 	}
 	
 	public void PipelineAsyncSetState(int state)
@@ -274,19 +274,15 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyBoolean (string element, string property, bool val)
 	{
-		Gst.Element e;
-		Gst.Pipeline pipe;
-		GLib.ParamSpec spec;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		spec = e.get_class ().find_property (property);
+		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -306,19 +302,15 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyInt (string element, string property, int val)
 	{
-		Element e;
-		Gst.Pipeline pipe;
-		GLib.ParamSpec spec;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		spec = e.get_class ().find_property (property);
+		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Gstd: Element %s does not have the property %s",
@@ -337,19 +329,15 @@ public class Pipeline : GLib.Object
 	   @param val, long property value     */
 	public bool ElementSetPropertyInt64 (string element, string property, int64 val)
 	{
-		Element e;
-		Gst.Pipeline pipe;
-		GLib.ParamSpec spec;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		spec = e.get_class ().find_property (property);
+		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -369,19 +357,15 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyString (string element, string property, string val)
 	{
-		Element e;
-		Gst.Pipeline pipe;
-		GLib.ParamSpec spec;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		spec = e.get_class ().find_property (property);
+		GLib.ParamSpec spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -582,10 +566,9 @@ public class Pipeline : GLib.Object
 	 */
 	public int64 PipelineGetDuration ()
 	{
+		/* Query duration */
 		Format format = Gst.Format.TIME;
 		int64 duration = 0;
-
-		/* Query duration */
 		if (!this.pipeline.query_duration (ref format, out duration))
 		{
 			return -1;
@@ -663,12 +646,7 @@ public class Pipeline : GLib.Object
 	public bool PipelineSkip (int64 period_ns)
 	{
 		Gst.Format format = Gst.Format.TIME;
-		Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
-		Gst.SeekType cur_type = Gst.SeekType.SET;
-		Gst.SeekType stp_type = Gst.SeekType.NONE;
-		int64 stp_pos_ns = CLOCK_TIME_NONE;
 		int64 cur_pos_ns = 0;
-		int64 seek_ns = 0;
 
 		/*Gets the current position */
 		if (!this.pipeline.query_position (ref format, out cur_pos_ns))
@@ -677,11 +655,10 @@ public class Pipeline : GLib.Object
 		}
 
 		/*Sets the new position relative to the current one */
-		seek_ns = cur_pos_ns + period_ns;
+		int64 seek_ns = cur_pos_ns + period_ns;
 
 		/*Set the current position */
-		if (!this.pipeline.seek (this.rate, format, flag, cur_type, seek_ns, stp_type,
-		                    stp_pos_ns))
+		if (!this.pipeline.seek (this.rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -698,16 +675,11 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelineSpeed (double new_rate)
 	{
-		Gst.Format format = Gst.Format.TIME;
-		Gst.SeekFlags flag = Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH;
-		Gst.SeekType type = Gst.SeekType.NONE;
-		int64 pos_ns = CLOCK_TIME_NONE;
-
 		/*Sets the new rate */
 		this.rate = new_rate;
 
 		/*Changes the rate on the pipeline */
-		if (!this.pipeline.seek (this.rate, format, flag, type, pos_ns, type, pos_ns))
+		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, CLOCK_TIME_NONE, Gst.SeekType.NONE, CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
 			return false;
@@ -723,7 +695,7 @@ public class Pipeline : GLib.Object
 	public void PipelineStep (uint64 frames)
 	{
 #if GSTREAMER_SUPPORT_STEP
-		PipelineSetState (State.PAUSED);
+		PipelineSetStateImpl (State.PAUSED);
 		this.pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
 #else
 		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
@@ -753,8 +725,8 @@ public class Pipeline : GLib.Object
 			default:
 				return false;
 		}
-		this.pipeline.send_event(new Event.custom(type,
-			new Structure.empty(name)));
+		this.pipeline.send_event(new Event.custom(type, new Structure.empty(name)));
+
 		return true;
 	}
 
@@ -765,12 +737,8 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetState (string element, int state)
 	{
-		Element e;
-		Gst.Pipeline pipe;
-		State current, pending;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -780,10 +748,8 @@ public class Pipeline : GLib.Object
 		e.set_state ((State)(state));
 
 		/* Wait for the transition at most 8 secs */
-		e.get_state (out current, out pending,
-				    (Gst.ClockTime) 4000000000u);
-		e.get_state (out current, out pending,
-				    (Gst.ClockTime) 4000000000u);
+		State current, pending;
+		e.get_state (out current, out pending, (Gst.ClockTime) Gst.CLOCK_TIME_NONE);
 		if (current != state)
 		{
 			Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
@@ -799,11 +765,8 @@ public class Pipeline : GLib.Object
 	 */
 	public void ElementAsyncSetState (string element, int state)
 	{
-		Element e;
-		Gst.Pipeline pipe;
-
-		pipe = this.pipeline as Gst.Pipeline;
-		e = pipe.get_child_by_name (element) as Element;
+		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -824,12 +787,4 @@ public class Pipeline : GLib.Object
 	{
 		return true;
 	}
-
-	/*public uint GetCounter() {
-	   return _counter;
-	   }
-
-	   public void SetCounter(uint c) {
-	   _counter = c;
-	   } */
 }
