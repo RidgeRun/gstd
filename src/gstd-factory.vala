@@ -14,7 +14,7 @@ using Gst;
 public class Factory : GLib.Object
 {
 	private Pipeline[] pipes;
-	private const int num_pipes = 20;
+	private static const int num_pipes = 20;
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
