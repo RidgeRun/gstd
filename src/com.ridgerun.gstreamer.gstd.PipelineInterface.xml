@@ -185,7 +185,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineSendEoS"/>
+    <method name="PipelineSendEos"/>
     <method name="PipelineSendCustomEvent">
         <arg type="s" name ="type" direction = "in" />
         <arg type="s" name ="name" direction = "in" />
@@ -216,7 +216,7 @@
     </method>
 
     <!-- Signals definitions -->
-    <signal name="EoS">
+    <signal name="Eos">
         <arg type="t" name="pipe_id"/>
     </signal>
     <signal name="Error">
@@ -229,7 +229,7 @@
         <arg type="i" name="new_state"/>
         <arg type="s" name="src"/>
     </signal>
-    <signal name="QoS">
+    <signal name="Qos">
         <arg type="t" name="pipe_id"/>
         <arg type="b" name="live"/>
         <arg type="t" name="running_time"/>

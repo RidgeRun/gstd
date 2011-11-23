@@ -36,8 +36,8 @@ POST_UNINSTALL = :
 bin_PROGRAMS = gstd$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	gstd-factory.c gstd-pipeline.c gstd-signals.c gstd_vala.stamp \
-	main.c
+	gstd-factory.c gstd-interfaces.c gstd-pipeline.c \
+	gstd-signals.c gstd_vala.stamp main.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -48,8 +48,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(interfacedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_gstd_OBJECTS = gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
-	gstd-gstd-pipeline.$(OBJEXT) gstd-gstd-signals.$(OBJEXT)
+am_gstd_OBJECTS = gstd-gstd-interfaces.$(OBJEXT) gstd-main.$(OBJEXT) \
+	gstd-gstd-factory.$(OBJEXT) gstd-gstd-pipeline.$(OBJEXT) \
+	gstd-gstd-signals.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
 gstd_DEPENDENCIES =
 gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -212,7 +213,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-gstd_SOURCES = main.vala gstd-factory.vala gstd-pipeline.vala gstd-signals.vala
+gstd_SOURCES = gstd-interfaces.vala main.vala gstd-factory.vala gstd-pipeline.vala gstd-signals.vala
 gstd_VALAFLAGS = --thread --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
     --pkg gio-2.0 --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix \
     @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @GSTD_SUPPORT_SIGNALS@
@@ -317,6 +318,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-factory.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-interfaces.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-pipeline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-gstd-signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstd-main.Po@am__quote@
@@ -336,6 +338,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+gstd-gstd-interfaces.o: gstd-interfaces.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-interfaces.o -MD -MP -MF $(DEPDIR)/gstd-gstd-interfaces.Tpo -c -o gstd-gstd-interfaces.o `test -f 'gstd-interfaces.c' || echo '$(srcdir)/'`gstd-interfaces.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-interfaces.Tpo $(DEPDIR)/gstd-gstd-interfaces.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-interfaces.c' object='gstd-gstd-interfaces.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-interfaces.o `test -f 'gstd-interfaces.c' || echo '$(srcdir)/'`gstd-interfaces.c
+
+gstd-gstd-interfaces.obj: gstd-interfaces.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-gstd-interfaces.obj -MD -MP -MF $(DEPDIR)/gstd-gstd-interfaces.Tpo -c -o gstd-gstd-interfaces.obj `if test -f 'gstd-interfaces.c'; then $(CYGPATH_W) 'gstd-interfaces.c'; else $(CYGPATH_W) '$(srcdir)/gstd-interfaces.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstd-gstd-interfaces.Tpo $(DEPDIR)/gstd-gstd-interfaces.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-interfaces.c' object='gstd-gstd-interfaces.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-interfaces.obj `if test -f 'gstd-interfaces.c'; then $(CYGPATH_W) 'gstd-interfaces.c'; else $(CYGPATH_W) '$(srcdir)/gstd-interfaces.c'; fi`
 
 gstd-main.o: main.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -MT gstd-main.o -MD -MP -MF $(DEPDIR)/gstd-main.Tpo -c -o gstd-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
@@ -400,6 +418,11 @@ gstd-gstd-signals.obj: gstd-signals.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gstd-signals.c' object='gstd-gstd-signals.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstd_CFLAGS) $(CFLAGS) -c -o gstd-gstd-signals.obj `if test -f 'gstd-signals.c'; then $(CYGPATH_W) 'gstd-signals.c'; else $(CYGPATH_W) '$(srcdir)/gstd-signals.c'; fi`
+$(srcdir)/gstd-interfaces.c: $(srcdir)/gstd_vala.stamp
+	@if test -f $@; then :; else \
+	  rm -f $(srcdir)/gstd_vala.stamp; \
+	  $(am__cd) $(srcdir) && $(MAKE) $(AM_MAKEFLAGS) gstd_vala.stamp; \
+	fi
 $(srcdir)/main.c: $(srcdir)/gstd_vala.stamp
 	@if test -f $@; then :; else \
 	  rm -f $(srcdir)/gstd_vala.stamp; \
@@ -559,6 +582,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-rm -f gstd-factory.c
+	-rm -f gstd-interfaces.c
 	-rm -f gstd-pipeline.c
 	-rm -f gstd-signals.c
 	-rm -f gstd_vala.stamp

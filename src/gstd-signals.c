@@ -20,36 +20,47 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
-#define TYPE_GSTD_SIGNALS (gstd_signals_get_type ())
-#define GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_GSTD_SIGNALS, GstdSignals))
-#define GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_GSTD_SIGNALS, GstdSignalsClass))
-#define IS_GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_GSTD_SIGNALS))
-#define IS_GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_GSTD_SIGNALS))
-#define GSTD_SIGNALS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_GSTD_SIGNALS, GstdSignalsClass))
+#define GSTD_TYPE_SIGNALS (gstd_signals_get_type ())
+#define GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_SIGNALS, gstdSignals))
+#define GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_SIGNALS, gstdSignalsClass))
+#define GSTD_IS_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_SIGNALS))
+#define GSTD_IS_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_SIGNALS))
+#define GSTD_SIGNALS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_SIGNALS, gstdSignalsClass))
 
-typedef struct _GstdSignals GstdSignals;
-typedef struct _GstdSignalsClass GstdSignalsClass;
-typedef struct _GstdSignalsPrivate GstdSignalsPrivate;
+typedef struct _gstdSignals gstdSignals;
+typedef struct _gstdSignalsClass gstdSignalsClass;
+typedef struct _gstdSignalsPrivate gstdSignalsPrivate;
 
-#define TYPE_FACTORY (factory_get_type ())
-#define FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FACTORY, Factory))
-#define FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FACTORY, FactoryClass))
-#define IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FACTORY))
-#define IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FACTORY))
-#define FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_FACTORY, FactoryClass))
+#define GSTD_TYPE_FACTORY_INTERFACE (gstd_factory_interface_get_type ())
+#define GSTD_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterface))
+#define GSTD_IS_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_FACTORY_INTERFACE))
+#define GSTD_FACTORY_INTERFACE_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterfaceIface))
 
-typedef struct _Factory Factory;
-typedef struct _FactoryClass FactoryClass;
+typedef struct _gstdFactoryInterface gstdFactoryInterface;
+typedef struct _gstdFactoryInterfaceIface gstdFactoryInterfaceIface;
 
-struct _GstdSignals {
+#define GSTD_TYPE_FACTORY_INTERFACE_PROXY (gstd_factory_interface_proxy_get_type ())
+
+struct _gstdSignals {
 	GObject parent_instance;
-	GstdSignalsPrivate * priv;
+	gstdSignalsPrivate * priv;
 };
 
-struct _GstdSignalsClass {
+struct _gstdSignalsClass {
 	GObjectClass parent_class;
+};
+
+struct _gstdFactoryInterfaceIface {
+	GTypeInterface parent_iface;
+	gchar* (*create) (gstdFactoryInterface* self, const gchar* description, GError** error);
+	gboolean (*destroy) (gstdFactoryInterface* self, const gchar* path, GError** error);
+	gboolean (*destroy_all) (gstdFactoryInterface* self, GError** error);
+	gchar** (*list) (gstdFactoryInterface* self, int* result_length1, GError** error);
+	gboolean (*ping) (gstdFactoryInterface* self, GError** error);
 };
 
 
@@ -59,45 +70,46 @@ GType gstd_signals_get_type (void) G_GNUC_CONST;
 enum  {
 	GSTD_SIGNALS_DUMMY_PROPERTY
 };
-GstdSignals* gstd_signals_new (void);
-GstdSignals* gstd_signals_construct (GType object_type);
-GType factory_get_type (void) G_GNUC_CONST;
-guint factory_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
-void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms);
+gstdSignals* gstd_signals_new (void);
+gstdSignals* gstd_signals_construct (GType object_type);
+GType gstd_factory_interface_proxy_get_type (void) G_GNUC_CONST;
+guint gstd_factory_interface_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_factory_interface_get_type (void) G_GNUC_CONST;
+void gstd_signals_monitor (gstdSignals* self, GMainLoop* loop, gstdFactoryInterface* factory, guint pollrate_ms);
 static void gstd_signals_finalize (GObject* obj);
 
 
-GstdSignals* gstd_signals_construct (GType object_type) {
-	GstdSignals * self = NULL;
-	self = (GstdSignals*) g_object_new (object_type, NULL);
+gstdSignals* gstd_signals_construct (GType object_type) {
+	gstdSignals * self = NULL;
+	self = (gstdSignals*) g_object_new (object_type, NULL);
 	return self;
 }
 
 
-GstdSignals* gstd_signals_new (void) {
-	return gstd_signals_construct (TYPE_GSTD_SIGNALS);
+gstdSignals* gstd_signals_new (void) {
+	return gstd_signals_construct (GSTD_TYPE_SIGNALS);
 }
 
 
-void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms) {
+void gstd_signals_monitor (gstdSignals* self, GMainLoop* loop, gstdFactoryInterface* factory, guint pollrate_ms) {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (loop != NULL);
 	g_return_if_fail (factory != NULL);
 }
 
 
-static void gstd_signals_class_init (GstdSignalsClass * klass) {
+static void gstd_signals_class_init (gstdSignalsClass * klass) {
 	gstd_signals_parent_class = g_type_class_peek_parent (klass);
 	G_OBJECT_CLASS (klass)->finalize = gstd_signals_finalize;
 }
 
 
-static void gstd_signals_instance_init (GstdSignals * self) {
+static void gstd_signals_instance_init (gstdSignals * self) {
 }
 
 
 static void gstd_signals_finalize (GObject* obj) {
-	GstdSignals * self;
+	gstdSignals * self;
 	self = GSTD_SIGNALS (obj);
 	G_OBJECT_CLASS (gstd_signals_parent_class)->finalize (obj);
 }
@@ -106,9 +118,9 @@ static void gstd_signals_finalize (GObject* obj) {
 GType gstd_signals_get_type (void) {
 	static volatile gsize gstd_signals_type_id__volatile = 0;
 	if (g_once_init_enter (&gstd_signals_type_id__volatile)) {
-		static const GTypeInfo g_define_type_info = { sizeof (GstdSignalsClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) gstd_signals_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (GstdSignals), 0, (GInstanceInitFunc) gstd_signals_instance_init, NULL };
+		static const GTypeInfo g_define_type_info = { sizeof (gstdSignalsClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) gstd_signals_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (gstdSignals), 0, (GInstanceInitFunc) gstd_signals_instance_init, NULL };
 		GType gstd_signals_type_id;
-		gstd_signals_type_id = g_type_register_static (G_TYPE_OBJECT, "GstdSignals", &g_define_type_info, 0);
+		gstd_signals_type_id = g_type_register_static (G_TYPE_OBJECT, "gstdSignals", &g_define_type_info, 0);
 		g_once_init_leave (&gstd_signals_type_id__volatile, gstd_signals_type_id);
 	}
 	return gstd_signals_type_id__volatile;

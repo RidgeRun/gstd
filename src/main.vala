@@ -33,8 +33,6 @@ public errordomain ErrorGstd
 
 public int main (string[] args)
 {
-	GstdSignals signal_processor = null;
-
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
 		Posix.syslog(Posix.LOG_ERR, "Started");
@@ -67,13 +65,10 @@ public int main (string[] args)
 
 		Posix.syslog(Posix.LOG_DEBUG, "Debug logging enabled");
 
-		if (signalPollRate > 0) 
-			signal_processor = new GstdSignals ();
+		gstd.Signals signal_processor = (signalPollRate > 0) ? new gstd.Signals () : null;
 
 		if (useSystemBus && useSessionBus)
-		{
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
-		}
 
 		/* Initializing GStreamer */
 		Gst.init (ref args);
@@ -89,7 +84,7 @@ public int main (string[] args)
 		                                                 GLib.BusType.STARTER);
 
 		/* Create the factory */
-		Factory factory = new Factory (connection);
+		gstd.FactoryInterface factory = new gstd.Factory (connection);
 
 		/* Register factory to DBus */
 		GLib.Bus.own_name_on_connection (

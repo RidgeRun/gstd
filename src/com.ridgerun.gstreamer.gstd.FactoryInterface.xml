@@ -75,7 +75,6 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <signal name="Alive" />
   </interface>
 </node>
 

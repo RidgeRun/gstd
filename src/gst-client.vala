@@ -33,6 +33,9 @@
 using GLib;
 using Gst;
 
+namespace gstd
+{
+
 public class GstdCli : GLib.Object
 {
 	private DBus.Connection conn;
@@ -1335,3 +1338,6 @@ public class GstdCli : GLib.Object
 		return 0;
 	}
 }
+
+}
+

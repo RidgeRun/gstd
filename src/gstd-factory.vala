@@ -9,11 +9,13 @@
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface")]
-public class Factory : GLib.Object
+namespace gstd
+{
+
+public class Factory : GLib.Object, FactoryInterface
 {
 	private GLib.DBusConnection conn;
-	private Pipeline[] pipes;
+	private PipelineInterface[] pipes;
 	private static const int num_pipes = 20;
 
 	/**
@@ -23,7 +25,7 @@ public class Factory : GLib.Object
 	public Factory (GLib.DBusConnection conn)
 	{
 		this.conn = conn;
-		this.pipes = new Pipeline[this.num_pipes];
+		this.pipes = new PipelineInterface[this.num_pipes];
 		for (int ids = 0; ids < this.pipes.length; ++ids)
 		{
 			this.pipes[ids] = null;
@@ -37,7 +39,7 @@ public class Factory : GLib.Object
 	   @param debug, flag to enable debug information
 	   @return the dbus-path of the pipeline, or null if out of resources
 	 */
-	public string Create (string description)
+	public string create (string description)
 	{
 		try
 		{
@@ -53,14 +55,14 @@ public class Factory : GLib.Object
 			}
 			this.pipes[next_id] = new Pipeline (description);
 
-			if (!this.pipes[next_id].PipelineIsInitialized ())
+			if (!(this.pipes[next_id] as Pipeline).pipeline_is_initialized ())
 			{
 				this.pipes[next_id] = null;
 				return "";
 			}
 			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
 			this.conn.register_object(objectpath, this.pipes[next_id]);
-			this.pipes[next_id].PipelineSetPath(objectpath);
+			(this.pipes[next_id] as Pipeline).pipeline_set_path(objectpath);
 			return objectpath;
 		}
 		catch (GLib.IOError error)
@@ -75,13 +77,13 @@ public class Factory : GLib.Object
 	   @return true, if succeded
 	   @see PipelineId
 	 */
-	public bool Destroy (string objectpath)
+	public bool destroy (string objectpath)
 	{
 		for (int index = 0; index < this.pipes.length; ++index)
 		{
 			if (this.pipes[index] != null)
 			{
-				if (this.pipes[index].PipelineGetPath () == objectpath)
+				if ((this.pipes[index] as Pipeline).pipeline_get_path () == objectpath)
 				{
 					this.pipes[index] = null;
 					return true;
@@ -98,7 +100,7 @@ public class Factory : GLib.Object
 	   @return true, if succeded
 	   @see PipelineId
 	 */
-	public bool DestroyAll ()
+	public bool destroy_all ()
 	{
 		for (int index = 0; index < this.pipes.length; ++index)
 		{
@@ -114,7 +116,7 @@ public class Factory : GLib.Object
 	   List the existing pipelines
 	   @return pipe_list with the corresponding paths
 	 */
-	public string[] List ()
+	public string[] list ()
 	{
 		string[] paths = {};
 
@@ -122,7 +124,7 @@ public class Factory : GLib.Object
 		{
 			if (this.pipes[index] != null)
 			{
-				paths += this.pipes[index].PipelineGetPath ();
+				paths += (this.pipes[index] as Pipeline).pipeline_get_path ();
 			}
 		}
 		return paths;
@@ -133,10 +135,12 @@ public class Factory : GLib.Object
 	   Some GStreamer elements use exit(), thus killing the daemon.
 	   @return true if alive
 	 */
-	public bool Ping ()
+	public bool ping ()
 	{
 		/*Gstd received the Ping method call */
 		return true;
 	}
+}
+
 }
 

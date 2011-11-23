@@ -11,9 +11,10 @@
 
 using Gst, Posix;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EoS",
-       signals = "StateChanged", signals = "Error", signals = "QoS")]
-public class Pipeline : GLib.Object
+namespace gstd
+{
+
+public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
 	private Gst.Element pipeline;
@@ -22,23 +23,6 @@ public class Pipeline : GLib.Object
 	private string path = "";
 	private double rate = 1.0;
 	private ulong windowId = 0;
-
-	/* Signals */
-	public signal void EoS (uint64 pipe_id);
-	public signal void StateChanged (uint64 pipe_id, State old_state, State new_state, string src);
-	public signal void Error (uint64 pipe_id, string err_message);
-	public signal void QoS (uint64 pipe_id,
-                                bool live, 
-	                        uint64 running_time,
-	                        uint64 stream_time,
-	                        uint64 timestamp,
-	                        uint64 duration,
-	                        int64 jitter,
-	                        double proportion,
-	                        int quality,
-	                        int format,
-	                        uint64 processed,
-	                        uint64 dropped);
 
 	/**
 	   Create a new instance of a Pipeline
@@ -80,7 +64,7 @@ public class Pipeline : GLib.Object
 		/* Destroy the pipeline */
 		if (this.initialized)
 		{
-			if (!PipelineSetStateImpl (State.NULL))
+			if (!pipeline_set_state_impl (State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
 		}
 	}
@@ -126,7 +110,7 @@ public class Pipeline : GLib.Object
 				message.parse_error (out err, out dbg);
 
 				/*Sending Error Signal */
-				Error (PipelineGetId(), err.message);
+				error(this.id, err.message);
 
 				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
 				break;
@@ -134,7 +118,7 @@ public class Pipeline : GLib.Object
 			case MessageType.EOS:
 
 				/*Sending Eos Signal */
-				EoS (PipelineGetId());
+				eos (this.id);
 				break;
 
 			case MessageType.STATE_CHANGED:
@@ -150,7 +134,7 @@ public class Pipeline : GLib.Object
 				Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src, oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
-				StateChanged (PipelineGetId(), oldstate, newstate, src);
+				state_changed (this.id, oldstate, newstate, src);
 				break;
 
 #if GSTREAMER_SUPPORT_QOS_SIGNAL
@@ -174,7 +158,7 @@ public class Pipeline : GLib.Object
 				message.parse_qos_stats(out fmt, out processed, out dropped);
 				format = fmt;
 
-				QoS(PipelineGetId(), live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
+				qos(this.id, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
 #endif
 			default:
@@ -184,7 +168,7 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	private bool PipelineSetStateImpl (State state)
+	private bool pipeline_set_state_impl (State state)
 	{
 		this.pipeline.set_state (state);
 
@@ -199,27 +183,25 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	public bool PipelineSetState (int state)
+	public bool pipeline_set_state (int state)
 	{
-		return PipelineSetStateImpl((State)(state));
+		return pipeline_set_state_impl((State)(state));
 	}
 
-	private void PipelineAsyncSetStateImpl(State state)
+	private void pipeline_async_set_state_impl(State state)
 	{
-		//Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
 		this.pipeline.set_state (state);
 	}
 	
-	[DBus (no_reply = true)]
-	public void PipelineAsyncSetState(int state)
+	public void pipeline_async_set_state(int state)
 	{
-		PipelineAsyncSetStateImpl((State)(state));
+		pipeline_async_set_state_impl((State)(state));
 	}
 
 	/**
 	   Returns initialized flag value.
 	 */
-	public bool PipelineIsInitialized ()
+	public bool pipeline_is_initialized ()
 	{
 		return this.initialized;
 	}
@@ -227,7 +209,7 @@ public class Pipeline : GLib.Object
 	/**
            Gets the id of the pipe.
           */
-	public uint64 PipelineGetId()
+	public uint64 pipeline_get_id()
 	{
 		return this.id;
 	}
@@ -235,7 +217,7 @@ public class Pipeline : GLib.Object
 	/**
            Sets the id of the pipe.
           */
-	public void PipelineSetId(uint64 id)
+	public void pipeline_set_id(uint64 id)
 	{
 		this.id = id;
 	}
@@ -243,7 +225,7 @@ public class Pipeline : GLib.Object
 	/**
 	   Returns the dbus-path assigned when created
 	 */
-	public string PipelineGetPath ()
+	public string pipeline_get_path()
 	{
 		return this.path;
 	}
@@ -251,7 +233,7 @@ public class Pipeline : GLib.Object
 	/**
 	   Sets a dbus-path,this is assigned when connected to daemon
 	 */
-	public bool PipelineSetPath (string dbuspath)
+	public bool pipeline_set_path (string dbuspath)
 	{
 		this.path = dbuspath;
 		return true;
@@ -260,7 +242,7 @@ public class Pipeline : GLib.Object
 	/**
 	   Gets the pipeline state
 	 */
-	public int PipelineGetState ()
+	public int pipeline_get_state ()
 	{
 		State current, pending;
 		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
@@ -273,7 +255,7 @@ public class Pipeline : GLib.Object
 	   @param property,property name
 	   @param val, bool property value
 	 */
-	public bool ElementSetPropertyBoolean (string element, string property, bool val)
+	public bool element_set_property_boolean (string element, string property, bool val)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Gst.Element e = pipe.get_child_by_name (element) as Element;
@@ -301,7 +283,7 @@ public class Pipeline : GLib.Object
 	   @param property,property name
 	   @param val, int property value
 	 */
-	public bool ElementSetPropertyInt (string element, string property, int val)
+	public bool element_set_property_int (string element, string property, int val)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
@@ -328,7 +310,7 @@ public class Pipeline : GLib.Object
 	   @param element, whose property needs to be set
 	   @param property,property name
 	   @param val, long property value     */
-	public bool ElementSetPropertyInt64 (string element, string property, int64 val)
+	public bool element_set_property_int64 (string element, string property, int64 val)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
@@ -356,7 +338,7 @@ public class Pipeline : GLib.Object
 	   @param property,property name
 	   @param val,string property value
 	 */
-	public bool ElementSetPropertyString (string element, string property, string val)
+	public bool element_set_property_string (string element, string property, string val)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
@@ -379,12 +361,17 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
+	public void element_get_property_boolean(string element, string property, out bool val, out bool success)
+	{
+		success = element_get_property_boolean_impl(element, property, out val);
+	}
+
 	/**
 	   Gets an element's bool property value of a specific pipeline
 	   @param element, whose property value wants to be known
 	   @param property,property name
 	 */
-	public bool ElementGetPropertyBoolean (string element, string property, out bool val)
+	private bool element_get_property_boolean_impl (string element, string property, out bool val)
 	{
 		val = false;
 
@@ -408,13 +395,18 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
+	public void element_get_property_int(string element, string property, out int val, out bool success)
+	{
+		success = element_get_property_int_impl(element, property, out val);
+	}
+
 	/**
 	   Gets an element's int property value of a specific pipeline
 	   @param element, whose property value wants to be known
 	   @param property,property name
 	   @param val value of the property
 	 */
-	public bool ElementGetPropertyInt (string element, string property, out int val)
+	private bool element_get_property_int_impl (string element, string property, out int val)
 	{
 		val = 0;
 
@@ -436,6 +428,11 @@ public class Pipeline : GLib.Object
 
 		e.get (property, &val, null);
 		return true;
+	}
+
+	public void element_get_property_int64(string element, string property, out int64 val, out bool success)
+	{
+		success = element_get_property_int64_impl(element, property, out val);
 	}
 
 	/**
@@ -444,7 +441,7 @@ public class Pipeline : GLib.Object
 	   @param property,property name
 	   @param val value of the property
 	 */
-	public bool ElementGetPropertyInt64 (string element, string property, out int64 val)
+	private bool element_get_property_int64_impl (string element, string property, out int64 val)
 	{
 		val = 0;
 
@@ -468,13 +465,18 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
+	public void element_get_property_string(string element, string property, out string val, out bool success)
+	{
+		success = element_get_property_string_impl(element, property, out val);
+	}
+
 	/**
 	   Gets an element's string property value of a specific pipeline
 	   @param element, whose property value wants to be known
 	   @param property,property name
 	   @param val value of the property
 	 */
-	public bool ElementGetPropertyString (string element, string property, out string val)
+	private bool element_get_property_string_impl (string element, string property, out string val)
 	{
 		val = "";
 
@@ -503,7 +505,7 @@ public class Pipeline : GLib.Object
 	   @param element, whose property value wants to be known
 	   @param val value of the property
 	 */
-	public int ElementGetState (string element)
+	public int element_get_state (string element)
 	{
 		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
@@ -521,6 +523,11 @@ public class Pipeline : GLib.Object
 		return current;
 	}
 
+	public void element_get_property_buffer(string element, string property, out string caps, out uint8[] data, out bool success)
+	{
+		success = element_get_property_buffer_impl(element, property, out caps, out data);
+	}
+
 	/**
 	   Gets an element's buffer property value of a specific pipeline
 	   @param element, whose property value wants to be known
@@ -528,7 +535,7 @@ public class Pipeline : GLib.Object
 	   @param caps caps of buffer
 	   @param data data
 	 */
-	public bool ElementGetPropertyBuffer (string element, string property, out string caps, out uint8[] data)
+	private bool element_get_property_buffer_impl (string element, string property, out string caps, out uint8[] data)
 	{
 		caps = "";
 		data = new uint8[0];
@@ -565,7 +572,7 @@ public class Pipeline : GLib.Object
 	   Query duration to a pipeline on the server
 	   @return time in milliseconds or null if not available
 	 */
-	public int64 PipelineGetDuration ()
+	public int64 pipeline_get_duration ()
 	{
 		/* Query duration */
 		Format format = Gst.Format.TIME;
@@ -591,7 +598,7 @@ public class Pipeline : GLib.Object
 	   Query position to a pipeline on the server
 	   @return position in milliseconds or null if not available
 	 */
-	public int64 PipelineGetPosition ()
+	public int64 pipeline_get_position ()
 	{
 		Format format = Gst.Format.TIME;
 		int64 position = 0;
@@ -615,9 +622,9 @@ public class Pipeline : GLib.Object
 	/**
 	   Seeks a specific time position.
 	   Data in the pipeline is flushed.
-	   @param ipos_ms, absolute position in milliseconds
+	   @param ipos_ns, absolute position in nanoseconds
 	 */
-	public bool PipelineSeek (int64 ipos_ns)
+	public bool pipeline_seek (int64 ipos_ns)
 	{
 		/*Set the current position */
 		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
@@ -631,12 +638,11 @@ public class Pipeline : GLib.Object
 	/**
 	   Seeks a specific time position.
 	   Data in the pipeline is flushed.
-	   @param ipos_ms, absolute position in milliseconds
+	   @param ipos_ms, absolute position in nanoseconds
 	 */
-	[DBus (no_reply = true)]
-	public void PipelineAsyncSeek (int64 ipos_ms)
+	public void pipeline_async_seek (int64 ipos_ns)
 	{
-		PipelineSeek(ipos_ms);
+		pipeline_seek(ipos_ns);
 	}
 
 	/**
@@ -645,7 +651,7 @@ public class Pipeline : GLib.Object
 	   Data in the pipeline is flushed.
 	   @param period_ms, relative time in milliseconds
 	 */
-	public bool PipelineSkip (int64 period_ns)
+	public bool pipeline_skip (int64 period_ns)
 	{
 		Gst.Format format = Gst.Format.TIME;
 		int64 cur_pos_ns = 0;
@@ -675,7 +681,7 @@ public class Pipeline : GLib.Object
 	        otherwise.  Values greater than 1 (or -1 for reverse)
 	        play faster than normal, otherwise slower than normal.
 	 */
-	public bool PipelineSpeed (double new_rate)
+	public bool pipeline_speed (double new_rate)
 	{
 		/*Sets the new rate */
 		this.rate = new_rate;
@@ -689,22 +695,22 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
-	public void PipelineSendEoS ()
+	public void pipeline_send_eos ()
 	{
 		this.pipeline.send_event(new Event.eos());
 	}
 
-	public void PipelineStep (uint64 frames)
+	public void pipeline_step (uint64 frames)
 	{
 #if GSTREAMER_SUPPORT_STEP
-		PipelineSetStateImpl (State.PAUSED);
+		pipeline_set_state_impl (State.PAUSED);
 		this.pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
 #else
 		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
 #endif
 	}
 
-	public bool PipelineSendCustomEvent(string stype, string name)
+	public bool pipeline_send_custom_event(string stype, string name)
 	{
 		EventType type;
 
@@ -737,7 +743,7 @@ public class Pipeline : GLib.Object
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
-	public bool ElementSetState (string element, int state)
+	public bool element_set_state (string element, int state)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
@@ -765,8 +771,7 @@ public class Pipeline : GLib.Object
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
-	[DBus (no_reply = true)]
-	public void ElementAsyncSetState (string element, int state)
+	public void element_async_set_state (string element, int state)
 	{
 		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
@@ -777,7 +782,7 @@ public class Pipeline : GLib.Object
 		e.set_state ((State)(state));
 	}
 
-	public void SetWindowId(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
+	public void set_window_id(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
 	{
 		this.windowId = (ulong)(winId);
 	}
@@ -786,9 +791,11 @@ public class Pipeline : GLib.Object
 	   Ping pipeline..
 	   @return true if alive
 	 */
-	public bool Ping ()
+	public bool ping ()
 	{
 		return true;
 	}
+}
+
 }
 

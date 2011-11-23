@@ -22,30 +22,40 @@
 #include <gst/gst.h>
 
 
-#define TYPE_GSTD_SIGNALS (gstd_signals_get_type ())
-#define GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_GSTD_SIGNALS, GstdSignals))
-#define GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_GSTD_SIGNALS, GstdSignalsClass))
-#define IS_GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_GSTD_SIGNALS))
-#define IS_GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_GSTD_SIGNALS))
-#define GSTD_SIGNALS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_GSTD_SIGNALS, GstdSignalsClass))
+#define GSTD_TYPE_FACTORY_INTERFACE (gstd_factory_interface_get_type ())
+#define GSTD_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterface))
+#define GSTD_IS_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_FACTORY_INTERFACE))
+#define GSTD_FACTORY_INTERFACE_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterfaceIface))
 
-typedef struct _GstdSignals GstdSignals;
-typedef struct _GstdSignalsClass GstdSignalsClass;
+typedef struct _gstdFactoryInterface gstdFactoryInterface;
+typedef struct _gstdFactoryInterfaceIface gstdFactoryInterfaceIface;
 
-#define TYPE_FACTORY (factory_get_type ())
-#define FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FACTORY, Factory))
-#define FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FACTORY, FactoryClass))
-#define IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FACTORY))
-#define IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FACTORY))
-#define FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_FACTORY, FactoryClass))
-
-typedef struct _Factory Factory;
-typedef struct _FactoryClass FactoryClass;
+#define GSTD_TYPE_FACTORY_INTERFACE_PROXY (gstd_factory_interface_proxy_get_type ())
 typedef struct _Block1Data Block1Data;
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
 #define _g_main_loop_unref0(var) ((var == NULL) ? NULL : (var = (g_main_loop_unref (var), NULL)))
 #define _g_option_context_free0(var) ((var == NULL) ? NULL : (var = (g_option_context_free (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
+
+#define GSTD_TYPE_SIGNALS (gstd_signals_get_type ())
+#define GSTD_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_SIGNALS, gstdSignals))
+#define GSTD_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_SIGNALS, gstdSignalsClass))
+#define GSTD_IS_SIGNALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_SIGNALS))
+#define GSTD_IS_SIGNALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_SIGNALS))
+#define GSTD_SIGNALS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_SIGNALS, gstdSignalsClass))
+
+typedef struct _gstdSignals gstdSignals;
+typedef struct _gstdSignalsClass gstdSignalsClass;
+
+#define GSTD_TYPE_FACTORY (gstd_factory_get_type ())
+#define GSTD_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_FACTORY, gstdFactory))
+#define GSTD_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_FACTORY, gstdFactoryClass))
+#define GSTD_IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_FACTORY))
+#define GSTD_IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_FACTORY))
+#define GSTD_FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_FACTORY, gstdFactoryClass))
+
+typedef struct _gstdFactory gstdFactory;
+typedef struct _gstdFactoryClass gstdFactoryClass;
 
 typedef enum  {
 	ERROR_GSTD_OPTION,
@@ -53,10 +63,19 @@ typedef enum  {
 	ERROR_GSTD_SERVICE_OWNERSHIP
 } ErrorGstd;
 #define ERROR_GSTD error_gstd_quark ()
+struct _gstdFactoryInterfaceIface {
+	GTypeInterface parent_iface;
+	gchar* (*create) (gstdFactoryInterface* self, const gchar* description, GError** error);
+	gboolean (*destroy) (gstdFactoryInterface* self, const gchar* path, GError** error);
+	gboolean (*destroy_all) (gstdFactoryInterface* self, GError** error);
+	gchar** (*list) (gstdFactoryInterface* self, int* result_length1, GError** error);
+	gboolean (*ping) (gstdFactoryInterface* self, GError** error);
+};
+
 struct _Block1Data {
 	int _ref_count_;
 	GMainLoop* loop;
-	Factory* factory;
+	gstdFactoryInterface* factory;
 };
 
 
@@ -71,20 +90,22 @@ gint signalPollRate = 0;
 
 GQuark error_gstd_quark (void);
 gint _vala_main (gchar** args, int args_length1);
-GType gstd_signals_get_type (void) G_GNUC_CONST;
-GType factory_get_type (void) G_GNUC_CONST;
-guint factory_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_factory_interface_proxy_get_type (void) G_GNUC_CONST;
+guint gstd_factory_interface_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_factory_interface_get_type (void) G_GNUC_CONST;
 static Block1Data* block1_data_ref (Block1Data* _data1_);
 static void block1_data_unref (Block1Data* _data1_);
-GstdSignals* gstd_signals_new (void);
-GstdSignals* gstd_signals_construct (GType object_type);
-Factory* factory_new (GDBusConnection* conn);
-Factory* factory_construct (GType object_type, GDBusConnection* conn);
+GType gstd_signals_get_type (void) G_GNUC_CONST;
+gstdSignals* gstd_signals_new (void);
+gstdSignals* gstd_signals_construct (GType object_type);
+gstdFactory* gstd_factory_new (GDBusConnection* conn);
+gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn);
+GType gstd_factory_get_type (void) G_GNUC_CONST;
 static void ___lambda0_ (Block1Data* _data1_, GDBusConnection* connection, const gchar* name);
 static void ____lambda0__gbus_name_acquired_callback (GDBusConnection* connection, const gchar* name, gpointer self);
 static void ___lambda1_ (Block1Data* _data1_, GDBusConnection* connection, const gchar* name);
 static void ____lambda1__gbus_name_lost_callback (GDBusConnection* connection, const gchar* name, gpointer self);
-void gstd_signals_monitor (GstdSignals* self, GMainLoop* loop, Factory* factory, guint pollrate_ms);
+void gstd_signals_monitor (gstdSignals* self, GMainLoop* loop, gstdFactoryInterface* factory, guint pollrate_ms);
 
 const GOptionEntry options[4] = {{"system", '\0', 0, G_OPTION_ARG_NONE, &useSystemBus, "Use system bus", NULL}, {"session", '\0', 0, G_OPTION_ARG_NONE, &useSessionBus, "Use session bus", NULL}, {"debug", 'd', 0, G_OPTION_ARG_INT, &debugLevel, "Set debug level (0..3: error, warning, info, debug)", NULL}, {NULL}};
 
@@ -108,16 +129,21 @@ static void block1_data_unref (Block1Data* _data1_) {
 }
 
 
+static gpointer _g_object_ref0 (gpointer self) {
+	return self ? g_object_ref (self) : NULL;
+}
+
+
 static void ___lambda0_ (Block1Data* _data1_, GDBusConnection* connection, const gchar* name) {
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (connection != NULL);
 	g_return_if_fail (name != NULL);
 	{
 		GDBusConnection* _tmp0_;
-		Factory* _tmp1_;
+		gstdFactoryInterface* _tmp1_;
 		_tmp0_ = connection;
 		_tmp1_ = _data1_->factory;
-		factory_register_object (_tmp1_, _tmp0_, "/com/ridgerun/gstreamer/gstd/factory", &_inner_error_);
+		gstd_factory_interface_register_object (_tmp1_, _tmp0_, "/com/ridgerun/gstreamer/gstd/factory", &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_IO_ERROR) {
 				goto __catch2_g_io_error;
@@ -170,30 +196,32 @@ static void ____lambda1__gbus_name_lost_callback (GDBusConnection* connection, c
 
 gint _vala_main (gchar** args, int args_length1) {
 	gint result = 0;
-	GstdSignals* signal_processor;
 	GError * _inner_error_ = NULL;
-	signal_processor = NULL;
 	{
 		Block1Data* _data1_;
 		GOptionContext* _tmp0_;
 		GOptionContext* opt;
 		GOptionContext* _tmp1_;
 		gint _tmp6_;
-		gint _tmp11_;
-		gboolean _tmp13_ = FALSE;
-		gboolean _tmp14_;
-		gboolean _tmp16_;
-		GMainLoop* _tmp18_;
-		GBusType _tmp19_ = 0;
-		gboolean _tmp20_;
-		GBusType _tmp24_;
-		GDBusConnection* _tmp25_ = NULL;
+		gstdSignals* _tmp11_ = NULL;
+		gint _tmp12_;
+		gstdSignals* _tmp14_;
+		gstdSignals* _tmp15_;
+		gstdSignals* signal_processor;
+		gboolean _tmp16_ = FALSE;
+		gboolean _tmp17_;
+		gboolean _tmp19_;
+		GMainLoop* _tmp21_;
+		GBusType _tmp22_ = 0;
+		gboolean _tmp23_;
+		GBusType _tmp27_;
+		GDBusConnection* _tmp28_ = NULL;
 		GDBusConnection* connection;
-		GDBusConnection* _tmp26_;
-		Factory* _tmp27_;
-		GDBusConnection* _tmp28_;
-		GstdSignals* _tmp29_;
-		GMainLoop* _tmp34_;
+		GDBusConnection* _tmp29_;
+		gstdFactory* _tmp30_;
+		GDBusConnection* _tmp31_;
+		gstdSignals* _tmp32_;
+		GMainLoop* _tmp37_;
 		_data1_ = g_slice_new0 (Block1Data);
 		_data1_->_ref_count_ = 1;
 		openlog ("gstd", LOG_PID, LOG_USER);
@@ -213,7 +241,6 @@ gint _vala_main (gchar** args, int args_length1) {
 				_g_option_context_free0 (opt);
 				block1_data_unref (_data1_);
 				_data1_ = NULL;
-				_g_object_unref0 (signal_processor);
 				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
 				return 0;
@@ -274,79 +301,91 @@ gint _vala_main (gchar** args, int args_length1) {
 			}
 		}
 		syslog (LOG_DEBUG, "Debug logging enabled", NULL);
-		_tmp11_ = signalPollRate;
-		if (_tmp11_ > 0) {
-			GstdSignals* _tmp12_;
-			_tmp12_ = gstd_signals_new ();
-			_g_object_unref0 (signal_processor);
-			signal_processor = _tmp12_;
-		}
-		_tmp14_ = useSystemBus;
-		if (_tmp14_) {
-			gboolean _tmp15_;
-			_tmp15_ = useSessionBus;
-			_tmp13_ = _tmp15_;
+		_tmp12_ = signalPollRate;
+		if (_tmp12_ > 0) {
+			gstdSignals* _tmp13_;
+			_tmp13_ = gstd_signals_new ();
+			_g_object_unref0 (_tmp11_);
+			_tmp11_ = _tmp13_;
 		} else {
-			_tmp13_ = FALSE;
+			_g_object_unref0 (_tmp11_);
+			_tmp11_ = NULL;
 		}
-		_tmp16_ = _tmp13_;
-		if (_tmp16_) {
-			GError* _tmp17_;
-			_tmp17_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_BUS, "you have to choose: system or session bus");
-			_inner_error_ = _tmp17_;
+		_tmp14_ = _tmp11_;
+		_tmp15_ = _g_object_ref0 (_tmp14_);
+		signal_processor = _tmp15_;
+		_tmp17_ = useSystemBus;
+		if (_tmp17_) {
+			gboolean _tmp18_;
+			_tmp18_ = useSessionBus;
+			_tmp16_ = _tmp18_;
+		} else {
+			_tmp16_ = FALSE;
+		}
+		_tmp19_ = _tmp16_;
+		if (_tmp19_) {
+			GError* _tmp20_;
+			_tmp20_ = g_error_new_literal (ERROR_GSTD, ERROR_GSTD_BUS, "you have to choose: system or session bus");
+			_inner_error_ = _tmp20_;
+			_g_object_unref0 (signal_processor);
+			_g_object_unref0 (_tmp11_);
 			_g_option_context_free0 (opt);
 			block1_data_unref (_data1_);
 			_data1_ = NULL;
 			goto __catch0_g_error;
 		}
 		gst_init (&args_length1, &args);
-		_tmp18_ = g_main_loop_new (NULL, FALSE);
-		_data1_->loop = _tmp18_;
-		_tmp20_ = useSystemBus;
-		if (_tmp20_) {
-			_tmp19_ = G_BUS_TYPE_SYSTEM;
+		_tmp21_ = g_main_loop_new (NULL, FALSE);
+		_data1_->loop = _tmp21_;
+		_tmp23_ = useSystemBus;
+		if (_tmp23_) {
+			_tmp22_ = G_BUS_TYPE_SYSTEM;
 		} else {
-			GBusType _tmp21_ = 0;
-			gboolean _tmp22_;
-			GBusType _tmp23_;
-			_tmp22_ = useSessionBus;
-			if (_tmp22_) {
-				_tmp21_ = G_BUS_TYPE_SESSION;
+			GBusType _tmp24_ = 0;
+			gboolean _tmp25_;
+			GBusType _tmp26_;
+			_tmp25_ = useSessionBus;
+			if (_tmp25_) {
+				_tmp24_ = G_BUS_TYPE_SESSION;
 			} else {
-				_tmp21_ = G_BUS_TYPE_STARTER;
+				_tmp24_ = G_BUS_TYPE_STARTER;
 			}
-			_tmp23_ = _tmp21_;
-			_tmp19_ = _tmp23_;
+			_tmp26_ = _tmp24_;
+			_tmp22_ = _tmp26_;
 		}
-		_tmp24_ = _tmp19_;
-		_tmp25_ = g_bus_get_sync (_tmp24_, NULL, &_inner_error_);
-		connection = _tmp25_;
+		_tmp27_ = _tmp22_;
+		_tmp28_ = g_bus_get_sync (_tmp27_, NULL, &_inner_error_);
+		connection = _tmp28_;
 		if (_inner_error_ != NULL) {
+			_g_object_unref0 (signal_processor);
+			_g_object_unref0 (_tmp11_);
 			_g_option_context_free0 (opt);
 			block1_data_unref (_data1_);
 			_data1_ = NULL;
 			goto __catch0_g_error;
 		}
-		_tmp26_ = connection;
-		_tmp27_ = factory_new (_tmp26_);
-		_data1_->factory = _tmp27_;
-		_tmp28_ = connection;
-		g_bus_own_name_on_connection_with_closures (_tmp28_, "com.ridgerun.gstreamer.gstd", G_BUS_NAME_OWNER_FLAGS_NONE, (GClosure*) ((____lambda0__gbus_name_acquired_callback == NULL) ? NULL : g_cclosure_new ((GCallback) ____lambda0__gbus_name_acquired_callback, block1_data_ref (_data1_), block1_data_unref)), (GClosure*) ((____lambda1__gbus_name_lost_callback == NULL) ? NULL : g_cclosure_new ((GCallback) ____lambda1__gbus_name_lost_callback, block1_data_ref (_data1_), block1_data_unref)));
-		_tmp29_ = signal_processor;
-		if (_tmp29_ != NULL) {
-			GstdSignals* _tmp30_;
-			GMainLoop* _tmp31_;
-			Factory* _tmp32_;
-			gint _tmp33_;
-			_tmp30_ = signal_processor;
-			_tmp31_ = _data1_->loop;
-			_tmp32_ = _data1_->factory;
-			_tmp33_ = signalPollRate;
-			gstd_signals_monitor (_tmp30_, _tmp31_, _tmp32_, (guint) _tmp33_);
+		_tmp29_ = connection;
+		_tmp30_ = gstd_factory_new (_tmp29_);
+		_data1_->factory = (gstdFactoryInterface*) _tmp30_;
+		_tmp31_ = connection;
+		g_bus_own_name_on_connection_with_closures (_tmp31_, "com.ridgerun.gstreamer.gstd", G_BUS_NAME_OWNER_FLAGS_NONE, (GClosure*) ((____lambda0__gbus_name_acquired_callback == NULL) ? NULL : g_cclosure_new ((GCallback) ____lambda0__gbus_name_acquired_callback, block1_data_ref (_data1_), block1_data_unref)), (GClosure*) ((____lambda1__gbus_name_lost_callback == NULL) ? NULL : g_cclosure_new ((GCallback) ____lambda1__gbus_name_lost_callback, block1_data_ref (_data1_), block1_data_unref)));
+		_tmp32_ = signal_processor;
+		if (_tmp32_ != NULL) {
+			gstdSignals* _tmp33_;
+			GMainLoop* _tmp34_;
+			gstdFactoryInterface* _tmp35_;
+			gint _tmp36_;
+			_tmp33_ = signal_processor;
+			_tmp34_ = _data1_->loop;
+			_tmp35_ = _data1_->factory;
+			_tmp36_ = signalPollRate;
+			gstd_signals_monitor (_tmp33_, _tmp34_, _tmp35_, (guint) _tmp36_);
 		}
-		_tmp34_ = _data1_->loop;
-		g_main_loop_run (_tmp34_);
+		_tmp37_ = _data1_->loop;
+		g_main_loop_run (_tmp37_);
 		_g_object_unref0 (connection);
+		_g_object_unref0 (signal_processor);
+		_g_object_unref0 (_tmp11_);
 		_g_option_context_free0 (opt);
 		block1_data_unref (_data1_);
 		_data1_ = NULL;
@@ -355,25 +394,23 @@ gint _vala_main (gchar** args, int args_length1) {
 	__catch0_g_error:
 	{
 		GError* e = NULL;
-		GError* _tmp35_;
-		const gchar* _tmp36_;
+		GError* _tmp38_;
+		const gchar* _tmp39_;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp35_ = e;
-		_tmp36_ = _tmp35_->message;
-		syslog (LOG_ERR, "Error: %s", _tmp36_, NULL);
+		_tmp38_ = e;
+		_tmp39_ = _tmp38_->message;
+		syslog (LOG_ERR, "Error: %s", _tmp39_, NULL);
 		_g_error_free0 (e);
 	}
 	__finally0:
 	if (_inner_error_ != NULL) {
-		_g_object_unref0 (signal_processor);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return 0;
 	}
 	syslog (LOG_ERR, "Ended", NULL);
 	result = 0;
-	_g_object_unref0 (signal_processor);
 	return result;
 }
 

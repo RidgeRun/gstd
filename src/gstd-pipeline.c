@@ -15,41 +15,83 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
-#include <gst/gst.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include <gst/gst.h>
 #include <syslog.h>
 #include <gst/interfaces/xoverlay.h>
 
 
-#define TYPE_PIPELINE (pipeline_get_type ())
-#define PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_PIPELINE, Pipeline))
-#define PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_PIPELINE, PipelineClass))
-#define IS_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_PIPELINE))
-#define IS_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_PIPELINE))
-#define PIPELINE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_PIPELINE, PipelineClass))
+#define GSTD_TYPE_PIPELINE_INTERFACE (gstd_pipeline_interface_get_type ())
+#define GSTD_PIPELINE_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_PIPELINE_INTERFACE, gstdPipelineInterface))
+#define GSTD_IS_PIPELINE_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_PIPELINE_INTERFACE))
+#define GSTD_PIPELINE_INTERFACE_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), GSTD_TYPE_PIPELINE_INTERFACE, gstdPipelineInterfaceIface))
 
-typedef struct _Pipeline Pipeline;
-typedef struct _PipelineClass PipelineClass;
-typedef struct _PipelinePrivate PipelinePrivate;
+typedef struct _gstdPipelineInterface gstdPipelineInterface;
+typedef struct _gstdPipelineInterfaceIface gstdPipelineInterfaceIface;
+
+#define GSTD_TYPE_PIPELINE_INTERFACE_PROXY (gstd_pipeline_interface_proxy_get_type ())
+
+#define GSTD_TYPE_PIPELINE (gstd_pipeline_get_type ())
+#define GSTD_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_PIPELINE, gstdPipeline))
+#define GSTD_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_PIPELINE, gstdPipelineClass))
+#define GSTD_IS_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_PIPELINE))
+#define GSTD_IS_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_PIPELINE))
+#define GSTD_PIPELINE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_PIPELINE, gstdPipelineClass))
+
+typedef struct _gstdPipeline gstdPipeline;
+typedef struct _gstdPipelineClass gstdPipelineClass;
+typedef struct _gstdPipelinePrivate gstdPipelinePrivate;
 #define _gst_object_unref0(var) ((var == NULL) ? NULL : (var = (gst_object_unref (var), NULL)))
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 #define _g_param_spec_unref0(var) ((var == NULL) ? NULL : (var = (g_param_spec_unref (var), NULL)))
 #define _gst_buffer_unref0(var) ((var == NULL) ? NULL : (var = (gst_buffer_unref (var), NULL)))
 
-struct _Pipeline {
-	GObject parent_instance;
-	PipelinePrivate * priv;
+struct _gstdPipelineInterfaceIface {
+	GTypeInterface parent_iface;
+	void (*pipeline_set_id) (gstdPipelineInterface* self, guint64 id, GError** error);
+	guint64 (*pipeline_get_id) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	void (*pipeline_async_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
+	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+	gboolean (*element_set_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
+	void (*element_get_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
+	void (*element_get_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
+	void (*element_get_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
+	void (*element_get_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
+	void (*element_get_property_buffer) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
+	gint64 (*pipeline_get_duration) (gstdPipelineInterface* self, GError** error);
+	gint64 (*pipeline_get_position) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_speed) (gstdPipelineInterface* self, gdouble newrate, GError** error);
+	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
+	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
+	void (*pipeline_async_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
+	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
+	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_send_custom_event) (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
+	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
+	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
+	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+	void (*element_async_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 };
 
-struct _PipelineClass {
+struct _gstdPipeline {
+	GObject parent_instance;
+	gstdPipelinePrivate * priv;
+};
+
+struct _gstdPipelineClass {
 	GObjectClass parent_class;
 };
 
-struct _PipelinePrivate {
+struct _gstdPipelinePrivate {
 	GstElement* pipeline;
 	guint64 id;
 	gboolean initialized;
@@ -59,318 +101,90 @@ struct _PipelinePrivate {
 };
 
 
-static gpointer pipeline_parent_class = NULL;
+static gpointer gstd_pipeline_parent_class = NULL;
+static gstdPipelineInterfaceIface* gstd_pipeline_gstd_pipeline_interface_parent_iface = NULL;
 
-GType pipeline_get_type (void) G_GNUC_CONST;
-guint pipeline_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
-#define PIPELINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_PIPELINE, PipelinePrivate))
+GType gstd_pipeline_interface_proxy_get_type (void) G_GNUC_CONST;
+guint gstd_pipeline_interface_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_pipeline_interface_get_type (void) G_GNUC_CONST;
+GType gstd_pipeline_get_type (void) G_GNUC_CONST;
+#define GSTD_PIPELINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GSTD_TYPE_PIPELINE, gstdPipelinePrivate))
 enum  {
-	PIPELINE_DUMMY_PROPERTY
+	GSTD_PIPELINE_DUMMY_PROPERTY
 };
-static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state);
-Pipeline* pipeline_new (const gchar* description);
-Pipeline* pipeline_construct (GType object_type, const gchar* description);
-static GstBusSyncReply pipeline_bus_sync_callback (Pipeline* self, GstBus* bus, GstMessage* message);
-static GstBusSyncReply _pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self);
-static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* message);
-static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
-guint64 pipeline_PipelineGetId (Pipeline* self);
-gboolean pipeline_PipelineSetState (Pipeline* self, gint state);
-static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state);
-void pipeline_PipelineAsyncSetState (Pipeline* self, gint state);
-gboolean pipeline_PipelineIsInitialized (Pipeline* self);
-void pipeline_PipelineSetId (Pipeline* self, guint64 id);
-gchar* pipeline_PipelineGetPath (Pipeline* self);
-gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath);
-gint pipeline_PipelineGetState (Pipeline* self);
-gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* element, const gchar* property, gboolean val);
-gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, const gchar* property, gint val);
-gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element, const gchar* property, gint64 val);
-gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element, const gchar* property, const gchar* val);
-gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const gchar* element, const gchar* property, gboolean* val);
-gboolean pipeline_ElementGetPropertyInt (Pipeline* self, const gchar* element, const gchar* property, gint* val);
-gboolean pipeline_ElementGetPropertyInt64 (Pipeline* self, const gchar* element, const gchar* property, gint64* val);
-gboolean pipeline_ElementGetPropertyString (Pipeline* self, const gchar* element, const gchar* property, gchar** val);
-gint pipeline_ElementGetState (Pipeline* self, const gchar* element);
-gboolean pipeline_ElementGetPropertyBuffer (Pipeline* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1);
+static gboolean gstd_pipeline_pipeline_set_state_impl (gstdPipeline* self, GstState state);
+gstdPipeline* gstd_pipeline_new (const gchar* description);
+gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* description);
+static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstBus* bus, GstMessage* message);
+static GstBusSyncReply _gstd_pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self);
+static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, GstMessage* message);
+static gboolean _gstd_pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
+static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* base, gint state, GError** error);
+static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, GstState state);
+static void gstd_pipeline_real_pipeline_async_set_state (gstdPipelineInterface* base, gint state, GError** error);
+gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self);
+static guint64 gstd_pipeline_real_pipeline_get_id (gstdPipelineInterface* base, GError** error);
+static void gstd_pipeline_real_pipeline_set_id (gstdPipelineInterface* base, guint64 id, GError** error);
+gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self);
+gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbuspath);
+static gint gstd_pipeline_real_pipeline_get_state (gstdPipelineInterface* base, GError** error);
+static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
+static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error);
+static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error);
+static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error);
+static void gstd_pipeline_real_element_get_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_boolean_impl (gstdPipeline* self, const gchar* element, const gchar* property, gboolean* val);
+static void gstd_pipeline_real_element_get_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_int_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint* val);
+static void gstd_pipeline_real_element_get_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_int64_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint64* val);
+static void gstd_pipeline_real_element_get_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_string_impl (gstdPipeline* self, const gchar* element, const gchar* property, gchar** val);
+static gint gstd_pipeline_real_element_get_state (gstdPipelineInterface* base, const gchar* element, GError** error);
+static void gstd_pipeline_real_element_get_property_buffer (gstdPipelineInterface* base, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_buffer_impl (gstdPipeline* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1);
 static guint8* _vala_array_dup1 (guint8* self, int length);
-gint64 pipeline_PipelineGetDuration (Pipeline* self);
-gint64 pipeline_PipelineGetPosition (Pipeline* self);
-gboolean pipeline_PipelineSeek (Pipeline* self, gint64 ipos_ns);
-void pipeline_PipelineAsyncSeek (Pipeline* self, gint64 ipos_ms);
-gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns);
-gboolean pipeline_PipelineSpeed (Pipeline* self, gdouble new_rate);
-void pipeline_PipelineSendEoS (Pipeline* self);
-void pipeline_PipelineStep (Pipeline* self, guint64 frames);
-gboolean pipeline_PipelineSendCustomEvent (Pipeline* self, const gchar* stype, const gchar* name);
-gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint state);
-void pipeline_ElementAsyncSetState (Pipeline* self, const gchar* element, gint state);
-void pipeline_SetWindowId (Pipeline* self, guint64 winId);
-gboolean pipeline_Ping (Pipeline* self);
-static void g_cclosure_user_marshal_VOID__UINT64 (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
-static void g_cclosure_user_marshal_VOID__UINT64_ENUM_ENUM_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
-static void g_cclosure_user_marshal_VOID__UINT64_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
-static void g_cclosure_user_marshal_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64 (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
-static void pipeline_finalize (GObject* obj);
-static void _dbus_pipeline_PipelineSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineAsyncSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineIsInitialized (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineGetId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSetId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineGetPath (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSetPath (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineGetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementSetPropertyInt64 (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementSetPropertyString (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetPropertyInt64 (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetPropertyString (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementGetPropertyBuffer (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineGetDuration (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineGetPosition (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSeek (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineAsyncSeek (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSkip (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSpeed (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSendEoS (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineStep (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_PipelineSendCustomEvent (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_ElementAsyncSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_SetWindowId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_pipeline_Ping (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void pipeline_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data);
-static GVariant* pipeline_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data);
-static gboolean pipeline_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data);
-static void _dbus_pipeline_eo_s (GObject* _sender, guint64 pipe_id, gpointer* _data);
-static void _dbus_pipeline_state_changed (GObject* _sender, guint64 pipe_id, GstState old_state, GstState new_state, const gchar* src, gpointer* _data);
-static void _dbus_pipeline_error (GObject* _sender, guint64 pipe_id, const gchar* err_message, gpointer* _data);
-static void _dbus_pipeline_qo_s (GObject* _sender, guint64 pipe_id, gboolean live, guint64 running_time, guint64 stream_time, guint64 timestamp, guint64 duration, gint64 jitter, gdouble proportion, gint quality, gint format, guint64 processed, guint64 dropped, gpointer* _data);
-static void _pipeline_unregister_object (gpointer user_data);
+static gint64 gstd_pipeline_real_pipeline_get_duration (gstdPipelineInterface* base, GError** error);
+static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* base, GError** error);
+static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
+static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
+gboolean gstd_pipeline_interface_pipeline_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, gint64 period_ns, GError** error);
+static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error);
+static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, GError** error);
+static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint64 frames, GError** error);
+static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
+static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
+static void gstd_pipeline_real_element_async_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
+static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint64 winId, GError** error);
+static gboolean gstd_pipeline_real_ping (gstdPipelineInterface* base, GError** error);
+static void gstd_pipeline_finalize (GObject* obj);
 
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSetState_state = {-1, "state", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSetState_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetState_in[] = {&_pipeline_dbus_arg_info_PipelineSetState_state, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetState_out[] = {&_pipeline_dbus_arg_info_PipelineSetState_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSetState = {-1, "PipelineSetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineAsyncSetState_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineAsyncSetState_in[] = {&_pipeline_dbus_arg_info_PipelineAsyncSetState_state, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineAsyncSetState_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineAsyncSetState = {-1, "PipelineAsyncSetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineAsyncSetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineAsyncSetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineIsInitialized_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineIsInitialized_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineIsInitialized_out[] = {&_pipeline_dbus_arg_info_PipelineIsInitialized_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineIsInitialized = {-1, "PipelineIsInitialized", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineIsInitialized_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineIsInitialized_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineGetId_result = {-1, "result", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetId_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetId_out[] = {&_pipeline_dbus_arg_info_PipelineGetId_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineGetId = {-1, "PipelineGetId", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetId_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetId_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSetId_id = {-1, "id", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetId_in[] = {&_pipeline_dbus_arg_info_PipelineSetId_id, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetId_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSetId = {-1, "PipelineSetId", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetId_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetId_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineGetPath_result = {-1, "result", "s"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetPath_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetPath_out[] = {&_pipeline_dbus_arg_info_PipelineGetPath_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineGetPath = {-1, "PipelineGetPath", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetPath_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetPath_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSetPath_dbuspath = {-1, "dbuspath", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSetPath_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetPath_in[] = {&_pipeline_dbus_arg_info_PipelineSetPath_dbuspath, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSetPath_out[] = {&_pipeline_dbus_arg_info_PipelineSetPath_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSetPath = {-1, "PipelineSetPath", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetPath_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSetPath_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineGetState_result = {-1, "result", "i"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetState_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetState_out[] = {&_pipeline_dbus_arg_info_PipelineGetState_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineGetState = {-1, "PipelineGetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyBoolean_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyBoolean_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyBoolean_val = {-1, "val", "b"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyBoolean_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyBoolean_in[] = {&_pipeline_dbus_arg_info_ElementSetPropertyBoolean_element, &_pipeline_dbus_arg_info_ElementSetPropertyBoolean_property, &_pipeline_dbus_arg_info_ElementSetPropertyBoolean_val, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyBoolean_out[] = {&_pipeline_dbus_arg_info_ElementSetPropertyBoolean_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementSetPropertyBoolean = {-1, "ElementSetPropertyBoolean", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyBoolean_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyBoolean_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt_val = {-1, "val", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyInt_in[] = {&_pipeline_dbus_arg_info_ElementSetPropertyInt_element, &_pipeline_dbus_arg_info_ElementSetPropertyInt_property, &_pipeline_dbus_arg_info_ElementSetPropertyInt_val, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyInt_out[] = {&_pipeline_dbus_arg_info_ElementSetPropertyInt_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementSetPropertyInt = {-1, "ElementSetPropertyInt", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyInt_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyInt_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt64_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt64_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt64_val = {-1, "val", "x"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyInt64_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyInt64_in[] = {&_pipeline_dbus_arg_info_ElementSetPropertyInt64_element, &_pipeline_dbus_arg_info_ElementSetPropertyInt64_property, &_pipeline_dbus_arg_info_ElementSetPropertyInt64_val, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyInt64_out[] = {&_pipeline_dbus_arg_info_ElementSetPropertyInt64_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementSetPropertyInt64 = {-1, "ElementSetPropertyInt64", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyInt64_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyInt64_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyString_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyString_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyString_val = {-1, "val", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetPropertyString_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyString_in[] = {&_pipeline_dbus_arg_info_ElementSetPropertyString_element, &_pipeline_dbus_arg_info_ElementSetPropertyString_property, &_pipeline_dbus_arg_info_ElementSetPropertyString_val, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetPropertyString_out[] = {&_pipeline_dbus_arg_info_ElementSetPropertyString_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementSetPropertyString = {-1, "ElementSetPropertyString", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyString_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetPropertyString_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBoolean_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBoolean_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBoolean_val = {-1, "val", "b"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBoolean_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyBoolean_in[] = {&_pipeline_dbus_arg_info_ElementGetPropertyBoolean_element, &_pipeline_dbus_arg_info_ElementGetPropertyBoolean_property, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyBoolean_out[] = {&_pipeline_dbus_arg_info_ElementGetPropertyBoolean_val, &_pipeline_dbus_arg_info_ElementGetPropertyBoolean_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetPropertyBoolean = {-1, "ElementGetPropertyBoolean", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyBoolean_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyBoolean_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt_val = {-1, "val", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyInt_in[] = {&_pipeline_dbus_arg_info_ElementGetPropertyInt_element, &_pipeline_dbus_arg_info_ElementGetPropertyInt_property, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyInt_out[] = {&_pipeline_dbus_arg_info_ElementGetPropertyInt_val, &_pipeline_dbus_arg_info_ElementGetPropertyInt_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetPropertyInt = {-1, "ElementGetPropertyInt", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyInt_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyInt_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt64_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt64_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt64_val = {-1, "val", "x"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyInt64_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyInt64_in[] = {&_pipeline_dbus_arg_info_ElementGetPropertyInt64_element, &_pipeline_dbus_arg_info_ElementGetPropertyInt64_property, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyInt64_out[] = {&_pipeline_dbus_arg_info_ElementGetPropertyInt64_val, &_pipeline_dbus_arg_info_ElementGetPropertyInt64_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetPropertyInt64 = {-1, "ElementGetPropertyInt64", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyInt64_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyInt64_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyString_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyString_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyString_val = {-1, "val", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyString_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyString_in[] = {&_pipeline_dbus_arg_info_ElementGetPropertyString_element, &_pipeline_dbus_arg_info_ElementGetPropertyString_property, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyString_out[] = {&_pipeline_dbus_arg_info_ElementGetPropertyString_val, &_pipeline_dbus_arg_info_ElementGetPropertyString_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetPropertyString = {-1, "ElementGetPropertyString", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyString_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyString_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetState_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetState_result = {-1, "result", "i"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetState_in[] = {&_pipeline_dbus_arg_info_ElementGetState_element, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetState_out[] = {&_pipeline_dbus_arg_info_ElementGetState_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetState = {-1, "ElementGetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBuffer_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBuffer_property = {-1, "property", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBuffer_caps = {-1, "caps", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBuffer_data = {-1, "data", "ay"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementGetPropertyBuffer_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyBuffer_in[] = {&_pipeline_dbus_arg_info_ElementGetPropertyBuffer_element, &_pipeline_dbus_arg_info_ElementGetPropertyBuffer_property, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementGetPropertyBuffer_out[] = {&_pipeline_dbus_arg_info_ElementGetPropertyBuffer_caps, &_pipeline_dbus_arg_info_ElementGetPropertyBuffer_data, &_pipeline_dbus_arg_info_ElementGetPropertyBuffer_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementGetPropertyBuffer = {-1, "ElementGetPropertyBuffer", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyBuffer_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementGetPropertyBuffer_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineGetDuration_result = {-1, "result", "x"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetDuration_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetDuration_out[] = {&_pipeline_dbus_arg_info_PipelineGetDuration_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineGetDuration = {-1, "PipelineGetDuration", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetDuration_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetDuration_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineGetPosition_result = {-1, "result", "x"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetPosition_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineGetPosition_out[] = {&_pipeline_dbus_arg_info_PipelineGetPosition_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineGetPosition = {-1, "PipelineGetPosition", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetPosition_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineGetPosition_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSeek_ipos_ns = {-1, "ipos_ns", "x"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSeek_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSeek_in[] = {&_pipeline_dbus_arg_info_PipelineSeek_ipos_ns, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSeek_out[] = {&_pipeline_dbus_arg_info_PipelineSeek_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSeek = {-1, "PipelineSeek", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSeek_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSeek_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineAsyncSeek_ipos_ms = {-1, "ipos_ms", "x"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineAsyncSeek_in[] = {&_pipeline_dbus_arg_info_PipelineAsyncSeek_ipos_ms, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineAsyncSeek_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineAsyncSeek = {-1, "PipelineAsyncSeek", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineAsyncSeek_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineAsyncSeek_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSkip_period_ns = {-1, "period_ns", "x"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSkip_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSkip_in[] = {&_pipeline_dbus_arg_info_PipelineSkip_period_ns, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSkip_out[] = {&_pipeline_dbus_arg_info_PipelineSkip_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSkip = {-1, "PipelineSkip", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSkip_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSkip_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSpeed_new_rate = {-1, "new_rate", "d"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSpeed_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSpeed_in[] = {&_pipeline_dbus_arg_info_PipelineSpeed_new_rate, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSpeed_out[] = {&_pipeline_dbus_arg_info_PipelineSpeed_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSpeed = {-1, "PipelineSpeed", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSpeed_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSpeed_out)};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSendEoS_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSendEoS_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSendEoS = {-1, "PipelineSendEoS", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSendEoS_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSendEoS_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineStep_frames = {-1, "frames", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineStep_in[] = {&_pipeline_dbus_arg_info_PipelineStep_frames, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineStep_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineStep = {-1, "PipelineStep", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineStep_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineStep_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSendCustomEvent_stype = {-1, "stype", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSendCustomEvent_name = {-1, "name", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_PipelineSendCustomEvent_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSendCustomEvent_in[] = {&_pipeline_dbus_arg_info_PipelineSendCustomEvent_stype, &_pipeline_dbus_arg_info_PipelineSendCustomEvent_name, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_PipelineSendCustomEvent_out[] = {&_pipeline_dbus_arg_info_PipelineSendCustomEvent_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_PipelineSendCustomEvent = {-1, "PipelineSendCustomEvent", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSendCustomEvent_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_PipelineSendCustomEvent_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetState_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetState_state = {-1, "state", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementSetState_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetState_in[] = {&_pipeline_dbus_arg_info_ElementSetState_element, &_pipeline_dbus_arg_info_ElementSetState_state, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementSetState_out[] = {&_pipeline_dbus_arg_info_ElementSetState_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementSetState = {-1, "ElementSetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementSetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementAsyncSetState_element = {-1, "element", "s"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_ElementAsyncSetState_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementAsyncSetState_in[] = {&_pipeline_dbus_arg_info_ElementAsyncSetState_element, &_pipeline_dbus_arg_info_ElementAsyncSetState_state, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_ElementAsyncSetState_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_ElementAsyncSetState = {-1, "ElementAsyncSetState", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementAsyncSetState_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_ElementAsyncSetState_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_SetWindowId_winId = {-1, "winId", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_SetWindowId_in[] = {&_pipeline_dbus_arg_info_SetWindowId_winId, NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_SetWindowId_out[] = {NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_SetWindowId = {-1, "SetWindowId", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_SetWindowId_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_SetWindowId_out)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_Ping_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_Ping_in[] = {NULL};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_Ping_out[] = {&_pipeline_dbus_arg_info_Ping_result, NULL};
-static const GDBusMethodInfo _pipeline_dbus_method_info_Ping = {-1, "Ping", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_Ping_in), (GDBusArgInfo **) (&_pipeline_dbus_arg_info_Ping_out)};
-static const GDBusMethodInfo * const _pipeline_dbus_method_info[] = {&_pipeline_dbus_method_info_PipelineSetState, &_pipeline_dbus_method_info_PipelineAsyncSetState, &_pipeline_dbus_method_info_PipelineIsInitialized, &_pipeline_dbus_method_info_PipelineGetId, &_pipeline_dbus_method_info_PipelineSetId, &_pipeline_dbus_method_info_PipelineGetPath, &_pipeline_dbus_method_info_PipelineSetPath, &_pipeline_dbus_method_info_PipelineGetState, &_pipeline_dbus_method_info_ElementSetPropertyBoolean, &_pipeline_dbus_method_info_ElementSetPropertyInt, &_pipeline_dbus_method_info_ElementSetPropertyInt64, &_pipeline_dbus_method_info_ElementSetPropertyString, &_pipeline_dbus_method_info_ElementGetPropertyBoolean, &_pipeline_dbus_method_info_ElementGetPropertyInt, &_pipeline_dbus_method_info_ElementGetPropertyInt64, &_pipeline_dbus_method_info_ElementGetPropertyString, &_pipeline_dbus_method_info_ElementGetState, &_pipeline_dbus_method_info_ElementGetPropertyBuffer, &_pipeline_dbus_method_info_PipelineGetDuration, &_pipeline_dbus_method_info_PipelineGetPosition, &_pipeline_dbus_method_info_PipelineSeek, &_pipeline_dbus_method_info_PipelineAsyncSeek, &_pipeline_dbus_method_info_PipelineSkip, &_pipeline_dbus_method_info_PipelineSpeed, &_pipeline_dbus_method_info_PipelineSendEoS, &_pipeline_dbus_method_info_PipelineStep, &_pipeline_dbus_method_info_PipelineSendCustomEvent, &_pipeline_dbus_method_info_ElementSetState, &_pipeline_dbus_method_info_ElementAsyncSetState, &_pipeline_dbus_method_info_SetWindowId, &_pipeline_dbus_method_info_Ping, NULL};
-static const GDBusArgInfo _pipeline_dbus_arg_info_eo_s_pipe_id = {-1, "pipe_id", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_eo_s[] = {&_pipeline_dbus_arg_info_eo_s_pipe_id, NULL};
-static const GDBusSignalInfo _pipeline_dbus_signal_info_eo_s = {-1, "EoS", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_eo_s)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_state_changed_pipe_id = {-1, "pipe_id", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_state_changed_old_state = {-1, "old_state", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_state_changed_new_state = {-1, "new_state", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_state_changed_src = {-1, "src", "s"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_state_changed[] = {&_pipeline_dbus_arg_info_state_changed_pipe_id, &_pipeline_dbus_arg_info_state_changed_old_state, &_pipeline_dbus_arg_info_state_changed_new_state, &_pipeline_dbus_arg_info_state_changed_src, NULL};
-static const GDBusSignalInfo _pipeline_dbus_signal_info_state_changed = {-1, "StateChanged", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_state_changed)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_error_pipe_id = {-1, "pipe_id", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_error_err_message = {-1, "err_message", "s"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_error[] = {&_pipeline_dbus_arg_info_error_pipe_id, &_pipeline_dbus_arg_info_error_err_message, NULL};
-static const GDBusSignalInfo _pipeline_dbus_signal_info_error = {-1, "Error", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_error)};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_pipe_id = {-1, "pipe_id", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_live = {-1, "live", "b"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_running_time = {-1, "running_time", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_stream_time = {-1, "stream_time", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_timestamp = {-1, "timestamp", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_duration = {-1, "duration", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_jitter = {-1, "jitter", "x"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_proportion = {-1, "proportion", "d"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_quality = {-1, "quality", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_format = {-1, "format", "i"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_processed = {-1, "processed", "t"};
-static const GDBusArgInfo _pipeline_dbus_arg_info_qo_s_dropped = {-1, "dropped", "t"};
-static const GDBusArgInfo * const _pipeline_dbus_arg_info_qo_s[] = {&_pipeline_dbus_arg_info_qo_s_pipe_id, &_pipeline_dbus_arg_info_qo_s_live, &_pipeline_dbus_arg_info_qo_s_running_time, &_pipeline_dbus_arg_info_qo_s_stream_time, &_pipeline_dbus_arg_info_qo_s_timestamp, &_pipeline_dbus_arg_info_qo_s_duration, &_pipeline_dbus_arg_info_qo_s_jitter, &_pipeline_dbus_arg_info_qo_s_proportion, &_pipeline_dbus_arg_info_qo_s_quality, &_pipeline_dbus_arg_info_qo_s_format, &_pipeline_dbus_arg_info_qo_s_processed, &_pipeline_dbus_arg_info_qo_s_dropped, NULL};
-static const GDBusSignalInfo _pipeline_dbus_signal_info_qo_s = {-1, "QoS", (GDBusArgInfo **) (&_pipeline_dbus_arg_info_qo_s)};
-static const GDBusSignalInfo * const _pipeline_dbus_signal_info[] = {&_pipeline_dbus_signal_info_eo_s, &_pipeline_dbus_signal_info_state_changed, &_pipeline_dbus_signal_info_error, &_pipeline_dbus_signal_info_qo_s, NULL};
-static const GDBusPropertyInfo * const _pipeline_dbus_property_info[] = {NULL};
-static const GDBusInterfaceInfo _pipeline_dbus_interface_info = {-1, "com.ridgerun.gstreamer.gstd.PipelineInterface", (GDBusMethodInfo **) (&_pipeline_dbus_method_info), (GDBusSignalInfo **) (&_pipeline_dbus_signal_info), (GDBusPropertyInfo **) (&_pipeline_dbus_property_info)};
-static const GDBusInterfaceVTable _pipeline_dbus_interface_vtable = {pipeline_dbus_interface_method_call, pipeline_dbus_interface_get_property, pipeline_dbus_interface_set_property};
 
 /**
    Create a new instance of a Pipeline
    @param description, gst-launch style string description of the pipeline
    @param ids, pipeline identifier
  */
-static GstBusSyncReply _pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self) {
+static GstBusSyncReply _gstd_pipeline_bus_sync_callback_gst_bus_sync_handler (GstBus* bus, GstMessage* message, gpointer self) {
 	GstBusSyncReply result;
-	result = pipeline_bus_sync_callback (self, bus, message);
+	result = gstd_pipeline_bus_sync_callback (self, bus, message);
 	return result;
 }
 
 
-static gboolean _pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self) {
+static gboolean _gstd_pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self) {
 	gboolean result;
-	result = pipeline_bus_callback (self, bus, message);
+	result = gstd_pipeline_bus_callback (self, bus, message);
 	return result;
 }
 
 
-Pipeline* pipeline_construct (GType object_type, const gchar* description) {
-	Pipeline * self = NULL;
+gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* description) {
+	gstdPipeline * self = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (description != NULL, NULL);
-	self = (Pipeline*) g_object_new (object_type, NULL);
+	self = (gstdPipeline*) g_object_new (object_type, NULL);
 	{
 		const gchar* _tmp0_;
 		GstElement* _tmp1_ = NULL;
@@ -393,9 +207,9 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 		_tmp4_ = gst_element_get_bus (_tmp3_);
 		bus = _tmp4_;
 		_tmp5_ = bus;
-		gst_bus_set_sync_handler (_tmp5_, _pipeline_bus_sync_callback_gst_bus_sync_handler, self);
+		gst_bus_set_sync_handler (_tmp5_, _gstd_pipeline_bus_sync_callback_gst_bus_sync_handler, self);
 		_tmp6_ = bus;
-		gst_bus_add_watch_full (_tmp6_, G_PRIORITY_DEFAULT, _pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
+		gst_bus_add_watch_full (_tmp6_, G_PRIORITY_DEFAULT, _gstd_pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
 		g_object_unref ((GObject*) self);
 		self->priv->initialized = TRUE;
 		_tmp7_ = description;
@@ -425,8 +239,8 @@ Pipeline* pipeline_construct (GType object_type, const gchar* description) {
 }
 
 
-Pipeline* pipeline_new (const gchar* description) {
-	return pipeline_construct (TYPE_PIPELINE, description);
+gstdPipeline* gstd_pipeline_new (const gchar* description) {
+	return gstd_pipeline_construct (GSTD_TYPE_PIPELINE, description);
 }
 
 
@@ -435,7 +249,7 @@ static gpointer _gst_object_ref0 (gpointer self) {
 }
 
 
-static GstBusSyncReply pipeline_bus_sync_callback (Pipeline* self, GstBus* bus, GstMessage* message) {
+static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstBus* bus, GstMessage* message) {
 	GstBusSyncReply result = 0;
 	gulong _tmp0_;
 	GstMessage* _tmp1_;
@@ -525,7 +339,7 @@ static GstBusSyncReply pipeline_bus_sync_callback (Pipeline* self, GstBus* bus, 
 }
 
 
-static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* message) {
+static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, GstMessage* message) {
 	gboolean result = FALSE;
 	GstMessage* _tmp0_;
 	GstMessageType _tmp1_;
@@ -549,7 +363,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			GstMessage* _tmp5_;
 			GError* _tmp6_ = NULL;
 			gchar* _tmp7_ = NULL;
-			guint64 _tmp8_ = 0ULL;
+			guint64 _tmp8_;
 			GError* _tmp9_;
 			const gchar* _tmp10_;
 			GError* _tmp11_;
@@ -560,10 +374,10 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			err = _tmp6_;
 			_g_free0 (dbg);
 			dbg = _tmp7_;
-			_tmp8_ = pipeline_PipelineGetId (self);
+			_tmp8_ = self->priv->id;
 			_tmp9_ = err;
 			_tmp10_ = _tmp9_->message;
-			g_signal_emit_by_name (self, "error", _tmp8_, _tmp10_);
+			g_signal_emit_by_name ((gstdPipelineInterface*) self, "error", _tmp8_, _tmp10_);
 			_tmp11_ = err;
 			_tmp12_ = _tmp11_->message;
 			syslog (LOG_DEBUG, "Error on pipeline, %s", _tmp12_, NULL);
@@ -573,9 +387,9 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 		}
 		case GST_MESSAGE_EOS:
 		{
-			guint64 _tmp13_ = 0ULL;
-			_tmp13_ = pipeline_PipelineGetId (self);
-			g_signal_emit_by_name (self, "eo-s", _tmp13_);
+			guint64 _tmp13_;
+			_tmp13_ = self->priv->id;
+			g_signal_emit_by_name ((gstdPipelineInterface*) self, "eos", _tmp13_);
 			break;
 		}
 		case GST_MESSAGE_STATE_CHANGED:
@@ -596,7 +410,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			const gchar* _tmp23_ = NULL;
 			GstState _tmp24_;
 			const gchar* _tmp25_ = NULL;
-			guint64 _tmp26_ = 0ULL;
+			guint64 _tmp26_;
 			GstState _tmp27_;
 			GstState _tmp28_;
 			const gchar* _tmp29_;
@@ -615,11 +429,11 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			_tmp24_ = newstate;
 			_tmp25_ = gst_element_state_get_name (_tmp24_);
 			syslog (LOG_INFO, "%s,changes state from %s to %s", _tmp21_, _tmp23_, _tmp25_, NULL);
-			_tmp26_ = pipeline_PipelineGetId (self);
+			_tmp26_ = self->priv->id;
 			_tmp27_ = oldstate;
 			_tmp28_ = newstate;
 			_tmp29_ = src;
-			g_signal_emit_by_name (self, "state-changed", _tmp26_, _tmp27_, _tmp28_, _tmp29_);
+			g_signal_emit_by_name ((gstdPipelineInterface*) self, "state-changed", _tmp26_, (gint) _tmp27_, (gint) _tmp28_, _tmp29_);
 			_g_free0 (src);
 			break;
 		}
@@ -652,7 +466,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			guint64 _tmp42_ = 0ULL;
 			guint64 _tmp43_ = 0ULL;
 			GstFormat _tmp44_;
-			guint64 _tmp45_ = 0ULL;
+			guint64 _tmp45_;
 			gboolean _tmp46_;
 			guint64 _tmp47_;
 			guint64 _tmp48_;
@@ -683,7 +497,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			dropped = _tmp43_;
 			_tmp44_ = fmt;
 			format = (gint) _tmp44_;
-			_tmp45_ = pipeline_PipelineGetId (self);
+			_tmp45_ = self->priv->id;
 			_tmp46_ = live;
 			_tmp47_ = running_time;
 			_tmp48_ = stream_time;
@@ -695,7 +509,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 			_tmp54_ = format;
 			_tmp55_ = processed;
 			_tmp56_ = dropped;
-			g_signal_emit_by_name (self, "qo-s", _tmp45_, _tmp46_, _tmp47_, _tmp48_, _tmp49_, _tmp50_, _tmp51_, _tmp52_, _tmp53_, _tmp54_, _tmp55_, _tmp56_);
+			g_signal_emit_by_name ((gstdPipelineInterface*) self, "qos", _tmp45_, _tmp46_, _tmp47_, _tmp48_, _tmp49_, _tmp50_, _tmp51_, _tmp52_, _tmp53_, _tmp54_, _tmp55_, _tmp56_);
 			break;
 		}
 		default:
@@ -708,7 +522,7 @@ static gboolean pipeline_bus_callback (Pipeline* self, GstBus* bus, GstMessage* 
 }
 
 
-static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state) {
+static gboolean gstd_pipeline_pipeline_set_state_impl (gstdPipeline* self, GstState state) {
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstState _tmp1_;
@@ -743,19 +557,20 @@ static gboolean pipeline_PipelineSetStateImpl (Pipeline* self, GstState state) {
 }
 
 
-gboolean pipeline_PipelineSetState (Pipeline* self, gint state) {
+static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* base, gint state, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	gint _tmp0_;
 	gboolean _tmp1_ = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	_tmp0_ = state;
-	_tmp1_ = pipeline_PipelineSetStateImpl (self, (GstState) _tmp0_);
+	_tmp1_ = gstd_pipeline_pipeline_set_state_impl (self, (GstState) _tmp0_);
 	result = _tmp1_;
 	return result;
 }
 
 
-static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state) {
+static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, GstState state) {
 	GstElement* _tmp0_;
 	GstState _tmp1_;
 	g_return_if_fail (self != NULL);
@@ -765,18 +580,19 @@ static void pipeline_PipelineAsyncSetStateImpl (Pipeline* self, GstState state) 
 }
 
 
-void pipeline_PipelineAsyncSetState (Pipeline* self, gint state) {
+static void gstd_pipeline_real_pipeline_async_set_state (gstdPipelineInterface* base, gint state, GError** error) {
+	gstdPipeline * self;
 	gint _tmp0_;
-	g_return_if_fail (self != NULL);
+	self = (gstdPipeline*) base;
 	_tmp0_ = state;
-	pipeline_PipelineAsyncSetStateImpl (self, (GstState) _tmp0_);
+	gstd_pipeline_pipeline_async_set_state_impl (self, (GstState) _tmp0_);
 }
 
 
 /**
    Returns initialized flag value.
  */
-gboolean pipeline_PipelineIsInitialized (Pipeline* self) {
+gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self) {
 	gboolean result = FALSE;
 	gboolean _tmp0_;
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -789,10 +605,11 @@ gboolean pipeline_PipelineIsInitialized (Pipeline* self) {
 /**
            Gets the id of the pipe.
           */
-guint64 pipeline_PipelineGetId (Pipeline* self) {
+static guint64 gstd_pipeline_real_pipeline_get_id (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	guint64 result = 0ULL;
 	guint64 _tmp0_;
-	g_return_val_if_fail (self != NULL, 0ULL);
+	self = (gstdPipeline*) base;
 	_tmp0_ = self->priv->id;
 	result = _tmp0_;
 	return result;
@@ -802,9 +619,10 @@ guint64 pipeline_PipelineGetId (Pipeline* self) {
 /**
            Sets the id of the pipe.
           */
-void pipeline_PipelineSetId (Pipeline* self, guint64 id) {
+static void gstd_pipeline_real_pipeline_set_id (gstdPipelineInterface* base, guint64 id, GError** error) {
+	gstdPipeline * self;
 	guint64 _tmp0_;
-	g_return_if_fail (self != NULL);
+	self = (gstdPipeline*) base;
 	_tmp0_ = id;
 	self->priv->id = _tmp0_;
 }
@@ -813,7 +631,7 @@ void pipeline_PipelineSetId (Pipeline* self, guint64 id) {
 /**
    Returns the dbus-path assigned when created
  */
-gchar* pipeline_PipelineGetPath (Pipeline* self) {
+gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self) {
 	gchar* result = NULL;
 	const gchar* _tmp0_;
 	gchar* _tmp1_;
@@ -828,7 +646,7 @@ gchar* pipeline_PipelineGetPath (Pipeline* self) {
 /**
    Sets a dbus-path,this is assigned when connected to daemon
  */
-gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath) {
+gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbuspath) {
 	gboolean result = FALSE;
 	const gchar* _tmp0_;
 	gchar* _tmp1_;
@@ -846,14 +664,15 @@ gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath) {
 /**
    Gets the pipeline state
  */
-gint pipeline_PipelineGetState (Pipeline* self) {
+static gint gstd_pipeline_real_pipeline_get_state (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	gint result = 0;
 	GstState current = 0;
 	GstState pending = 0;
 	GstElement* _tmp0_;
 	GstState _tmp1_ = 0;
 	GstState _tmp2_ = 0;
-	g_return_val_if_fail (self != NULL, 0);
+	self = (gstdPipeline*) base;
 	_tmp0_ = self->priv->pipeline;
 	gst_element_get_state (_tmp0_, &_tmp1_, &_tmp2_, (GstClockTime) GST_CLOCK_TIME_NONE);
 	current = _tmp1_;
@@ -874,7 +693,8 @@ static gpointer _g_param_spec_ref0 (gpointer self) {
 }
 
 
-gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* element, const gchar* property, gboolean val) {
+static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -894,7 +714,7 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* elemen
 	GstElement* _tmp15_;
 	const gchar* _tmp16_;
 	gboolean _tmp17_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
@@ -951,7 +771,8 @@ gboolean pipeline_ElementSetPropertyBoolean (Pipeline* self, const gchar* elemen
    @param property,property name
    @param val, int property value
  */
-gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, const gchar* property, gint val) {
+static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -971,7 +792,7 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, c
 	GstElement* _tmp15_;
 	const gchar* _tmp16_;
 	gint _tmp17_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
@@ -1027,7 +848,8 @@ gboolean pipeline_ElementSetPropertyInt (Pipeline* self, const gchar* element, c
    @param element, whose property needs to be set
    @param property,property name
    @param val, long property value     */
-gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element, const gchar* property, gint64 val) {
+static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -1047,7 +869,7 @@ gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element,
 	GstElement* _tmp15_;
 	const gchar* _tmp16_;
 	gint64 _tmp17_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
@@ -1104,7 +926,8 @@ gboolean pipeline_ElementSetPropertyInt64 (Pipeline* self, const gchar* element,
    @param property,property name
    @param val,string property value
  */
-gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element, const gchar* property, const gchar* val) {
+static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -1124,7 +947,7 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element
 	GstElement* _tmp15_;
 	const gchar* _tmp16_;
 	const gchar* _tmp17_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	g_return_val_if_fail (val != NULL, FALSE);
@@ -1176,12 +999,37 @@ gboolean pipeline_ElementSetPropertyString (Pipeline* self, const gchar* element
 }
 
 
+static void gstd_pipeline_real_element_get_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gboolean _vala_val = FALSE;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gboolean _tmp2_ = FALSE;
+	gboolean _tmp3_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp3_ = gstd_pipeline_element_get_property_boolean_impl (self, _tmp0_, _tmp1_, &_tmp2_);
+	_vala_val = _tmp2_;
+	_vala_success = _tmp3_;
+	if (val) {
+		*val = _vala_val;
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
 /**
    Gets an element's bool property value of a specific pipeline
    @param element, whose property value wants to be known
    @param property,property name
  */
-gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const gchar* element, const gchar* property, gboolean* val) {
+static gboolean gstd_pipeline_element_get_property_boolean_impl (gstdPipeline* self, const gchar* element, const gchar* property, gboolean* val) {
 	gboolean _vala_val = FALSE;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
@@ -1261,13 +1109,38 @@ gboolean pipeline_ElementGetPropertyBoolean (Pipeline* self, const gchar* elemen
 }
 
 
+static void gstd_pipeline_real_element_get_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gint _vala_val = 0;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gint _tmp2_ = 0;
+	gboolean _tmp3_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp3_ = gstd_pipeline_element_get_property_int_impl (self, _tmp0_, _tmp1_, &_tmp2_);
+	_vala_val = _tmp2_;
+	_vala_success = _tmp3_;
+	if (val) {
+		*val = _vala_val;
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
 /**
    Gets an element's int property value of a specific pipeline
    @param element, whose property value wants to be known
    @param property,property name
    @param val value of the property
  */
-gboolean pipeline_ElementGetPropertyInt (Pipeline* self, const gchar* element, const gchar* property, gint* val) {
+static gboolean gstd_pipeline_element_get_property_int_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint* val) {
 	gint _vala_val = 0;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
@@ -1347,13 +1220,38 @@ gboolean pipeline_ElementGetPropertyInt (Pipeline* self, const gchar* element, c
 }
 
 
+static void gstd_pipeline_real_element_get_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gint64 _vala_val = 0LL;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gint64 _tmp2_ = 0LL;
+	gboolean _tmp3_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp3_ = gstd_pipeline_element_get_property_int64_impl (self, _tmp0_, _tmp1_, &_tmp2_);
+	_vala_val = _tmp2_;
+	_vala_success = _tmp3_;
+	if (val) {
+		*val = _vala_val;
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
 /**
    Gets an element's long property value of a specific pipeline
    @param element, whose property value wants to be known
    @param property,property name
    @param val value of the property
  */
-gboolean pipeline_ElementGetPropertyInt64 (Pipeline* self, const gchar* element, const gchar* property, gint64* val) {
+static gboolean gstd_pipeline_element_get_property_int64_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint64* val) {
 	gint64 _vala_val = 0LL;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
@@ -1433,13 +1331,41 @@ gboolean pipeline_ElementGetPropertyInt64 (Pipeline* self, const gchar* element,
 }
 
 
+static void gstd_pipeline_real_element_get_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gchar* _vala_val = NULL;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gchar* _tmp2_ = NULL;
+	gboolean _tmp3_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp3_ = gstd_pipeline_element_get_property_string_impl (self, _tmp0_, _tmp1_, &_tmp2_);
+	_g_free0 (_vala_val);
+	_vala_val = _tmp2_;
+	_vala_success = _tmp3_;
+	if (val) {
+		*val = _vala_val;
+	} else {
+		_g_free0 (_vala_val);
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
 /**
    Gets an element's string property value of a specific pipeline
    @param element, whose property value wants to be known
    @param property,property name
    @param val value of the property
  */
-gboolean pipeline_ElementGetPropertyString (Pipeline* self, const gchar* element, const gchar* property, gchar** val) {
+static gboolean gstd_pipeline_element_get_property_string_impl (gstdPipeline* self, const gchar* element, const gchar* property, gchar** val) {
 	gchar* _vala_val = NULL;
 	gboolean result = FALSE;
 	gchar* _tmp0_;
@@ -1533,7 +1459,8 @@ gboolean pipeline_ElementGetPropertyString (Pipeline* self, const gchar* element
    @param element, whose property value wants to be known
    @param val value of the property
  */
-gint pipeline_ElementGetState (Pipeline* self, const gchar* element) {
+static gint gstd_pipeline_real_element_get_state (gstdPipelineInterface* base, const gchar* element, GError** error) {
+	gstdPipeline * self;
 	gint result = 0;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -1548,7 +1475,7 @@ gint pipeline_ElementGetState (Pipeline* self, const gchar* element) {
 	GstElement* _tmp10_;
 	GstState _tmp11_ = 0;
 	GstState _tmp12_ = 0;
-	g_return_val_if_fail (self != NULL, 0);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, 0);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
@@ -1585,6 +1512,49 @@ gint pipeline_ElementGetState (Pipeline* self, const gchar* element) {
 }
 
 
+static void gstd_pipeline_real_element_get_property_buffer (gstdPipelineInterface* base, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gchar* _vala_caps = NULL;
+	guint8* _vala_data = NULL;
+	int _vala_data_length1 = 0;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gchar* _tmp2_ = NULL;
+	guint8* _tmp3_ = NULL;
+	gint _tmp4_ = 0;
+	gboolean _tmp5_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp5_ = gstd_pipeline_element_get_property_buffer_impl (self, _tmp0_, _tmp1_, &_tmp2_, &_tmp3_, &_tmp4_);
+	_g_free0 (_vala_caps);
+	_vala_caps = _tmp2_;
+	_vala_data = (g_free (_vala_data), NULL);
+	_vala_data = _tmp3_;
+	_vala_data_length1 = _tmp4_;
+	_vala_success = _tmp5_;
+	if (caps) {
+		*caps = _vala_caps;
+	} else {
+		_g_free0 (_vala_caps);
+	}
+	if (data) {
+		*data = _vala_data;
+	} else {
+		_vala_data = (g_free (_vala_data), NULL);
+	}
+	if (data_length1) {
+		*data_length1 = _vala_data_length1;
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
 /**
    Gets an element's buffer property value of a specific pipeline
    @param element, whose property value wants to be known
@@ -1597,7 +1567,7 @@ static guint8* _vala_array_dup1 (guint8* self, int length) {
 }
 
 
-gboolean pipeline_ElementGetPropertyBuffer (Pipeline* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1) {
+static gboolean gstd_pipeline_element_get_property_buffer_impl (gstdPipeline* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1) {
 	gchar* _vala_caps = NULL;
 	guint8* _vala_data = NULL;
 	int _vala_data_length1 = 0;
@@ -1768,7 +1738,8 @@ gboolean pipeline_ElementGetPropertyBuffer (Pipeline* self, const gchar* element
    Query duration to a pipeline on the server
    @return time in milliseconds or null if not available
  */
-gint64 pipeline_PipelineGetDuration (Pipeline* self) {
+static gint64 gstd_pipeline_real_pipeline_get_duration (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	gint64 result = 0LL;
 	GstFormat format;
 	gint64 duration;
@@ -1780,7 +1751,7 @@ gint64 pipeline_PipelineGetDuration (Pipeline* self) {
 	gint64 _tmp5_;
 	gint64 _tmp6_;
 	gint64 _tmp7_;
-	g_return_val_if_fail (self != NULL, 0LL);
+	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	duration = (gint64) 0;
 	_tmp0_ = self->priv->pipeline;
@@ -1809,7 +1780,8 @@ gint64 pipeline_PipelineGetDuration (Pipeline* self) {
    Query position to a pipeline on the server
    @return position in milliseconds or null if not available
  */
-gint64 pipeline_PipelineGetPosition (Pipeline* self) {
+static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	gint64 result = 0LL;
 	GstFormat format;
 	gint64 position;
@@ -1821,7 +1793,7 @@ gint64 pipeline_PipelineGetPosition (Pipeline* self) {
 	gint64 _tmp5_;
 	gint64 _tmp6_;
 	gint64 _tmp7_;
-	g_return_val_if_fail (self != NULL, 0LL);
+	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	position = (gint64) 0;
 	_tmp0_ = self->priv->pipeline;
@@ -1849,15 +1821,16 @@ gint64 pipeline_PipelineGetPosition (Pipeline* self) {
 /**
    Seeks a specific time position.
    Data in the pipeline is flushed.
-   @param ipos_ms, absolute position in milliseconds
+   @param ipos_ns, absolute position in nanoseconds
  */
-gboolean pipeline_PipelineSeek (Pipeline* self, gint64 ipos_ns) {
+static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	gdouble _tmp1_;
 	gint64 _tmp2_;
 	gboolean _tmp3_ = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = self->priv->rate;
 	_tmp2_ = ipos_ns;
@@ -1875,13 +1848,20 @@ gboolean pipeline_PipelineSeek (Pipeline* self, gint64 ipos_ns) {
 /**
    Seeks a specific time position.
    Data in the pipeline is flushed.
-   @param ipos_ms, absolute position in milliseconds
+   @param ipos_ms, absolute position in nanoseconds
  */
-void pipeline_PipelineAsyncSeek (Pipeline* self, gint64 ipos_ms) {
+static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
+	gstdPipeline * self;
 	gint64 _tmp0_;
-	g_return_if_fail (self != NULL);
-	_tmp0_ = ipos_ms;
-	pipeline_PipelineSeek (self, _tmp0_);
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	_tmp0_ = ipos_ns;
+	gstd_pipeline_interface_pipeline_seek ((gstdPipelineInterface*) self, _tmp0_, &_inner_error_);
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -1891,7 +1871,8 @@ void pipeline_PipelineAsyncSeek (Pipeline* self, gint64 ipos_ms) {
    Data in the pipeline is flushed.
    @param period_ms, relative time in milliseconds
  */
-gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
+static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, gint64 period_ns, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstFormat format;
 	gint64 cur_pos_ns;
@@ -1906,7 +1887,7 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
 	GstFormat _tmp7_;
 	gint64 _tmp8_;
 	gboolean _tmp9_ = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	cur_pos_ns = (gint64) 0;
 	_tmp0_ = self->priv->pipeline;
@@ -1941,13 +1922,14 @@ gboolean pipeline_PipelineSkip (Pipeline* self, gint64 period_ns) {
         otherwise.  Values greater than 1 (or -1 for reverse)
         play faster than normal, otherwise slower than normal.
  */
-gboolean pipeline_PipelineSpeed (Pipeline* self, gdouble new_rate) {
+static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	gdouble _tmp0_;
 	GstElement* _tmp1_;
 	gdouble _tmp2_;
 	gboolean _tmp3_ = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	_tmp0_ = new_rate;
 	self->priv->rate = _tmp0_;
 	_tmp1_ = self->priv->pipeline;
@@ -1963,22 +1945,24 @@ gboolean pipeline_PipelineSpeed (Pipeline* self, gdouble new_rate) {
 }
 
 
-void pipeline_PipelineSendEoS (Pipeline* self) {
+static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	GstElement* _tmp0_;
 	GstEvent* _tmp1_;
-	g_return_if_fail (self != NULL);
+	self = (gstdPipeline*) base;
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = gst_event_new_eos ();
 	gst_element_send_event (_tmp0_, _tmp1_);
 }
 
 
-void pipeline_PipelineStep (Pipeline* self, guint64 frames) {
+static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint64 frames, GError** error) {
+	gstdPipeline * self;
 	GstElement* _tmp0_;
 	guint64 _tmp1_;
 	GstEvent* _tmp2_;
-	g_return_if_fail (self != NULL);
-	pipeline_PipelineSetStateImpl (self, GST_STATE_PAUSED);
+	self = (gstdPipeline*) base;
+	gstd_pipeline_pipeline_set_state_impl (self, GST_STATE_PAUSED);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = frames;
 	_tmp2_ = gst_event_new_step (GST_FORMAT_BUFFERS, _tmp1_, 1.0, TRUE, FALSE);
@@ -1986,7 +1970,8 @@ void pipeline_PipelineStep (Pipeline* self, guint64 frames) {
 }
 
 
-gboolean pipeline_PipelineSendCustomEvent (Pipeline* self, const gchar* stype, const gchar* name) {
+static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstEventType type = 0;
 	const gchar* _tmp0_;
@@ -2003,7 +1988,7 @@ gboolean pipeline_PipelineSendCustomEvent (Pipeline* self, const gchar* stype, c
 	const gchar* _tmp7_;
 	GstStructure* _tmp8_;
 	GstEvent* _tmp9_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (stype != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 	_tmp0_ = stype;
@@ -2076,7 +2061,8 @@ gboolean pipeline_PipelineSendCustomEvent (Pipeline* self, const gchar* stype, c
    @param element, whose state is to be set
    @param state, desired element state
  */
-gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint state) {
+static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -2095,7 +2081,7 @@ gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint st
 	GstState _tmp11_ = 0;
 	GstState _tmp12_;
 	gint _tmp13_;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
@@ -2149,7 +2135,8 @@ gboolean pipeline_ElementSetState (Pipeline* self, const gchar* element, gint st
    @param element, whose state is to be set
    @param state, desired element state
  */
-void pipeline_ElementAsyncSetState (Pipeline* self, const gchar* element, gint state) {
+static void gstd_pipeline_real_element_async_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
+	gstdPipeline * self;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
 	GstPipeline* pipe;
@@ -2160,7 +2147,7 @@ void pipeline_ElementAsyncSetState (Pipeline* self, const gchar* element, gint s
 	GstElement* _tmp5_;
 	GstElement* _tmp7_;
 	gint _tmp8_;
-	g_return_if_fail (self != NULL);
+	self = (gstdPipeline*) base;
 	g_return_if_fail (element != NULL);
 	_tmp0_ = self->priv->pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
@@ -2183,9 +2170,10 @@ void pipeline_ElementAsyncSetState (Pipeline* self, const gchar* element, gint s
 }
 
 
-void pipeline_SetWindowId (Pipeline* self, guint64 winId) {
+static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint64 winId, GError** error) {
+	gstdPipeline * self;
 	guint64 _tmp0_;
-	g_return_if_fail (self != NULL);
+	self = (gstdPipeline*) base;
 	_tmp0_ = winId;
 	self->priv->windowId = (gulong) _tmp0_;
 }
@@ -2195,108 +2183,58 @@ void pipeline_SetWindowId (Pipeline* self, guint64 winId) {
    Ping pipeline..
    @return true if alive
  */
-gboolean pipeline_Ping (Pipeline* self) {
+static gboolean gstd_pipeline_real_ping (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
 	gboolean result = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdPipeline*) base;
 	result = TRUE;
 	return result;
 }
 
 
-static void g_cclosure_user_marshal_VOID__UINT64 (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
-	typedef void (*GMarshalFunc_VOID__UINT64) (gpointer data1, guint64 arg_1, gpointer data2);
-	register GMarshalFunc_VOID__UINT64 callback;
-	register GCClosure * cc;
-	register gpointer data1;
-	register gpointer data2;
-	cc = (GCClosure *) closure;
-	g_return_if_fail (n_param_values == 2);
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = param_values->data[0].v_pointer;
-	} else {
-		data1 = param_values->data[0].v_pointer;
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_VOID__UINT64) (marshal_data ? marshal_data : cc->callback);
-	callback (data1, g_value_get_uint64 (param_values + 1), data2);
+static void gstd_pipeline_class_init (gstdPipelineClass * klass) {
+	gstd_pipeline_parent_class = g_type_class_peek_parent (klass);
+	g_type_class_add_private (klass, sizeof (gstdPipelinePrivate));
+	G_OBJECT_CLASS (klass)->finalize = gstd_pipeline_finalize;
 }
 
 
-static void g_cclosure_user_marshal_VOID__UINT64_ENUM_ENUM_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
-	typedef void (*GMarshalFunc_VOID__UINT64_ENUM_ENUM_STRING) (gpointer data1, guint64 arg_1, gint arg_2, gint arg_3, const char* arg_4, gpointer data2);
-	register GMarshalFunc_VOID__UINT64_ENUM_ENUM_STRING callback;
-	register GCClosure * cc;
-	register gpointer data1;
-	register gpointer data2;
-	cc = (GCClosure *) closure;
-	g_return_if_fail (n_param_values == 5);
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = param_values->data[0].v_pointer;
-	} else {
-		data1 = param_values->data[0].v_pointer;
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_VOID__UINT64_ENUM_ENUM_STRING) (marshal_data ? marshal_data : cc->callback);
-	callback (data1, g_value_get_uint64 (param_values + 1), g_value_get_enum (param_values + 2), g_value_get_enum (param_values + 3), g_value_get_string (param_values + 4), data2);
+static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineInterfaceIface * iface) {
+	gstd_pipeline_gstd_pipeline_interface_parent_iface = g_type_interface_peek_parent (iface);
+	iface->pipeline_set_state = (gboolean (*)(gstdPipelineInterface*, gint, GError**)) gstd_pipeline_real_pipeline_set_state;
+	iface->pipeline_async_set_state = (void (*)(gstdPipelineInterface*, gint, GError**)) gstd_pipeline_real_pipeline_async_set_state;
+	iface->pipeline_get_id = (guint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_id;
+	iface->pipeline_set_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_set_id;
+	iface->pipeline_get_state = (gint (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_state;
+	iface->element_set_property_boolean = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean;
+	iface->element_set_property_int = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int;
+	iface->element_set_property_int64 = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64;
+	iface->element_set_property_string = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_element_set_property_string;
+	iface->element_get_property_boolean = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_boolean;
+	iface->element_get_property_int = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int;
+	iface->element_get_property_int64 = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int64;
+	iface->element_get_property_string = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gchar**, gboolean*, GError**)) gstd_pipeline_real_element_get_property_string;
+	iface->element_get_state = (gint (*)(gstdPipelineInterface*, const gchar*, GError**)) gstd_pipeline_real_element_get_state;
+	iface->element_get_property_buffer = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gchar**, guint8**, int*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_buffer;
+	iface->pipeline_get_duration = (gint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_duration;
+	iface->pipeline_get_position = (gint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_position;
+	iface->pipeline_seek = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_seek;
+	iface->pipeline_async_seek = (void (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_async_seek;
+	iface->pipeline_skip = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_skip;
+	iface->pipeline_speed = (gboolean (*)(gstdPipelineInterface*, gdouble, GError**)) gstd_pipeline_real_pipeline_speed;
+	iface->pipeline_send_eos = (void (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_send_eos;
+	iface->pipeline_step = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_step;
+	iface->pipeline_send_custom_event = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_pipeline_send_custom_event;
+	iface->element_set_state = (gboolean (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_state;
+	iface->element_async_set_state = (void (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_async_set_state;
+	iface->set_window_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_set_window_id;
+	iface->ping = (gboolean (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_ping;
 }
 
 
-static void g_cclosure_user_marshal_VOID__UINT64_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
-	typedef void (*GMarshalFunc_VOID__UINT64_STRING) (gpointer data1, guint64 arg_1, const char* arg_2, gpointer data2);
-	register GMarshalFunc_VOID__UINT64_STRING callback;
-	register GCClosure * cc;
-	register gpointer data1;
-	register gpointer data2;
-	cc = (GCClosure *) closure;
-	g_return_if_fail (n_param_values == 3);
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = param_values->data[0].v_pointer;
-	} else {
-		data1 = param_values->data[0].v_pointer;
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_VOID__UINT64_STRING) (marshal_data ? marshal_data : cc->callback);
-	callback (data1, g_value_get_uint64 (param_values + 1), g_value_get_string (param_values + 2), data2);
-}
-
-
-static void g_cclosure_user_marshal_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64 (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
-	typedef void (*GMarshalFunc_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64) (gpointer data1, guint64 arg_1, gboolean arg_2, guint64 arg_3, guint64 arg_4, guint64 arg_5, guint64 arg_6, gint64 arg_7, gdouble arg_8, gint arg_9, gint arg_10, guint64 arg_11, guint64 arg_12, gpointer data2);
-	register GMarshalFunc_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64 callback;
-	register GCClosure * cc;
-	register gpointer data1;
-	register gpointer data2;
-	cc = (GCClosure *) closure;
-	g_return_if_fail (n_param_values == 13);
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = param_values->data[0].v_pointer;
-	} else {
-		data1 = param_values->data[0].v_pointer;
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64) (marshal_data ? marshal_data : cc->callback);
-	callback (data1, g_value_get_uint64 (param_values + 1), g_value_get_boolean (param_values + 2), g_value_get_uint64 (param_values + 3), g_value_get_uint64 (param_values + 4), g_value_get_uint64 (param_values + 5), g_value_get_uint64 (param_values + 6), g_value_get_int64 (param_values + 7), g_value_get_double (param_values + 8), g_value_get_int (param_values + 9), g_value_get_int (param_values + 10), g_value_get_uint64 (param_values + 11), g_value_get_uint64 (param_values + 12), data2);
-}
-
-
-static void pipeline_class_init (PipelineClass * klass) {
-	pipeline_parent_class = g_type_class_peek_parent (klass);
-	g_type_class_add_private (klass, sizeof (PipelinePrivate));
-	G_OBJECT_CLASS (klass)->finalize = pipeline_finalize;
-	g_signal_new ("eo_s", TYPE_PIPELINE, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_VOID__UINT64, G_TYPE_NONE, 1, G_TYPE_UINT64);
-	g_signal_new ("state_changed", TYPE_PIPELINE, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_VOID__UINT64_ENUM_ENUM_STRING, G_TYPE_NONE, 4, G_TYPE_UINT64, GST_TYPE_STATE, GST_TYPE_STATE, G_TYPE_STRING);
-	g_signal_new ("error", TYPE_PIPELINE, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_VOID__UINT64_STRING, G_TYPE_NONE, 2, G_TYPE_UINT64, G_TYPE_STRING);
-	g_signal_new ("qo_s", TYPE_PIPELINE, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_user_marshal_VOID__UINT64_BOOLEAN_UINT64_UINT64_UINT64_UINT64_INT64_DOUBLE_INT_INT_UINT64_UINT64, G_TYPE_NONE, 12, G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64, G_TYPE_UINT64, G_TYPE_UINT64, G_TYPE_UINT64, G_TYPE_INT64, G_TYPE_DOUBLE, G_TYPE_INT, G_TYPE_INT, G_TYPE_UINT64, G_TYPE_UINT64);
-}
-
-
-static void pipeline_instance_init (Pipeline * self) {
+static void gstd_pipeline_instance_init (gstdPipeline * self) {
 	gchar* _tmp0_;
-	self->priv = PIPELINE_GET_PRIVATE (self);
+	self->priv = GSTD_PIPELINE_GET_PRIVATE (self);
 	self->priv->id = (guint64) 0;
 	self->priv->initialized = FALSE;
 	_tmp0_ = g_strdup ("");
@@ -2306,1051 +2244,35 @@ static void pipeline_instance_init (Pipeline * self) {
 }
 
 
-static void pipeline_finalize (GObject* obj) {
-	Pipeline * self;
+static void gstd_pipeline_finalize (GObject* obj) {
+	gstdPipeline * self;
 	gboolean _tmp0_;
-	self = PIPELINE (obj);
+	self = GSTD_PIPELINE (obj);
 	_tmp0_ = self->priv->initialized;
 	if (_tmp0_) {
 		gboolean _tmp1_ = FALSE;
-		_tmp1_ = pipeline_PipelineSetStateImpl (self, GST_STATE_NULL);
+		_tmp1_ = gstd_pipeline_pipeline_set_state_impl (self, GST_STATE_NULL);
 		if (!_tmp1_) {
 			syslog (LOG_ERR, "Failed to destroy pipeline", NULL);
 		}
 	}
 	_gst_object_unref0 (self->priv->pipeline);
 	_g_free0 (self->priv->path);
-	G_OBJECT_CLASS (pipeline_parent_class)->finalize (obj);
+	G_OBJECT_CLASS (gstd_pipeline_parent_class)->finalize (obj);
 }
 
 
-GType pipeline_get_type (void) {
-	static volatile gsize pipeline_type_id__volatile = 0;
-	if (g_once_init_enter (&pipeline_type_id__volatile)) {
-		static const GTypeInfo g_define_type_info = { sizeof (PipelineClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) pipeline_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (Pipeline), 0, (GInstanceInitFunc) pipeline_instance_init, NULL };
-		GType pipeline_type_id;
-		pipeline_type_id = g_type_register_static (G_TYPE_OBJECT, "Pipeline", &g_define_type_info, 0);
-		g_type_set_qdata (pipeline_type_id, g_quark_from_static_string ("vala-dbus-register-object"), (void*) pipeline_register_object);
-		g_once_init_leave (&pipeline_type_id__volatile, pipeline_type_id);
+GType gstd_pipeline_get_type (void) {
+	static volatile gsize gstd_pipeline_type_id__volatile = 0;
+	if (g_once_init_enter (&gstd_pipeline_type_id__volatile)) {
+		static const GTypeInfo g_define_type_info = { sizeof (gstdPipelineClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) gstd_pipeline_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (gstdPipeline), 0, (GInstanceInitFunc) gstd_pipeline_instance_init, NULL };
+		static const GInterfaceInfo gstd_pipeline_interface_info = { (GInterfaceInitFunc) gstd_pipeline_gstd_pipeline_interface_interface_init, (GInterfaceFinalizeFunc) NULL, NULL};
+		GType gstd_pipeline_type_id;
+		gstd_pipeline_type_id = g_type_register_static (G_TYPE_OBJECT, "gstdPipeline", &g_define_type_info, 0);
+		g_type_add_interface_static (gstd_pipeline_type_id, GSTD_TYPE_PIPELINE_INTERFACE, &gstd_pipeline_interface_info);
+		g_once_init_leave (&gstd_pipeline_type_id__volatile, gstd_pipeline_type_id);
 	}
-	return pipeline_type_id__volatile;
-}
-
-
-static void _dbus_pipeline_PipelineSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gint state = 0;
-	GVariant* _tmp5_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp5_ = g_variant_iter_next_value (&_arguments_iter);
-	state = g_variant_get_int32 (_tmp5_);
-	g_variant_unref (_tmp5_);
-	result = pipeline_PipelineSetState (self, state);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineAsyncSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gint state = 0;
-	GVariant* _tmp6_;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp6_ = g_variant_iter_next_value (&_arguments_iter);
-	state = g_variant_get_int32 (_tmp6_);
-	g_variant_unref (_tmp6_);
-	pipeline_PipelineAsyncSetState (self, state);
-}
-
-
-static void _dbus_pipeline_PipelineIsInitialized (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineIsInitialized (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineGetId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	guint64 result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineGetId (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_uint64 (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSetId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	guint64 id = 0ULL;
-	GVariant* _tmp7_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp7_ = g_variant_iter_next_value (&_arguments_iter);
-	id = g_variant_get_uint64 (_tmp7_);
-	g_variant_unref (_tmp7_);
-	pipeline_PipelineSetId (self, id);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineGetPath (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gchar* result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineGetPath (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_string (result));
-	_g_free0 (result);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSetPath (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* dbuspath = NULL;
-	GVariant* _tmp8_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp8_ = g_variant_iter_next_value (&_arguments_iter);
-	dbuspath = g_variant_dup_string (_tmp8_, NULL);
-	g_variant_unref (_tmp8_);
-	result = pipeline_PipelineSetPath (self, dbuspath);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (dbuspath);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineGetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineGetState (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int32 (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementSetPropertyBoolean (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp9_;
-	gchar* property = NULL;
-	GVariant* _tmp10_;
-	gboolean val = FALSE;
-	GVariant* _tmp11_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp9_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp9_, NULL);
-	g_variant_unref (_tmp9_);
-	_tmp10_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp10_, NULL);
-	g_variant_unref (_tmp10_);
-	_tmp11_ = g_variant_iter_next_value (&_arguments_iter);
-	val = g_variant_get_boolean (_tmp11_);
-	g_variant_unref (_tmp11_);
-	result = pipeline_ElementSetPropertyBoolean (self, element, property, val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementSetPropertyInt (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp12_;
-	gchar* property = NULL;
-	GVariant* _tmp13_;
-	gint val = 0;
-	GVariant* _tmp14_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp12_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp12_, NULL);
-	g_variant_unref (_tmp12_);
-	_tmp13_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp13_, NULL);
-	g_variant_unref (_tmp13_);
-	_tmp14_ = g_variant_iter_next_value (&_arguments_iter);
-	val = g_variant_get_int32 (_tmp14_);
-	g_variant_unref (_tmp14_);
-	result = pipeline_ElementSetPropertyInt (self, element, property, val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementSetPropertyInt64 (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp15_;
-	gchar* property = NULL;
-	GVariant* _tmp16_;
-	gint64 val = 0LL;
-	GVariant* _tmp17_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp15_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp15_, NULL);
-	g_variant_unref (_tmp15_);
-	_tmp16_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp16_, NULL);
-	g_variant_unref (_tmp16_);
-	_tmp17_ = g_variant_iter_next_value (&_arguments_iter);
-	val = g_variant_get_int64 (_tmp17_);
-	g_variant_unref (_tmp17_);
-	result = pipeline_ElementSetPropertyInt64 (self, element, property, val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementSetPropertyString (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp18_;
-	gchar* property = NULL;
-	GVariant* _tmp19_;
-	gchar* val = NULL;
-	GVariant* _tmp20_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp18_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp18_, NULL);
-	g_variant_unref (_tmp18_);
-	_tmp19_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp19_, NULL);
-	g_variant_unref (_tmp19_);
-	_tmp20_ = g_variant_iter_next_value (&_arguments_iter);
-	val = g_variant_dup_string (_tmp20_, NULL);
-	g_variant_unref (_tmp20_);
-	result = pipeline_ElementSetPropertyString (self, element, property, val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	_g_free0 (val);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetPropertyBoolean (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp21_;
-	gchar* property = NULL;
-	GVariant* _tmp22_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean val = FALSE;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp21_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp21_, NULL);
-	g_variant_unref (_tmp21_);
-	_tmp22_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp22_, NULL);
-	g_variant_unref (_tmp22_);
-	result = pipeline_ElementGetPropertyBoolean (self, element, property, &val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (val));
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetPropertyInt (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp23_;
-	gchar* property = NULL;
-	GVariant* _tmp24_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint val = 0;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp23_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp23_, NULL);
-	g_variant_unref (_tmp23_);
-	_tmp24_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp24_, NULL);
-	g_variant_unref (_tmp24_);
-	result = pipeline_ElementGetPropertyInt (self, element, property, &val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int32 (val));
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetPropertyInt64 (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp25_;
-	gchar* property = NULL;
-	GVariant* _tmp26_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint64 val = 0LL;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp25_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp25_, NULL);
-	g_variant_unref (_tmp25_);
-	_tmp26_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp26_, NULL);
-	g_variant_unref (_tmp26_);
-	result = pipeline_ElementGetPropertyInt64 (self, element, property, &val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int64 (val));
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetPropertyString (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp27_;
-	gchar* property = NULL;
-	GVariant* _tmp28_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gchar* val = NULL;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp27_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp27_, NULL);
-	g_variant_unref (_tmp27_);
-	_tmp28_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp28_, NULL);
-	g_variant_unref (_tmp28_);
-	result = pipeline_ElementGetPropertyString (self, element, property, &val);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_string (val));
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	_g_free0 (val);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp29_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp29_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp29_, NULL);
-	g_variant_unref (_tmp29_);
-	result = pipeline_ElementGetState (self, element);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int32 (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementGetPropertyBuffer (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp30_;
-	gchar* property = NULL;
-	GVariant* _tmp31_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gchar* caps = NULL;
-	guint8* data = NULL;
-	int data_length1 = 0;
-	guint8* _tmp32_;
-	GVariantBuilder _tmp33_;
-	int _tmp34_;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp30_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp30_, NULL);
-	g_variant_unref (_tmp30_);
-	_tmp31_ = g_variant_iter_next_value (&_arguments_iter);
-	property = g_variant_dup_string (_tmp31_, NULL);
-	g_variant_unref (_tmp31_);
-	result = pipeline_ElementGetPropertyBuffer (self, element, property, &caps, &data, &data_length1);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_string (caps));
-	_tmp32_ = data;
-	g_variant_builder_init (&_tmp33_, G_VARIANT_TYPE ("ay"));
-	for (_tmp34_ = 0; _tmp34_ < data_length1; _tmp34_++) {
-		g_variant_builder_add_value (&_tmp33_, g_variant_new_byte (*_tmp32_));
-		_tmp32_++;
-	}
-	g_variant_builder_add_value (&_reply_builder, g_variant_builder_end (&_tmp33_));
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	_g_free0 (property);
-	_g_free0 (caps);
-	data = (g_free (data), NULL);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineGetDuration (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint64 result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineGetDuration (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int64 (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineGetPosition (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gint64 result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_PipelineGetPosition (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_int64 (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSeek (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gint64 ipos_ns = 0LL;
-	GVariant* _tmp35_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp35_ = g_variant_iter_next_value (&_arguments_iter);
-	ipos_ns = g_variant_get_int64 (_tmp35_);
-	g_variant_unref (_tmp35_);
-	result = pipeline_PipelineSeek (self, ipos_ns);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineAsyncSeek (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gint64 ipos_ms = 0LL;
-	GVariant* _tmp36_;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp36_ = g_variant_iter_next_value (&_arguments_iter);
-	ipos_ms = g_variant_get_int64 (_tmp36_);
-	g_variant_unref (_tmp36_);
-	pipeline_PipelineAsyncSeek (self, ipos_ms);
-}
-
-
-static void _dbus_pipeline_PipelineSkip (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gint64 period_ns = 0LL;
-	GVariant* _tmp37_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp37_ = g_variant_iter_next_value (&_arguments_iter);
-	period_ns = g_variant_get_int64 (_tmp37_);
-	g_variant_unref (_tmp37_);
-	result = pipeline_PipelineSkip (self, period_ns);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSpeed (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gdouble new_rate = 0.0;
-	GVariant* _tmp38_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp38_ = g_variant_iter_next_value (&_arguments_iter);
-	new_rate = g_variant_get_double (_tmp38_);
-	g_variant_unref (_tmp38_);
-	result = pipeline_PipelineSpeed (self, new_rate);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSendEoS (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	pipeline_PipelineSendEoS (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineStep (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	guint64 frames = 0ULL;
-	GVariant* _tmp39_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp39_ = g_variant_iter_next_value (&_arguments_iter);
-	frames = g_variant_get_uint64 (_tmp39_);
-	g_variant_unref (_tmp39_);
-	pipeline_PipelineStep (self, frames);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_PipelineSendCustomEvent (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* stype = NULL;
-	GVariant* _tmp40_;
-	gchar* name = NULL;
-	GVariant* _tmp41_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp40_ = g_variant_iter_next_value (&_arguments_iter);
-	stype = g_variant_dup_string (_tmp40_, NULL);
-	g_variant_unref (_tmp40_);
-	_tmp41_ = g_variant_iter_next_value (&_arguments_iter);
-	name = g_variant_dup_string (_tmp41_, NULL);
-	g_variant_unref (_tmp41_);
-	result = pipeline_PipelineSendCustomEvent (self, stype, name);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (stype);
-	_g_free0 (name);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp42_;
-	gint state = 0;
-	GVariant* _tmp43_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp42_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp42_, NULL);
-	g_variant_unref (_tmp42_);
-	_tmp43_ = g_variant_iter_next_value (&_arguments_iter);
-	state = g_variant_get_int32 (_tmp43_);
-	g_variant_unref (_tmp43_);
-	result = pipeline_ElementSetState (self, element, state);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (element);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_ElementAsyncSetState (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* element = NULL;
-	GVariant* _tmp44_;
-	gint state = 0;
-	GVariant* _tmp45_;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp44_ = g_variant_iter_next_value (&_arguments_iter);
-	element = g_variant_dup_string (_tmp44_, NULL);
-	g_variant_unref (_tmp44_);
-	_tmp45_ = g_variant_iter_next_value (&_arguments_iter);
-	state = g_variant_get_int32 (_tmp45_);
-	g_variant_unref (_tmp45_);
-	pipeline_ElementAsyncSetState (self, element, state);
-	_g_free0 (element);
-}
-
-
-static void _dbus_pipeline_SetWindowId (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	guint64 winId = 0ULL;
-	GVariant* _tmp46_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp46_ = g_variant_iter_next_value (&_arguments_iter);
-	winId = g_variant_get_uint64 (_tmp46_);
-	g_variant_unref (_tmp46_);
-	pipeline_SetWindowId (self, winId);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_pipeline_Ping (Pipeline* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = pipeline_Ping (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void pipeline_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	if (strcmp (method_name, "PipelineSetState") == 0) {
-		_dbus_pipeline_PipelineSetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSetState") == 0) {
-		_dbus_pipeline_PipelineAsyncSetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineIsInitialized") == 0) {
-		_dbus_pipeline_PipelineIsInitialized (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineGetId") == 0) {
-		_dbus_pipeline_PipelineGetId (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSetId") == 0) {
-		_dbus_pipeline_PipelineSetId (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineGetPath") == 0) {
-		_dbus_pipeline_PipelineGetPath (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSetPath") == 0) {
-		_dbus_pipeline_PipelineSetPath (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineGetState") == 0) {
-		_dbus_pipeline_PipelineGetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyBoolean") == 0) {
-		_dbus_pipeline_ElementSetPropertyBoolean (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyInt") == 0) {
-		_dbus_pipeline_ElementSetPropertyInt (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyInt64") == 0) {
-		_dbus_pipeline_ElementSetPropertyInt64 (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyString") == 0) {
-		_dbus_pipeline_ElementSetPropertyString (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetPropertyBoolean") == 0) {
-		_dbus_pipeline_ElementGetPropertyBoolean (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetPropertyInt") == 0) {
-		_dbus_pipeline_ElementGetPropertyInt (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetPropertyInt64") == 0) {
-		_dbus_pipeline_ElementGetPropertyInt64 (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetPropertyString") == 0) {
-		_dbus_pipeline_ElementGetPropertyString (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetState") == 0) {
-		_dbus_pipeline_ElementGetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementGetPropertyBuffer") == 0) {
-		_dbus_pipeline_ElementGetPropertyBuffer (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineGetDuration") == 0) {
-		_dbus_pipeline_PipelineGetDuration (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineGetPosition") == 0) {
-		_dbus_pipeline_PipelineGetPosition (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSeek") == 0) {
-		_dbus_pipeline_PipelineSeek (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSeek") == 0) {
-		_dbus_pipeline_PipelineAsyncSeek (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSkip") == 0) {
-		_dbus_pipeline_PipelineSkip (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSpeed") == 0) {
-		_dbus_pipeline_PipelineSpeed (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSendEoS") == 0) {
-		_dbus_pipeline_PipelineSendEoS (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineStep") == 0) {
-		_dbus_pipeline_PipelineStep (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineSendCustomEvent") == 0) {
-		_dbus_pipeline_PipelineSendCustomEvent (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetState") == 0) {
-		_dbus_pipeline_ElementSetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementAsyncSetState") == 0) {
-		_dbus_pipeline_ElementAsyncSetState (object, parameters, invocation);
-	} else if (strcmp (method_name, "SetWindowId") == 0) {
-		_dbus_pipeline_SetWindowId (object, parameters, invocation);
-	} else if (strcmp (method_name, "Ping") == 0) {
-		_dbus_pipeline_Ping (object, parameters, invocation);
-	} else {
-		g_object_unref (invocation);
-	}
-}
-
-
-static GVariant* pipeline_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	return NULL;
-}
-
-
-static gboolean pipeline_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	return FALSE;
-}
-
-
-static void _dbus_pipeline_eo_s (GObject* _sender, guint64 pipe_id, gpointer* _data) {
-	GDBusConnection * _connection;
-	const gchar * _path;
-	GVariant *_arguments;
-	GVariantBuilder _arguments_builder;
-	_connection = _data[1];
-	_path = _data[2];
-	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (pipe_id));
-	_arguments = g_variant_builder_end (&_arguments_builder);
-	g_dbus_connection_emit_signal (_connection, NULL, _path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "EoS", _arguments, NULL);
-}
-
-
-static void _dbus_pipeline_state_changed (GObject* _sender, guint64 pipe_id, GstState old_state, GstState new_state, const gchar* src, gpointer* _data) {
-	GDBusConnection * _connection;
-	const gchar * _path;
-	GVariant *_arguments;
-	GVariantBuilder _arguments_builder;
-	_connection = _data[1];
-	_path = _data[2];
-	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (pipe_id));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (old_state));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (new_state));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (src));
-	_arguments = g_variant_builder_end (&_arguments_builder);
-	g_dbus_connection_emit_signal (_connection, NULL, _path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "StateChanged", _arguments, NULL);
-}
-
-
-static void _dbus_pipeline_error (GObject* _sender, guint64 pipe_id, const gchar* err_message, gpointer* _data) {
-	GDBusConnection * _connection;
-	const gchar * _path;
-	GVariant *_arguments;
-	GVariantBuilder _arguments_builder;
-	_connection = _data[1];
-	_path = _data[2];
-	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (pipe_id));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (err_message));
-	_arguments = g_variant_builder_end (&_arguments_builder);
-	g_dbus_connection_emit_signal (_connection, NULL, _path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "Error", _arguments, NULL);
-}
-
-
-static void _dbus_pipeline_qo_s (GObject* _sender, guint64 pipe_id, gboolean live, guint64 running_time, guint64 stream_time, guint64 timestamp, guint64 duration, gint64 jitter, gdouble proportion, gint quality, gint format, guint64 processed, guint64 dropped, gpointer* _data) {
-	GDBusConnection * _connection;
-	const gchar * _path;
-	GVariant *_arguments;
-	GVariantBuilder _arguments_builder;
-	_connection = _data[1];
-	_path = _data[2];
-	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (pipe_id));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_boolean (live));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (running_time));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (stream_time));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (timestamp));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (duration));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int64 (jitter));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_double (proportion));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (quality));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (format));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (processed));
-	g_variant_builder_add_value (&_arguments_builder, g_variant_new_uint64 (dropped));
-	_arguments = g_variant_builder_end (&_arguments_builder);
-	g_dbus_connection_emit_signal (_connection, NULL, _path, "com.ridgerun.gstreamer.gstd.PipelineInterface", "QoS", _arguments, NULL);
-}
-
-
-guint pipeline_register_object (gpointer object, GDBusConnection* connection, const gchar* path, GError** error) {
-	guint result;
-	gpointer *data;
-	data = g_new (gpointer, 3);
-	data[0] = g_object_ref (object);
-	data[1] = g_object_ref (connection);
-	data[2] = g_strdup (path);
-	result = g_dbus_connection_register_object (connection, path, (GDBusInterfaceInfo *) (&_pipeline_dbus_interface_info), &_pipeline_dbus_interface_vtable, data, _pipeline_unregister_object, error);
-	if (!result) {
-		return 0;
-	}
-	g_signal_connect (object, "eo-s", (GCallback) _dbus_pipeline_eo_s, data);
-	g_signal_connect (object, "state-changed", (GCallback) _dbus_pipeline_state_changed, data);
-	g_signal_connect (object, "error", (GCallback) _dbus_pipeline_error, data);
-	g_signal_connect (object, "qo-s", (GCallback) _dbus_pipeline_qo_s, data);
-	return result;
-}
-
-
-static void _pipeline_unregister_object (gpointer user_data) {
-	gpointer* data;
-	data = user_data;
-	g_signal_handlers_disconnect_by_func (data[0], _dbus_pipeline_eo_s, data);
-	g_signal_handlers_disconnect_by_func (data[0], _dbus_pipeline_state_changed, data);
-	g_signal_handlers_disconnect_by_func (data[0], _dbus_pipeline_error, data);
-	g_signal_handlers_disconnect_by_func (data[0], _dbus_pipeline_qo_s, data);
-	g_object_unref (data[0]);
-	g_object_unref (data[1]);
-	g_free (data[2]);
-	g_free (data);
+	return gstd_pipeline_type_id__volatile;
 }
 
 

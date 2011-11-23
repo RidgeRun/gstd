@@ -17,114 +17,146 @@
 #include <gio/gio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+#include <math.h>
 #include <syslog.h>
 
 
-#define TYPE_FACTORY (factory_get_type ())
-#define FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FACTORY, Factory))
-#define FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FACTORY, FactoryClass))
-#define IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FACTORY))
-#define IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FACTORY))
-#define FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_FACTORY, FactoryClass))
+#define GSTD_TYPE_FACTORY_INTERFACE (gstd_factory_interface_get_type ())
+#define GSTD_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterface))
+#define GSTD_IS_FACTORY_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_FACTORY_INTERFACE))
+#define GSTD_FACTORY_INTERFACE_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), GSTD_TYPE_FACTORY_INTERFACE, gstdFactoryInterfaceIface))
 
-typedef struct _Factory Factory;
-typedef struct _FactoryClass FactoryClass;
-typedef struct _FactoryPrivate FactoryPrivate;
+typedef struct _gstdFactoryInterface gstdFactoryInterface;
+typedef struct _gstdFactoryInterfaceIface gstdFactoryInterfaceIface;
 
-#define TYPE_PIPELINE (pipeline_get_type ())
-#define PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_PIPELINE, Pipeline))
-#define PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_PIPELINE, PipelineClass))
-#define IS_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_PIPELINE))
-#define IS_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_PIPELINE))
-#define PIPELINE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_PIPELINE, PipelineClass))
+#define GSTD_TYPE_FACTORY_INTERFACE_PROXY (gstd_factory_interface_proxy_get_type ())
 
-typedef struct _Pipeline Pipeline;
-typedef struct _PipelineClass PipelineClass;
+#define GSTD_TYPE_FACTORY (gstd_factory_get_type ())
+#define GSTD_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_FACTORY, gstdFactory))
+#define GSTD_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_FACTORY, gstdFactoryClass))
+#define GSTD_IS_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_FACTORY))
+#define GSTD_IS_FACTORY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_FACTORY))
+#define GSTD_FACTORY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_FACTORY, gstdFactoryClass))
+
+typedef struct _gstdFactory gstdFactory;
+typedef struct _gstdFactoryClass gstdFactoryClass;
+typedef struct _gstdFactoryPrivate gstdFactoryPrivate;
+
+#define GSTD_TYPE_PIPELINE_INTERFACE (gstd_pipeline_interface_get_type ())
+#define GSTD_PIPELINE_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_PIPELINE_INTERFACE, gstdPipelineInterface))
+#define GSTD_IS_PIPELINE_INTERFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_PIPELINE_INTERFACE))
+#define GSTD_PIPELINE_INTERFACE_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), GSTD_TYPE_PIPELINE_INTERFACE, gstdPipelineInterfaceIface))
+
+typedef struct _gstdPipelineInterface gstdPipelineInterface;
+typedef struct _gstdPipelineInterfaceIface gstdPipelineInterfaceIface;
+
+#define GSTD_TYPE_PIPELINE_INTERFACE_PROXY (gstd_pipeline_interface_proxy_get_type ())
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
+
+#define GSTD_TYPE_PIPELINE (gstd_pipeline_get_type ())
+#define GSTD_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSTD_TYPE_PIPELINE, gstdPipeline))
+#define GSTD_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), GSTD_TYPE_PIPELINE, gstdPipelineClass))
+#define GSTD_IS_PIPELINE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSTD_TYPE_PIPELINE))
+#define GSTD_IS_PIPELINE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GSTD_TYPE_PIPELINE))
+#define GSTD_PIPELINE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GSTD_TYPE_PIPELINE, gstdPipelineClass))
+
+typedef struct _gstdPipeline gstdPipeline;
+typedef struct _gstdPipelineClass gstdPipelineClass;
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 
-struct _Factory {
-	GObject parent_instance;
-	FactoryPrivate * priv;
+struct _gstdFactoryInterfaceIface {
+	GTypeInterface parent_iface;
+	gchar* (*create) (gstdFactoryInterface* self, const gchar* description, GError** error);
+	gboolean (*destroy) (gstdFactoryInterface* self, const gchar* path, GError** error);
+	gboolean (*destroy_all) (gstdFactoryInterface* self, GError** error);
+	gchar** (*list) (gstdFactoryInterface* self, int* result_length1, GError** error);
+	gboolean (*ping) (gstdFactoryInterface* self, GError** error);
 };
 
-struct _FactoryClass {
+struct _gstdFactory {
+	GObject parent_instance;
+	gstdFactoryPrivate * priv;
+};
+
+struct _gstdFactoryClass {
 	GObjectClass parent_class;
 };
 
-struct _FactoryPrivate {
+struct _gstdPipelineInterfaceIface {
+	GTypeInterface parent_iface;
+	void (*pipeline_set_id) (gstdPipelineInterface* self, guint64 id, GError** error);
+	guint64 (*pipeline_get_id) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	void (*pipeline_async_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
+	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+	gboolean (*element_set_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
+	void (*element_get_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
+	void (*element_get_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
+	void (*element_get_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
+	void (*element_get_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
+	void (*element_get_property_buffer) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
+	gint64 (*pipeline_get_duration) (gstdPipelineInterface* self, GError** error);
+	gint64 (*pipeline_get_position) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_speed) (gstdPipelineInterface* self, gdouble newrate, GError** error);
+	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
+	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
+	void (*pipeline_async_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
+	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
+	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
+	gboolean (*pipeline_send_custom_event) (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
+	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
+	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
+	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+	void (*element_async_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+};
+
+struct _gstdFactoryPrivate {
 	GDBusConnection* conn;
-	Pipeline** pipes;
+	gstdPipelineInterface** pipes;
 	gint pipes_length1;
 	gint _pipes_size_;
 };
 
 
-static gpointer factory_parent_class = NULL;
+static gpointer gstd_factory_parent_class = NULL;
+static gstdFactoryInterfaceIface* gstd_factory_gstd_factory_interface_parent_iface = NULL;
 
-GType factory_get_type (void) G_GNUC_CONST;
-guint factory_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
-GType pipeline_get_type (void) G_GNUC_CONST;
-guint pipeline_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
-#define FACTORY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_FACTORY, FactoryPrivate))
+GType gstd_factory_interface_proxy_get_type (void) G_GNUC_CONST;
+guint gstd_factory_interface_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_factory_interface_get_type (void) G_GNUC_CONST;
+GType gstd_factory_get_type (void) G_GNUC_CONST;
+GType gstd_pipeline_interface_proxy_get_type (void) G_GNUC_CONST;
+guint gstd_pipeline_interface_register_object (void* object, GDBusConnection* connection, const gchar* path, GError** error);
+GType gstd_pipeline_interface_get_type (void) G_GNUC_CONST;
+#define GSTD_FACTORY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GSTD_TYPE_FACTORY, gstdFactoryPrivate))
 enum  {
-	FACTORY_DUMMY_PROPERTY
+	GSTD_FACTORY_DUMMY_PROPERTY
 };
-#define FACTORY_num_pipes 20
-Factory* factory_new (GDBusConnection* conn);
-Factory* factory_construct (GType object_type, GDBusConnection* conn);
-gchar* factory_Create (Factory* self, const gchar* description);
-Pipeline* pipeline_new (const gchar* description);
-Pipeline* pipeline_construct (GType object_type, const gchar* description);
-gboolean pipeline_PipelineIsInitialized (Pipeline* self);
-gboolean pipeline_PipelineSetPath (Pipeline* self, const gchar* dbuspath);
-gboolean factory_Destroy (Factory* self, const gchar* objectpath);
-gchar* pipeline_PipelineGetPath (Pipeline* self);
-gboolean factory_DestroyAll (Factory* self);
-gchar** factory_List (Factory* self, int* result_length1);
+#define GSTD_FACTORY_num_pipes 20
+gstdFactory* gstd_factory_new (GDBusConnection* conn);
+gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn);
+static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar* description, GError** error);
+gstdPipeline* gstd_pipeline_new (const gchar* description);
+gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* description);
+GType gstd_pipeline_get_type (void) G_GNUC_CONST;
+gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self);
+gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbuspath);
+static gboolean gstd_factory_real_destroy (gstdFactoryInterface* base, const gchar* objectpath, GError** error);
+gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self);
+static gboolean gstd_factory_real_destroy_all (gstdFactoryInterface* base, GError** error);
+static gchar** gstd_factory_real_list (gstdFactoryInterface* base, int* result_length1, GError** error);
 static void _vala_array_add1 (gchar*** array, int* length, int* size, gchar* value);
-gboolean factory_Ping (Factory* self);
-static void factory_finalize (GObject* obj);
-static void _dbus_factory_Create (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_factory_Destroy (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_factory_DestroyAll (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_factory_List (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_factory_Ping (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void factory_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data);
-static GVariant* factory_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data);
-static gboolean factory_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data);
-static void _factory_unregister_object (gpointer user_data);
+static gboolean gstd_factory_real_ping (gstdFactoryInterface* base, GError** error);
+static void gstd_factory_finalize (GObject* obj);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 
-static const GDBusArgInfo _factory_dbus_arg_info_Create_description = {-1, "description", "s"};
-static const GDBusArgInfo _factory_dbus_arg_info_Create_result = {-1, "result", "s"};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Create_in[] = {&_factory_dbus_arg_info_Create_description, NULL};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Create_out[] = {&_factory_dbus_arg_info_Create_result, NULL};
-static const GDBusMethodInfo _factory_dbus_method_info_Create = {-1, "Create", (GDBusArgInfo **) (&_factory_dbus_arg_info_Create_in), (GDBusArgInfo **) (&_factory_dbus_arg_info_Create_out)};
-static const GDBusArgInfo _factory_dbus_arg_info_Destroy_objectpath = {-1, "objectpath", "s"};
-static const GDBusArgInfo _factory_dbus_arg_info_Destroy_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Destroy_in[] = {&_factory_dbus_arg_info_Destroy_objectpath, NULL};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Destroy_out[] = {&_factory_dbus_arg_info_Destroy_result, NULL};
-static const GDBusMethodInfo _factory_dbus_method_info_Destroy = {-1, "Destroy", (GDBusArgInfo **) (&_factory_dbus_arg_info_Destroy_in), (GDBusArgInfo **) (&_factory_dbus_arg_info_Destroy_out)};
-static const GDBusArgInfo _factory_dbus_arg_info_DestroyAll_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _factory_dbus_arg_info_DestroyAll_in[] = {NULL};
-static const GDBusArgInfo * const _factory_dbus_arg_info_DestroyAll_out[] = {&_factory_dbus_arg_info_DestroyAll_result, NULL};
-static const GDBusMethodInfo _factory_dbus_method_info_DestroyAll = {-1, "DestroyAll", (GDBusArgInfo **) (&_factory_dbus_arg_info_DestroyAll_in), (GDBusArgInfo **) (&_factory_dbus_arg_info_DestroyAll_out)};
-static const GDBusArgInfo _factory_dbus_arg_info_List_result = {-1, "result", "as"};
-static const GDBusArgInfo * const _factory_dbus_arg_info_List_in[] = {NULL};
-static const GDBusArgInfo * const _factory_dbus_arg_info_List_out[] = {&_factory_dbus_arg_info_List_result, NULL};
-static const GDBusMethodInfo _factory_dbus_method_info_List = {-1, "List", (GDBusArgInfo **) (&_factory_dbus_arg_info_List_in), (GDBusArgInfo **) (&_factory_dbus_arg_info_List_out)};
-static const GDBusArgInfo _factory_dbus_arg_info_Ping_result = {-1, "result", "b"};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Ping_in[] = {NULL};
-static const GDBusArgInfo * const _factory_dbus_arg_info_Ping_out[] = {&_factory_dbus_arg_info_Ping_result, NULL};
-static const GDBusMethodInfo _factory_dbus_method_info_Ping = {-1, "Ping", (GDBusArgInfo **) (&_factory_dbus_arg_info_Ping_in), (GDBusArgInfo **) (&_factory_dbus_arg_info_Ping_out)};
-static const GDBusMethodInfo * const _factory_dbus_method_info[] = {&_factory_dbus_method_info_Create, &_factory_dbus_method_info_Destroy, &_factory_dbus_method_info_DestroyAll, &_factory_dbus_method_info_List, &_factory_dbus_method_info_Ping, NULL};
-static const GDBusSignalInfo * const _factory_dbus_signal_info[] = {NULL};
-static const GDBusPropertyInfo * const _factory_dbus_property_info[] = {NULL};
-static const GDBusInterfaceInfo _factory_dbus_interface_info = {-1, "com.ridgerun.gstreamer.gstd.FactoryInterface", (GDBusMethodInfo **) (&_factory_dbus_method_info), (GDBusSignalInfo **) (&_factory_dbus_signal_info), (GDBusPropertyInfo **) (&_factory_dbus_property_info)};
-static const GDBusInterfaceVTable _factory_dbus_interface_vtable = {factory_dbus_interface_method_call, factory_dbus_interface_get_property, factory_dbus_interface_set_property};
 
 /**
    Create a new instance of a factory server to process D-Bus
@@ -135,21 +167,21 @@ static gpointer _g_object_ref0 (gpointer self) {
 }
 
 
-Factory* factory_construct (GType object_type, GDBusConnection* conn) {
-	Factory * self = NULL;
+gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn) {
+	gstdFactory * self = NULL;
 	GDBusConnection* _tmp0_;
 	GDBusConnection* _tmp1_;
-	Pipeline** _tmp2_ = NULL;
+	gstdPipelineInterface** _tmp2_ = NULL;
 	g_return_val_if_fail (conn != NULL, NULL);
-	self = (Factory*) g_object_new (object_type, NULL);
+	self = (gstdFactory*) g_object_new (object_type, NULL);
 	_tmp0_ = conn;
 	_tmp1_ = _g_object_ref0 (_tmp0_);
 	_g_object_unref0 (self->priv->conn);
 	self->priv->conn = _tmp1_;
-	_tmp2_ = g_new0 (Pipeline*, FACTORY_num_pipes + 1);
+	_tmp2_ = g_new0 (gstdPipelineInterface*, GSTD_FACTORY_num_pipes + 1);
 	self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL);
 	self->priv->pipes = _tmp2_;
-	self->priv->pipes_length1 = FACTORY_num_pipes;
+	self->priv->pipes_length1 = GSTD_FACTORY_num_pipes;
 	self->priv->_pipes_size_ = self->priv->pipes_length1;
 	{
 		gint ids;
@@ -160,12 +192,12 @@ Factory* factory_construct (GType object_type, GDBusConnection* conn) {
 			while (TRUE) {
 				gboolean _tmp4_;
 				gint _tmp6_;
-				Pipeline** _tmp7_;
+				gstdPipelineInterface** _tmp7_;
 				gint _tmp7__length1;
-				Pipeline** _tmp8_;
+				gstdPipelineInterface** _tmp8_;
 				gint _tmp8__length1;
 				gint _tmp9_;
-				Pipeline* _tmp10_;
+				gstdPipelineInterface* _tmp10_;
 				_tmp4_ = _tmp3_;
 				if (!_tmp4_) {
 					gint _tmp5_;
@@ -192,8 +224,8 @@ Factory* factory_construct (GType object_type, GDBusConnection* conn) {
 }
 
 
-Factory* factory_new (GDBusConnection* conn) {
-	return factory_construct (TYPE_FACTORY, conn);
+gstdFactory* gstd_factory_new (GDBusConnection* conn) {
+	return gstd_factory_construct (GSTD_TYPE_FACTORY, conn);
 }
 
 
@@ -204,23 +236,24 @@ Factory* factory_new (GDBusConnection* conn) {
    @param debug, flag to enable debug information
    @return the dbus-path of the pipeline, or null if out of resources
  */
-gchar* factory_Create (Factory* self, const gchar* description) {
+static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar* description, GError** error) {
+	gstdFactory * self;
 	gchar* result = NULL;
 	GError * _inner_error_ = NULL;
-	g_return_val_if_fail (self != NULL, NULL);
+	self = (gstdFactory*) base;
 	g_return_val_if_fail (description != NULL, NULL);
 	{
 		gint next_id;
-		Pipeline** _tmp7_;
+		gstdPipelineInterface** _tmp7_;
 		gint _tmp7__length1;
 		gint _tmp8_;
 		const gchar* _tmp9_;
-		Pipeline* _tmp10_;
-		Pipeline* _tmp11_;
-		Pipeline** _tmp12_;
+		gstdPipeline* _tmp10_;
+		gstdPipelineInterface* _tmp11_;
+		gstdPipelineInterface** _tmp12_;
 		gint _tmp12__length1;
 		gint _tmp13_;
-		Pipeline* _tmp14_;
+		gstdPipelineInterface* _tmp14_;
 		gboolean _tmp15_ = FALSE;
 		gint _tmp20_;
 		gchar* _tmp21_ = NULL;
@@ -230,23 +263,23 @@ gchar* factory_Create (Factory* self, const gchar* description) {
 		gchar* objectpath;
 		GDBusConnection* _tmp25_;
 		const gchar* _tmp26_;
-		Pipeline** _tmp27_;
+		gstdPipelineInterface** _tmp27_;
 		gint _tmp27__length1;
 		gint _tmp28_;
-		Pipeline* _tmp29_;
-		Pipeline** _tmp30_;
+		gstdPipelineInterface* _tmp29_;
+		gstdPipelineInterface** _tmp30_;
 		gint _tmp30__length1;
 		gint _tmp31_;
-		Pipeline* _tmp32_;
+		gstdPipelineInterface* _tmp32_;
 		const gchar* _tmp33_;
 		next_id = 0;
 		while (TRUE) {
-			Pipeline** _tmp0_;
+			gstdPipelineInterface** _tmp0_;
 			gint _tmp0__length1;
 			gint _tmp1_;
-			Pipeline* _tmp2_;
+			gstdPipelineInterface* _tmp2_;
 			gint _tmp3_;
-			Pipeline** _tmp4_;
+			gstdPipelineInterface** _tmp4_;
 			gint _tmp4__length1;
 			gint _tmp5_;
 			_tmp0_ = self->priv->pipes;
@@ -272,20 +305,20 @@ gchar* factory_Create (Factory* self, const gchar* description) {
 		_tmp7__length1 = self->priv->pipes_length1;
 		_tmp8_ = next_id;
 		_tmp9_ = description;
-		_tmp10_ = pipeline_new (_tmp9_);
+		_tmp10_ = gstd_pipeline_new (_tmp9_);
 		_g_object_unref0 (_tmp7_[_tmp8_]);
-		_tmp7_[_tmp8_] = _tmp10_;
+		_tmp7_[_tmp8_] = (gstdPipelineInterface*) _tmp10_;
 		_tmp11_ = _tmp7_[_tmp8_];
 		_tmp12_ = self->priv->pipes;
 		_tmp12__length1 = self->priv->pipes_length1;
 		_tmp13_ = next_id;
 		_tmp14_ = _tmp12_[_tmp13_];
-		_tmp15_ = pipeline_PipelineIsInitialized (_tmp14_);
+		_tmp15_ = gstd_pipeline_pipeline_is_initialized (GSTD_IS_PIPELINE (_tmp14_) ? ((gstdPipeline*) _tmp14_) : NULL);
 		if (!_tmp15_) {
-			Pipeline** _tmp16_;
+			gstdPipelineInterface** _tmp16_;
 			gint _tmp16__length1;
 			gint _tmp17_;
-			Pipeline* _tmp18_;
+			gstdPipelineInterface* _tmp18_;
 			gchar* _tmp19_;
 			_tmp16_ = self->priv->pipes;
 			_tmp16__length1 = self->priv->pipes_length1;
@@ -310,7 +343,7 @@ gchar* factory_Create (Factory* self, const gchar* description) {
 		_tmp27__length1 = self->priv->pipes_length1;
 		_tmp28_ = next_id;
 		_tmp29_ = _tmp27_[_tmp28_];
-		pipeline_register_object (_tmp29_, _tmp25_, _tmp26_, &_inner_error_);
+		gstd_pipeline_interface_register_object (_tmp29_, _tmp25_, _tmp26_, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_free0 (objectpath);
 			if (_inner_error_->domain == G_IO_ERROR) {
@@ -326,7 +359,7 @@ gchar* factory_Create (Factory* self, const gchar* description) {
 		_tmp31_ = next_id;
 		_tmp32_ = _tmp30_[_tmp31_];
 		_tmp33_ = objectpath;
-		pipeline_PipelineSetPath (_tmp32_, _tmp33_);
+		gstd_pipeline_pipeline_set_path (GSTD_IS_PIPELINE (_tmp32_) ? ((gstdPipeline*) _tmp32_) : NULL, _tmp33_);
 		result = objectpath;
 		return result;
 	}
@@ -355,9 +388,10 @@ gchar* factory_Create (Factory* self, const gchar* description) {
    @return true, if succeded
    @see PipelineId
  */
-gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
+static gboolean gstd_factory_real_destroy (gstdFactoryInterface* base, const gchar* objectpath, GError** error) {
+	gstdFactory * self;
 	gboolean result = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdFactory*) base;
 	g_return_val_if_fail (objectpath != NULL, FALSE);
 	{
 		gint index;
@@ -368,12 +402,12 @@ gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
 			while (TRUE) {
 				gboolean _tmp1_;
 				gint _tmp3_;
-				Pipeline** _tmp4_;
+				gstdPipelineInterface** _tmp4_;
 				gint _tmp4__length1;
-				Pipeline** _tmp5_;
+				gstdPipelineInterface** _tmp5_;
 				gint _tmp5__length1;
 				gint _tmp6_;
-				Pipeline* _tmp7_;
+				gstdPipelineInterface* _tmp7_;
 				_tmp1_ = _tmp0_;
 				if (!_tmp1_) {
 					gint _tmp2_;
@@ -392,10 +426,10 @@ gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
 				_tmp6_ = index;
 				_tmp7_ = _tmp5_[_tmp6_];
 				if (_tmp7_ != NULL) {
-					Pipeline** _tmp8_;
+					gstdPipelineInterface** _tmp8_;
 					gint _tmp8__length1;
 					gint _tmp9_;
-					Pipeline* _tmp10_;
+					gstdPipelineInterface* _tmp10_;
 					gchar* _tmp11_ = NULL;
 					gchar* _tmp12_;
 					const gchar* _tmp13_;
@@ -404,16 +438,16 @@ gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
 					_tmp8__length1 = self->priv->pipes_length1;
 					_tmp9_ = index;
 					_tmp10_ = _tmp8_[_tmp9_];
-					_tmp11_ = pipeline_PipelineGetPath (_tmp10_);
+					_tmp11_ = gstd_pipeline_pipeline_get_path (GSTD_IS_PIPELINE (_tmp10_) ? ((gstdPipeline*) _tmp10_) : NULL);
 					_tmp12_ = _tmp11_;
 					_tmp13_ = objectpath;
 					_tmp14_ = g_strcmp0 (_tmp12_, _tmp13_) == 0;
 					_g_free0 (_tmp12_);
 					if (_tmp14_) {
-						Pipeline** _tmp15_;
+						gstdPipelineInterface** _tmp15_;
 						gint _tmp15__length1;
 						gint _tmp16_;
-						Pipeline* _tmp17_;
+						gstdPipelineInterface* _tmp17_;
 						_tmp15_ = self->priv->pipes;
 						_tmp15__length1 = self->priv->pipes_length1;
 						_tmp16_ = index;
@@ -438,9 +472,10 @@ gboolean factory_Destroy (Factory* self, const gchar* objectpath) {
    @return true, if succeded
    @see PipelineId
  */
-gboolean factory_DestroyAll (Factory* self) {
+static gboolean gstd_factory_real_destroy_all (gstdFactoryInterface* base, GError** error) {
+	gstdFactory * self;
 	gboolean result = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdFactory*) base;
 	{
 		gint index;
 		index = 0;
@@ -450,12 +485,12 @@ gboolean factory_DestroyAll (Factory* self) {
 			while (TRUE) {
 				gboolean _tmp1_;
 				gint _tmp3_;
-				Pipeline** _tmp4_;
+				gstdPipelineInterface** _tmp4_;
 				gint _tmp4__length1;
-				Pipeline** _tmp5_;
+				gstdPipelineInterface** _tmp5_;
 				gint _tmp5__length1;
 				gint _tmp6_;
-				Pipeline* _tmp7_;
+				gstdPipelineInterface* _tmp7_;
 				_tmp1_ = _tmp0_;
 				if (!_tmp1_) {
 					gint _tmp2_;
@@ -474,10 +509,10 @@ gboolean factory_DestroyAll (Factory* self) {
 				_tmp6_ = index;
 				_tmp7_ = _tmp5_[_tmp6_];
 				if (_tmp7_ != NULL) {
-					Pipeline** _tmp8_;
+					gstdPipelineInterface** _tmp8_;
 					gint _tmp8__length1;
 					gint _tmp9_;
-					Pipeline* _tmp10_;
+					gstdPipelineInterface* _tmp10_;
 					_tmp8_ = self->priv->pipes;
 					_tmp8__length1 = self->priv->pipes_length1;
 					_tmp9_ = index;
@@ -507,7 +542,8 @@ static void _vala_array_add1 (gchar*** array, int* length, int* size, gchar* val
 }
 
 
-gchar** factory_List (Factory* self, int* result_length1) {
+static gchar** gstd_factory_real_list (gstdFactoryInterface* base, int* result_length1, GError** error) {
+	gstdFactory * self;
 	gchar** result = NULL;
 	gchar** _tmp0_ = NULL;
 	gchar** paths;
@@ -515,7 +551,7 @@ gchar** factory_List (Factory* self, int* result_length1) {
 	gint _paths_size_;
 	gchar** _tmp14_;
 	gint _tmp14__length1;
-	g_return_val_if_fail (self != NULL, NULL);
+	self = (gstdFactory*) base;
 	_tmp0_ = g_new0 (gchar*, 0 + 1);
 	paths = _tmp0_;
 	paths_length1 = 0;
@@ -529,12 +565,12 @@ gchar** factory_List (Factory* self, int* result_length1) {
 			while (TRUE) {
 				gboolean _tmp2_;
 				gint _tmp4_;
-				Pipeline** _tmp5_;
+				gstdPipelineInterface** _tmp5_;
 				gint _tmp5__length1;
-				Pipeline** _tmp6_;
+				gstdPipelineInterface** _tmp6_;
 				gint _tmp6__length1;
 				gint _tmp7_;
-				Pipeline* _tmp8_;
+				gstdPipelineInterface* _tmp8_;
 				_tmp2_ = _tmp1_;
 				if (!_tmp2_) {
 					gint _tmp3_;
@@ -555,10 +591,10 @@ gchar** factory_List (Factory* self, int* result_length1) {
 				if (_tmp8_ != NULL) {
 					gchar** _tmp9_;
 					gint _tmp9__length1;
-					Pipeline** _tmp10_;
+					gstdPipelineInterface** _tmp10_;
 					gint _tmp10__length1;
 					gint _tmp11_;
-					Pipeline* _tmp12_;
+					gstdPipelineInterface* _tmp12_;
 					gchar* _tmp13_ = NULL;
 					_tmp9_ = paths;
 					_tmp9__length1 = paths_length1;
@@ -566,7 +602,7 @@ gchar** factory_List (Factory* self, int* result_length1) {
 					_tmp10__length1 = self->priv->pipes_length1;
 					_tmp11_ = index;
 					_tmp12_ = _tmp10_[_tmp11_];
-					_tmp13_ = pipeline_PipelineGetPath (_tmp12_);
+					_tmp13_ = gstd_pipeline_pipeline_get_path (GSTD_IS_PIPELINE (_tmp12_) ? ((gstdPipeline*) _tmp12_) : NULL);
 					_vala_array_add1 (&paths, &paths_length1, &_paths_size_, _tmp13_);
 				}
 			}
@@ -587,233 +623,57 @@ gchar** factory_List (Factory* self, int* result_length1) {
    Some GStreamer elements use exit(), thus killing the daemon.
    @return true if alive
  */
-gboolean factory_Ping (Factory* self) {
+static gboolean gstd_factory_real_ping (gstdFactoryInterface* base, GError** error) {
+	gstdFactory * self;
 	gboolean result = FALSE;
-	g_return_val_if_fail (self != NULL, FALSE);
+	self = (gstdFactory*) base;
 	result = TRUE;
 	return result;
 }
 
 
-static void factory_class_init (FactoryClass * klass) {
-	factory_parent_class = g_type_class_peek_parent (klass);
-	g_type_class_add_private (klass, sizeof (FactoryPrivate));
-	G_OBJECT_CLASS (klass)->finalize = factory_finalize;
+static void gstd_factory_class_init (gstdFactoryClass * klass) {
+	gstd_factory_parent_class = g_type_class_peek_parent (klass);
+	g_type_class_add_private (klass, sizeof (gstdFactoryPrivate));
+	G_OBJECT_CLASS (klass)->finalize = gstd_factory_finalize;
 }
 
 
-static void factory_instance_init (Factory * self) {
-	self->priv = FACTORY_GET_PRIVATE (self);
+static void gstd_factory_gstd_factory_interface_interface_init (gstdFactoryInterfaceIface * iface) {
+	gstd_factory_gstd_factory_interface_parent_iface = g_type_interface_peek_parent (iface);
+	iface->create = (gchar* (*)(gstdFactoryInterface*, const gchar*, GError**)) gstd_factory_real_create;
+	iface->destroy = (gboolean (*)(gstdFactoryInterface*, const gchar*, GError**)) gstd_factory_real_destroy;
+	iface->destroy_all = (gboolean (*)(gstdFactoryInterface*, GError**)) gstd_factory_real_destroy_all;
+	iface->list = (gchar** (*)(gstdFactoryInterface*, int*, GError**)) gstd_factory_real_list;
+	iface->ping = (gboolean (*)(gstdFactoryInterface*, GError**)) gstd_factory_real_ping;
 }
 
 
-static void factory_finalize (GObject* obj) {
-	Factory * self;
-	self = FACTORY (obj);
+static void gstd_factory_instance_init (gstdFactory * self) {
+	self->priv = GSTD_FACTORY_GET_PRIVATE (self);
+}
+
+
+static void gstd_factory_finalize (GObject* obj) {
+	gstdFactory * self;
+	self = GSTD_FACTORY (obj);
 	_g_object_unref0 (self->priv->conn);
 	self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL);
-	G_OBJECT_CLASS (factory_parent_class)->finalize (obj);
+	G_OBJECT_CLASS (gstd_factory_parent_class)->finalize (obj);
 }
 
 
-GType factory_get_type (void) {
-	static volatile gsize factory_type_id__volatile = 0;
-	if (g_once_init_enter (&factory_type_id__volatile)) {
-		static const GTypeInfo g_define_type_info = { sizeof (FactoryClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) factory_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (Factory), 0, (GInstanceInitFunc) factory_instance_init, NULL };
-		GType factory_type_id;
-		factory_type_id = g_type_register_static (G_TYPE_OBJECT, "Factory", &g_define_type_info, 0);
-		g_type_set_qdata (factory_type_id, g_quark_from_static_string ("vala-dbus-register-object"), (void*) factory_register_object);
-		g_once_init_leave (&factory_type_id__volatile, factory_type_id);
+GType gstd_factory_get_type (void) {
+	static volatile gsize gstd_factory_type_id__volatile = 0;
+	if (g_once_init_enter (&gstd_factory_type_id__volatile)) {
+		static const GTypeInfo g_define_type_info = { sizeof (gstdFactoryClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) gstd_factory_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (gstdFactory), 0, (GInstanceInitFunc) gstd_factory_instance_init, NULL };
+		static const GInterfaceInfo gstd_factory_interface_info = { (GInterfaceInitFunc) gstd_factory_gstd_factory_interface_interface_init, (GInterfaceFinalizeFunc) NULL, NULL};
+		GType gstd_factory_type_id;
+		gstd_factory_type_id = g_type_register_static (G_TYPE_OBJECT, "gstdFactory", &g_define_type_info, 0);
+		g_type_add_interface_static (gstd_factory_type_id, GSTD_TYPE_FACTORY_INTERFACE, &gstd_factory_interface_info);
+		g_once_init_leave (&gstd_factory_type_id__volatile, gstd_factory_type_id);
 	}
-	return factory_type_id__volatile;
-}
-
-
-static void _dbus_factory_Create (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* description = NULL;
-	GVariant* _tmp0_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gchar* result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp0_ = g_variant_iter_next_value (&_arguments_iter);
-	description = g_variant_dup_string (_tmp0_, NULL);
-	g_variant_unref (_tmp0_);
-	result = factory_Create (self, description);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_string (result));
-	_g_free0 (result);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (description);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_factory_Destroy (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	gchar* objectpath = NULL;
-	GVariant* _tmp1_;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	_tmp1_ = g_variant_iter_next_value (&_arguments_iter);
-	objectpath = g_variant_dup_string (_tmp1_, NULL);
-	g_variant_unref (_tmp1_);
-	result = factory_Destroy (self, objectpath);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	_g_free0 (objectpath);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_factory_DestroyAll (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = factory_DestroyAll (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_factory_List (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gchar** result;
-	int result_length1 = 0;
-	gchar** _tmp2_;
-	GVariantBuilder _tmp3_;
-	int _tmp4_;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = factory_List (self, &result_length1);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	_tmp2_ = result;
-	g_variant_builder_init (&_tmp3_, G_VARIANT_TYPE ("as"));
-	for (_tmp4_ = 0; _tmp4_ < result_length1; _tmp4_++) {
-		g_variant_builder_add_value (&_tmp3_, g_variant_new_string (*_tmp2_));
-		_tmp2_++;
-	}
-	g_variant_builder_add_value (&_reply_builder, g_variant_builder_end (&_tmp3_));
-	result = (_vala_array_free (result, result_length1, (GDestroyNotify) g_free), NULL);
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void _dbus_factory_Ping (Factory* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
-	GError* error = NULL;
-	GVariantIter _arguments_iter;
-	GDBusMessage* _reply_message;
-	GVariant* _reply;
-	GVariantBuilder _reply_builder;
-	gboolean result;
-	g_variant_iter_init (&_arguments_iter, parameters);
-	result = factory_Ping (self);
-	_reply_message = g_dbus_message_new_method_reply (g_dbus_method_invocation_get_message (invocation));
-	g_variant_builder_init (&_reply_builder, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value (&_reply_builder, g_variant_new_boolean (result));
-	_reply = g_variant_builder_end (&_reply_builder);
-	g_dbus_message_set_body (_reply_message, _reply);
-	g_dbus_connection_send_message (g_dbus_method_invocation_get_connection (invocation), _reply_message, G_DBUS_SEND_MESSAGE_FLAGS_NONE, NULL, NULL);
-	g_object_unref (invocation);
-	g_object_unref (_reply_message);
-}
-
-
-static void factory_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	if (strcmp (method_name, "Create") == 0) {
-		_dbus_factory_Create (object, parameters, invocation);
-	} else if (strcmp (method_name, "Destroy") == 0) {
-		_dbus_factory_Destroy (object, parameters, invocation);
-	} else if (strcmp (method_name, "DestroyAll") == 0) {
-		_dbus_factory_DestroyAll (object, parameters, invocation);
-	} else if (strcmp (method_name, "List") == 0) {
-		_dbus_factory_List (object, parameters, invocation);
-	} else if (strcmp (method_name, "Ping") == 0) {
-		_dbus_factory_Ping (object, parameters, invocation);
-	} else {
-		g_object_unref (invocation);
-	}
-}
-
-
-static GVariant* factory_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	return NULL;
-}
-
-
-static gboolean factory_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data) {
-	gpointer* data;
-	gpointer object;
-	data = user_data;
-	object = data[0];
-	return FALSE;
-}
-
-
-guint factory_register_object (gpointer object, GDBusConnection* connection, const gchar* path, GError** error) {
-	guint result;
-	gpointer *data;
-	data = g_new (gpointer, 3);
-	data[0] = g_object_ref (object);
-	data[1] = g_object_ref (connection);
-	data[2] = g_strdup (path);
-	result = g_dbus_connection_register_object (connection, path, (GDBusInterfaceInfo *) (&_factory_dbus_interface_info), &_factory_dbus_interface_vtable, data, _factory_unregister_object, error);
-	if (!result) {
-		return 0;
-	}
-	return result;
-}
-
-
-static void _factory_unregister_object (gpointer user_data) {
-	gpointer* data;
-	data = user_data;
-	g_object_unref (data[0]);
-	g_object_unref (data[1]);
-	g_free (data[2]);
-	g_free (data);
+	return gstd_factory_type_id__volatile;
 }
 
 
