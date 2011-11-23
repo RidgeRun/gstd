@@ -8,18 +8,26 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
+using Gst;
 
 /*Global Variable*/
+public MainLoop loop = null;
+public DBus.Connection conn = null;
+
 private bool useSystemBus = false;
 private bool useSessionBus = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
 private int signalPollRate = 0;
+private bool enableWatchdog = false;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
 #if GSTD_SUPPORT_SIGNALS
 	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
+#endif
+#if GSTD_SUPPORT_WATCHDOG
+	{"watchdog", 'w', 0, OptionArg.NONE, ref enableWatchdog, "Enable watchdog", null},
 #endif
 	{null}
 };
@@ -34,6 +42,7 @@ public errordomain ErrorGstd
 public int main (string[] args)
 {
 	GstdSignals signal_processor = null;
+	Watchdog wd = null;
 
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
@@ -75,51 +84,46 @@ public int main (string[] args)
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
 		}
 
+		DBus.thread_init ();
+
 		/* Initializing GStreamer */
 		Gst.init (ref args);
 
 		/* Creating a GLib main loop with a default context */
-		MainLoop loop = new MainLoop (null, false);
+		loop = new MainLoop (null, false);
 
-		/* Connect to DBus */
-		GLib.DBusConnection connection = GLib.Bus.get_sync((useSystemBus) ?
-		                                               GLib.BusType.SYSTEM :
-		                                               (useSessionBus) ?
-		                                                 GLib.BusType.SESSION :
-		                                                 GLib.BusType.STARTER);
+		conn = DBus.Bus.get ((useSystemBus) ?
+		                     DBus.BusType.SYSTEM :
+		                     (useSessionBus) ?
+		                     DBus.BusType.SESSION :
+		                     DBus.BusType.STARTER);
 
-		/* Create the factory */
-		Factory factory = new Factory (connection);
+		dynamic DBus.Object bus = conn.get_object ("org.freedesktop.DBus",
+		                                           "/org/freedesktop/DBus",
+		                                           "org.freedesktop.DBus");
 
-		/* Register factory to DBus */
-		GLib.Bus.own_name_on_connection (
-			connection,
-			"com.ridgerun.gstreamer.gstd",
-			GLib.BusNameOwnerFlags.NONE,
-			(connection, name) =>
-			{
-				try
-				{
-					connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
-				}
-				catch (IOError e)
-				{
-					Posix.syslog(Posix.LOG_ERR, "Could not register service");
-					loop.quit();
-				}
-			},
-			(connection, name) => 
-			{
-				Posix.syslog(Posix.LOG_ERR, "Lost bus name");
-				loop.quit();
-			}
-		);
+		/* Try to register service in session bus */
+		uint request_name_result =
+		    bus.request_name ("com.ridgerun.gstreamer.gstd", (uint)0);
 
-		/* Start signal processor */
+		if (request_name_result != DBus.RequestNameReply.PRIMARY_OWNER)
+		{
+			throw new ErrorGstd.SERVICE_OWNERSHIP("Failed to obtain primary ownership of " +
+			              "the service. This usually means there is another instance of " +
+			              "gstd already running");
+		}
+
+		/* Create our factory */
+		var factory = new Factory ();
+
+		conn.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
+
 		if (signal_processor != null) 
 			signal_processor.monitor (loop, factory, signalPollRate);
 
-		/* Run main loop */
+		if (enableWatchdog)
+			wd = new Watchdog (1000);
+
 		loop.run ();
 	}
 	catch (Error e)

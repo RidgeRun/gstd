@@ -8,26 +8,37 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
+using Gst;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface")]
+[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface", signals = "Alive")]
+
 public class Factory : GLib.Object
 {
-	private GLib.DBusConnection conn;
 	private Pipeline[] pipes;
-	private static const int num_pipes = 20;
+	private const int num_pipes = 20;
+	/*private TimeoutSource timer = null;
+	   private uint _txCounter = 0;
+	   private uint _rxCounter = 0;*/
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
 	   factory messages
 	 */
-	public Factory (GLib.DBusConnection conn)
+	public Factory ()
 	{
-		this.conn = conn;
-		this.pipes = new Pipeline[this.num_pipes];
-		for (int ids = 0; ids < this.pipes.length; ++ids)
+		pipes = new Pipeline[num_pipes];
+		for (int ids = 0; ids < pipes.length; ids++)
 		{
-			this.pipes[ids] = null;
+			pipes[ids] = null;
 		}
+
+		/*//signal alive every second
+		   timer = new TimeoutSource(1000);
+		   timer.set_callback(() => {
+		   CheckAlive();
+		   return true;
+		   });
+		   timer.attach(loop.get_context());*/
 	}
 
 	/**
@@ -39,34 +50,28 @@ public class Factory : GLib.Object
 	 */
 	public string Create (string description)
 	{
-		try
+		/* Create our pipeline */
+		int next_id = 0;
+		while (pipes[next_id] != null)
 		{
-			/* Create our pipeline */
-			int next_id = 0;
-			while (this.pipes[next_id] != null)
+			next_id = (next_id + 1) % pipes.length;
+			if (next_id == 0)
 			{
-				next_id = (next_id + 1) % this.pipes.length;
-				if (next_id == 0)
-				{
-					return "";
-				}
-			}
-			this.pipes[next_id] = new Pipeline (description);
-
-			if (!this.pipes[next_id].PipelineIsInitialized ())
-			{
-				this.pipes[next_id] = null;
 				return "";
 			}
-			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-			this.conn.register_object(objectpath, this.pipes[next_id]);
-			this.pipes[next_id].PipelineSetPath(objectpath);
-			return objectpath;
 		}
-		catch (GLib.IOError error)
+		pipes[next_id] = new Pipeline (description);
+
+		if (!pipes[next_id].PipelineIsInitialized ())
 		{
+			pipes[next_id] = null;
 			return "";
 		}
+		string objectpath =
+		    "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
+		conn.register_object (objectpath, pipes[next_id]);
+		pipes[next_id].PipelineSetPath (objectpath);
+		return objectpath;
 	}
 
 	/**
@@ -77,13 +82,13 @@ public class Factory : GLib.Object
 	 */
 	public bool Destroy (string objectpath)
 	{
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < pipes.length; index++)
 		{
-			if (this.pipes[index] != null)
+			if (pipes[index] != null)
 			{
-				if (this.pipes[index].PipelineGetPath () == objectpath)
+				if (pipes[index].PipelineGetPath () == objectpath)
 				{
-					this.pipes[index] = null;
+					pipes[index] = null;
 					return true;
 				}
 			}
@@ -100,13 +105,14 @@ public class Factory : GLib.Object
 	 */
 	public bool DestroyAll ()
 	{
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < pipes.length; index++)
 		{
-			if (this.pipes[index] != null)
+			if (pipes[index] != null)
 			{
-				this.pipes[index] = null;
+				pipes[index] = null;
 			}
 		}
+		
 		return true;
 	}
 
@@ -118,11 +124,11 @@ public class Factory : GLib.Object
 	{
 		string[] paths = {};
 
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < pipes.length; ++index)
 		{
-			if (this.pipes[index] != null)
+			if (pipes[index] != null)
 			{
-				paths += this.pipes[index].PipelineGetPath ();
+				paths += pipes[index].PipelineGetPath ();
 			}
 		}
 		return paths;
@@ -138,5 +144,53 @@ public class Factory : GLib.Object
 		/*Gstd received the Ping method call */
 		return true;
 	}
-}
 
+	/*private void CheckAlive ()
+	   {
+	   //increment counter
+	   ++_txCounter;
+
+	   //push event into each pipe
+	   uint nrOfPipes = 0;
+	   for (int index = 0; index < pipes.length; ++index) {
+	    if (pipes[index] == null)
+	      continue;
+	    if (!pipes[index].PipelineIsInitialized())
+	      continue;
+
+	    if (pipes[index].GetCounter() == 0) {
+	      pipes[index].SetCounter(_txCounter);
+	    }
+	    else {
+	      pipes[index].SendNewCounterEvent(_txCounter);
+	    }
+	   ++nrOfPipes;
+	   }
+
+	   //no pipe, no cry
+	   if (nrOfPipes == 0) {
+	    Alive();
+	    return;
+	   }
+
+	   //find smallest counter
+	   uint minCounter = _txCounter;
+	   for (int index = 0; index < pipes.length; ++index) {
+	    if (pipes[index] == null)
+	      continue;
+	    if (!pipes[index].PipelineIsInitialized())
+	      continue;
+	    uint counter = pipes[index].GetCounter();
+	    if (counter < minCounter)
+	        minCounter = counter;
+	   }
+
+	   if (_rxCounter != minCounter)
+	   {
+	    _rxCounter = minCounter;
+	    Alive();
+	   }
+	   }*/
+
+	//public signal void Alive();
+}

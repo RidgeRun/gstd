@@ -54,6 +54,15 @@
     <method name="PipelineGetId">
         <arg type="t" name ="id" direction="out"/>
     </method>
+    <method name="PipelineSetAutoStop">
+        <arg type="x" name = "timeout_ms" direction = "in" />
+        <arg type="b" name = "success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+	<method name="PipelineAbortAutoStop">
+            <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
     <method name="PipelineSetState">
         <arg type="i" name = "state" direction = "in" />
         <arg type="b" name = "success" direction="out" >
@@ -63,7 +72,6 @@
     <method name="PipelineAsyncSetState">
         <arg type="i" name = "state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -170,9 +178,8 @@
         <arg type="t" name ="frames" direction = "in" />
     </method>
     <method name="PipelineAsyncSeek">
-        <arg type="x" name ="ipos_ns" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+        <arg type="x" name ="ipos_ns" direction = "in" />
     </method>
     <method name="PipelineGetState">
         <arg type="i" name ="state" direction = "out" >
@@ -212,7 +219,6 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="i" name ="state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
 
     <!-- Signals definitions -->

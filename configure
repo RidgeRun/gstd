@@ -621,9 +621,10 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 GSTD_SUPPORT_SIGNALS
+GSTD_SUPPORT_WATCHDOG
 VAPIDIR
-GIO_LIBS
-GIO_CFLAGS
+DBUS_GLIB_LIBS
+DBUS_GLIB_CFLAGS
 GSTREAMER_INTERFACES_LIBS
 GSTREAMER_INTERFACES_CFLAGS
 GSTREAMER_SUPPORT_STEP
@@ -726,6 +727,7 @@ enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
 with_vapidir
+enable_watchdog
 enable_signals
 '
       ac_precious_vars='build_alias
@@ -744,8 +746,8 @@ GSTREAMER_CFLAGS
 GSTREAMER_LIBS
 GSTREAMER_INTERFACES_CFLAGS
 GSTREAMER_INTERFACES_LIBS
-GIO_CFLAGS
-GIO_LIBS
+DBUS_GLIB_CFLAGS
+DBUS_GLIB_LIBS
 VAPIDIR'
 
 
@@ -1367,6 +1369,7 @@ Optional Features:
   --disable-silent-rules         verbose build output (undo: `make V=0')
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-watchdog       enable watchdog
   --enable-signals        enable Posix signal handling
 
 Optional Packages:
@@ -1396,8 +1399,10 @@ Some influential environment variables:
               C compiler flags for GSTREAMER_INTERFACES, overriding pkg-config
   GSTREAMER_INTERFACES_LIBS
               linker flags for GSTREAMER_INTERFACES, overriding pkg-config
-  GIO_CFLAGS  C compiler flags for GIO, overriding pkg-config
-  GIO_LIBS    linker flags for GIO, overriding pkg-config
+  DBUS_GLIB_CFLAGS
+              C compiler flags for DBUS_GLIB, overriding pkg-config
+  DBUS_GLIB_LIBS
+              linker flags for DBUS_GLIB, overriding pkg-config
   VAPIDIR     path for the vala bindings
 
 Use these variables to override the choices made by `configure' or to help
@@ -4031,35 +4036,35 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GIO" >&5
-$as_echo_n "checking for GIO... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for DBUS_GLIB" >&5
+$as_echo_n "checking for DBUS_GLIB... " >&6; }
 
-if test -n "$GIO_CFLAGS"; then
-    pkg_cv_GIO_CFLAGS="$GIO_CFLAGS"
+if test -n "$DBUS_GLIB_CFLAGS"; then
+    pkg_cv_DBUS_GLIB_CFLAGS="$DBUS_GLIB_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0 >= 2.0 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gio-2.0 >= 2.0 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1 >= 0.80 \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1 >= 0.80 ") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GIO_CFLAGS=`$PKG_CONFIG --cflags "gio-2.0 >= 2.0 " 2>/dev/null`
+  pkg_cv_DBUS_GLIB_CFLAGS=`$PKG_CONFIG --cflags "dbus-glib-1 >= 0.80 " 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$GIO_LIBS"; then
-    pkg_cv_GIO_LIBS="$GIO_LIBS"
+if test -n "$DBUS_GLIB_LIBS"; then
+    pkg_cv_DBUS_GLIB_LIBS="$DBUS_GLIB_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0 >= 2.0 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gio-2.0 >= 2.0 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1 >= 0.80 \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1 >= 0.80 ") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GIO_LIBS=`$PKG_CONFIG --libs "gio-2.0 >= 2.0 " 2>/dev/null`
+  pkg_cv_DBUS_GLIB_LIBS=`$PKG_CONFIG --libs "dbus-glib-1 >= 0.80 " 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4079,29 +4084,31 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gio-2.0 >= 2.0 " 2>&1`
+	        DBUS_GLIB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "dbus-glib-1 >= 0.80 " 2>&1`
         else
-	        GIO_PKG_ERRORS=`$PKG_CONFIG --print-errors "gio-2.0 >= 2.0 " 2>&1`
+	        DBUS_GLIB_PKG_ERRORS=`$PKG_CONFIG --print-errors "dbus-glib-1 >= 0.80 " 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$GIO_PKG_ERRORS" >&5
+	echo "$DBUS_GLIB_PKG_ERRORS" >&5
 
-	HAVE_GIO=no
+	HAVE_DBUS_GLIB=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	HAVE_GIO=no
+	HAVE_DBUS_GLIB=no
 else
-	GIO_CFLAGS=$pkg_cv_GIO_CFLAGS
-	GIO_LIBS=$pkg_cv_GIO_LIBS
+	DBUS_GLIB_CFLAGS=$pkg_cv_DBUS_GLIB_CFLAGS
+	DBUS_GLIB_LIBS=$pkg_cv_DBUS_GLIB_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	HAVE_GIO=yes
+	HAVE_DBUS_GLIB=yes
 fi
 
-if test "x$HAVE_GIO" = "xno"; then
-  as_fn_error $? "you need gio-2.0 development packages installed >= 2.0 !" "$LINENO" 5
+if test "x$HAVE_DBUS_GLIB" = "xno"; then
+  as_fn_error $? "you need dbus-glib-1 development packages installed >= 0.80 !" "$LINENO" 5
 fi
+
+DBUS_GLIB_CFLAGS="$DBUS_GLIB_CFLAGS $DBUS_GLIB_ERROR"
 
 
 
@@ -4118,6 +4125,20 @@ $as_echo "$as_me: Setting the vapidir \"$withval\"" >&6;}
    VAPIDIR=$withval
 
 
+
+fi
+
+
+# Check whether --enable-watchdog was given.
+if test "${enable_watchdog+set}" = set; then :
+  enableval=$enable_watchdog;
+fi
+
+
+if test "x$enable_watchdog" = "xyes"; then :
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Not enabling extra thread for watchdog -- not fully implemented" >&5
+$as_echo "$as_me: Not enabling extra thread for watchdog -- not fully implemented" >&6;}
 
 fi
 

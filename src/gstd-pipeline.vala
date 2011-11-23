@@ -13,6 +13,7 @@ using Gst, Posix;
 
 [DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", signals = "EoS",
        signals = "StateChanged", signals = "Error", signals = "QoS")]
+
 public class Pipeline : GLib.Object
 {
 	/* Private data */
@@ -21,9 +22,15 @@ public class Pipeline : GLib.Object
 	private bool initialized = false;
 	private string path = "";
 	private double rate = 1.0;
+	private int64 autostop_time_ms = 0;
+	private bool autostop_thread_running = false;
+	private bool trigger_autostop = false;
+	private ClockID autostop_clkid;
+	private Cond autostop_eos_cond;
+	private Mutex autostop_eos_mutex;
+	//private uint _counter = 0;
 	private ulong windowId = 0;
 
-	/* Signals */
 	public signal void EoS (uint64 pipe_id);
 	public signal void StateChanged (uint64 pipe_id, State old_state, State new_state, string src);
 	public signal void Error (uint64 pipe_id, string err_message);
@@ -53,18 +60,24 @@ public class Pipeline : GLib.Object
 			this.pipeline = parse_launch (description) as Element;
 
 			/*Get and watch bus */
-			Gst.Bus bus = this.pipeline.get_bus ();
+			Gst.Bus bus = pipeline.get_bus ();
 			bus.set_sync_handler(bus_sync_callback);
 			bus.add_watch (bus_callback);
 			/* The bus watch increases our ref count, so we need to unreference
 			 * ourselfs in order to provide properly release behavior of this
 			 * object
 			 */
-			unref();
+			g_object_unref (this);
 
 			/* Set pipeline state to initialized */
-			this.initialized = true;
-			Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
+			initialized = true;
+			autostop_eos_cond = new Cond();
+			autostop_eos_mutex = new Mutex();
+
+			if (this.PipelineIsInitialized ())
+				Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
+			else
+				Posix.syslog (Posix.LOG_ERR, "Pipeline could not be initialized");
 		}
 		catch (GLib.Error e)
 		{
@@ -78,8 +91,9 @@ public class Pipeline : GLib.Object
 	~Pipeline ()
 	{
 		/* Destroy the pipeline */
-		if (this.initialized)
+		if (this.PipelineIsInitialized())
 		{
+			PipelineAbortAutoStop();
 			if (!PipelineSetStateImpl (State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
 		}
@@ -87,7 +101,7 @@ public class Pipeline : GLib.Object
 
 	private BusSyncReply bus_sync_callback (Gst.Bus bus, Gst.Message message)
 	{
-		if (this.windowId == 0)
+		if (windowId == 0)
 			return BusSyncReply.PASS;
 
 		unowned Structure ? st = message.get_structure();
@@ -95,7 +109,7 @@ public class Pipeline : GLib.Object
 			return BusSyncReply.PASS;
 
 		Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = pipeline as Gst.Pipeline;
 		GLib.assert(pipe != null);
 
 		var sink = pipe.get_child_by_name("videosink") as Element;
@@ -106,8 +120,8 @@ public class Pipeline : GLib.Object
 		if (overlay == null)
 			return BusSyncReply.PASS;
 
-		Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %lu", this.windowId);
-		overlay.set_xwindow_id(this.windowId);
+		Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %lu", windowId);
+		overlay.set_xwindow_id(windowId);
 
 		return BusSyncReply.PASS;
 	}
@@ -135,6 +149,12 @@ public class Pipeline : GLib.Object
 
 				/*Sending Eos Signal */
 				EoS (PipelineGetId());
+
+				/* In case we are in autostop, notify we completed the EOS */
+				autostop_eos_mutex.lock();
+				autostop_eos_cond.signal();
+				autostop_eos_mutex.unlock();
+
 				break;
 
 			case MessageType.STATE_CHANGED:
@@ -153,6 +173,19 @@ public class Pipeline : GLib.Object
 				StateChanged (PipelineGetId(), oldstate, newstate, src);
 				break;
 
+			/*case MessageType.INFO:
+			   Posix.syslog (Posix.LOG_DEBUG, "received info message");
+			   if (message.src == pipeline)
+			   {
+			    uint counter = 0;
+			    unowned Gst.Structure st = message.get_structure();
+			    if (st != null && st.get_name() == "keepalive" && st.get_uint("counter", out counter))
+			    {
+			      _counter = counter;
+			      Posix.syslog (Posix.LOG_DEBUG, "received keep alive %u", _counter);
+			    }
+			   }
+			   break;*/
 #if GSTREAMER_SUPPORT_QOS_SIGNAL
 			case MessageType.QOS:
 				bool live;
@@ -186,7 +219,7 @@ public class Pipeline : GLib.Object
 
 	private bool PipelineSetStateImpl (State state)
 	{
-		this.pipeline.set_state (state);
+		pipeline.set_state (state);
 
 		/* Wait until state change is done */
 		State current, pending;
@@ -199,18 +232,142 @@ public class Pipeline : GLib.Object
 		return true;
 	}
 
+	/**
+	   Set the pipeline to autostop after a certain amount of time has elapsed.
+	   The pipeline will receive an EOS when at that time.
+	   @param timeout_ms, timeout in mseconds
+	   @return true if timer set, false if timer is already running (need to abort the current timer first)
+	 */
+	public bool PipelineSetAutoStop(int64 timeout_ms)
+	{
+		if (!autostop_thread_running) {
+			autostop_time_ms = timeout_ms;
+			trigger_autostop = true;
+		} else {
+			Posix.syslog (Posix.LOG_ERR, "Can't set the autostop timer if the timer is already running");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	   Abort the autostop timer
+	 */
+	public void PipelineAbortAutoStop()
+	{
+		if (!autostop_thread_running) {
+			trigger_autostop = false;
+		} else {
+		    autostop_clkid.unschedule();
+		}
+	}
+
+	/* Thread to track elapsed time when using tplay. Sends eos to pipeline
+	 * after the time specified has expired, and sets pipeline to NULL state
+	 * after eos has been processed.
+	 */
+	private void* AutoStopThread()
+	{
+		ClockTime time;
+
+		time = (ClockTime)((uint64) autostop_time_ms) * 1000000;
+		time += pipeline.get_clock().get_time();
+		autostop_clkid = new ClockID.single_shot(pipeline.get_clock(),time);
+
+		Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer activated for %llu mseconds.\n", autostop_time_ms);
+
+		autostop_thread_running = true;
+		if ( autostop_clkid.wait(null) == ClockReturn.UNSCHEDULED )
+		{
+			/* We were aborted */
+			Posix.syslog (Posix.LOG_DEBUG, "Auto stop timer aborted.\n");
+			autostop_thread_running = false;
+			autostop_clkid = null;
+			return null;
+		}
+
+		/* OK, we timed out our wait, let's do our job */
+		autostop_eos_mutex.lock();
+		PipelineSendEoS ();
+		/* Waiting until EOS signal have been emitted */
+		autostop_eos_cond.wait(autostop_eos_mutex);
+		autostop_eos_mutex.unlock();
+
+		/* Set pipeline state to NULL */
+		if( !PipelineSetState(State.NULL) )
+		{
+			Posix.syslog (Posix.LOG_DEBUG,"ERROR trying to set pipeline state to NULL.\n");
+			autostop_thread_running = false;
+			autostop_clkid = null;
+			return null;
+		}
+		Posix.syslog (Posix.LOG_DEBUG,"Pipeline %s auto-stopped.\n", this.path);
+		autostop_thread_running = false;
+		autostop_clkid = null;
+		return null;
+	}
+
+	/* Ensure system supports threads and spawn the
+	 * auto-stop thread */
+	private bool StartAutoStop()
+	{
+		/* Be sure threads are supported */
+		if (!Thread.supported()) {
+			Posix.syslog (Posix.LOG_DEBUG,"Cannot run without threads.\n");
+			return false;
+		}
+		
+		/* Init timer thread */
+		try {
+			Thread.create<void*>(AutoStopThread, false);
+		} catch (ThreadError e) {
+			return false;
+		}
+
+
+		return true;
+	}
+
 	public bool PipelineSetState (int state)
 	{
-		return PipelineSetStateImpl((State)(state));
+		/* If auto-stop will be used, check the time value is valid */
+		if(trigger_autostop && state == State.PLAYING
+		   && autostop_time_ms <= 0 )
+		{
+			Posix.syslog (Posix.LOG_DEBUG,"Invalid time value. Timeout value must be > 0.\n");
+			trigger_autostop = false;
+			return false;
+		}
+		
+		/* If the state requested is different of PLAY then abort any
+		 * auto-stop process
+		 */
+		if(state != State.PLAYING && autostop_thread_running)
+		{
+			PipelineAbortAutoStop();
+		}
+
+		bool ret = PipelineSetStateImpl((State)(state));
+
+		/* If we are going to use the auto-stop property and the pipeline
+		 * was executed correctly, then start the auto-stop function
+		 */
+		if(trigger_autostop && state == State.PLAYING && ret)
+		{
+			trigger_autostop = false;
+			StartAutoStop();
+		}
+
+		return ret;
 	}
 
 	private void PipelineAsyncSetStateImpl(State state)
 	{
-		//Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
-		this.pipeline.set_state (state);
+		pipeline.set_state (state);
+		Posix.syslog (Posix.LOG_DEBUG, "Asynchronous state change to %s", state.to_string());
 	}
 	
-	[DBus (no_reply = true)]
 	public void PipelineAsyncSetState(int state)
 	{
 		PipelineAsyncSetStateImpl((State)(state));
@@ -263,7 +420,7 @@ public class Pipeline : GLib.Object
 	public int PipelineGetState ()
 	{
 		State current, pending;
-		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		return current;
 	}
 
@@ -275,15 +432,19 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyBoolean (string element, string property, bool val)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Gst.Element e = pipe.get_child_by_name (element) as Element;
+		Gst.Element e;
+		Gst.Pipeline pipe;
+		GLib.ParamSpec spec;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		GLib.ParamSpec spec = e.get_class ().find_property (property);
+		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -303,15 +464,19 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyInt (string element, string property, int val)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Element e = pipe.get_child_by_name (element) as Element;
+		Element e;
+		Gst.Pipeline pipe;
+		GLib.ParamSpec spec;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		GLib.ParamSpec spec = e.get_class ().find_property (property);
+		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Gstd: Element %s does not have the property %s",
@@ -330,15 +495,19 @@ public class Pipeline : GLib.Object
 	   @param val, long property value     */
 	public bool ElementSetPropertyInt64 (string element, string property, int64 val)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Element e = pipe.get_child_by_name (element) as Element;
+		Element e;
+		Gst.Pipeline pipe;
+		GLib.ParamSpec spec;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		GLib.ParamSpec spec = e.get_class ().find_property (property);
+		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -358,15 +527,19 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetPropertyString (string element, string property, string val)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Element e = pipe.get_child_by_name (element) as Element;
+		Element e;
+		Gst.Pipeline pipe;
+		GLib.ParamSpec spec;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
 			return false;
 		}
 
-		GLib.ParamSpec spec = e.get_class ().find_property (property);
+		spec = e.get_class ().find_property (property);
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
@@ -388,7 +561,7 @@ public class Pipeline : GLib.Object
 	{
 		val = false;
 
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
@@ -418,7 +591,7 @@ public class Pipeline : GLib.Object
 	{
 		val = 0;
 
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
@@ -448,7 +621,7 @@ public class Pipeline : GLib.Object
 	{
 		val = 0;
 
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
@@ -478,7 +651,7 @@ public class Pipeline : GLib.Object
 	{
 		val = "";
 
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
@@ -506,7 +679,7 @@ public class Pipeline : GLib.Object
 	public int ElementGetState (string element)
 	{
 		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
@@ -533,7 +706,7 @@ public class Pipeline : GLib.Object
 		caps = "";
 		data = new uint8[0];
 
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
+		Gst.Pipeline pipe = pipeline as Gst.Pipeline;
 		Element e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
@@ -567,10 +740,11 @@ public class Pipeline : GLib.Object
 	 */
 	public int64 PipelineGetDuration ()
 	{
-		/* Query duration */
 		Format format = Gst.Format.TIME;
 		int64 duration = 0;
-		if (!this.pipeline.query_duration (ref format, out duration))
+
+		/* Query duration */
+		if (!pipeline.query_duration (ref format, out duration))
 		{
 			return -1;
 		}
@@ -596,7 +770,7 @@ public class Pipeline : GLib.Object
 		Format format = Gst.Format.TIME;
 		int64 position = 0;
 
-		if (!this.pipeline.query_position (ref format, out position))
+		if (!pipeline.query_position (ref format, out position))
 		{
 			return -1;
 		}
@@ -620,7 +794,7 @@ public class Pipeline : GLib.Object
 	public bool PipelineSeek (int64 ipos_ns)
 	{
 		/*Set the current position */
-		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
+		if (!pipeline.seek (rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -633,7 +807,6 @@ public class Pipeline : GLib.Object
 	   Data in the pipeline is flushed.
 	   @param ipos_ms, absolute position in milliseconds
 	 */
-	[DBus (no_reply = true)]
 	public void PipelineAsyncSeek (int64 ipos_ms)
 	{
 		PipelineSeek(ipos_ms);
@@ -648,19 +821,25 @@ public class Pipeline : GLib.Object
 	public bool PipelineSkip (int64 period_ns)
 	{
 		Gst.Format format = Gst.Format.TIME;
+		Gst.SeekFlags flag = Gst.SeekFlags.FLUSH;
+		Gst.SeekType cur_type = Gst.SeekType.SET;
+		Gst.SeekType stp_type = Gst.SeekType.NONE;
+		int64 stp_pos_ns = CLOCK_TIME_NONE;
 		int64 cur_pos_ns = 0;
+		int64 seek_ns = 0;
 
 		/*Gets the current position */
-		if (!this.pipeline.query_position (ref format, out cur_pos_ns))
+		if (!pipeline.query_position (ref format, out cur_pos_ns))
 		{
 			return false;
 		}
 
 		/*Sets the new position relative to the current one */
-		int64 seek_ns = cur_pos_ns + period_ns;
+		seek_ns = cur_pos_ns + period_ns;
 
 		/*Set the current position */
-		if (!this.pipeline.seek (this.rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, CLOCK_TIME_NONE))
+		if (!pipeline.seek (rate, format, flag, cur_type, seek_ns, stp_type,
+		                    stp_pos_ns))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -677,11 +856,16 @@ public class Pipeline : GLib.Object
 	 */
 	public bool PipelineSpeed (double new_rate)
 	{
+		Gst.Format format = Gst.Format.TIME;
+		Gst.SeekFlags flag = Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH;
+		Gst.SeekType type = Gst.SeekType.NONE;
+		int64 pos_ns = CLOCK_TIME_NONE;
+
 		/*Sets the new rate */
-		this.rate = new_rate;
+		rate = new_rate;
 
 		/*Changes the rate on the pipeline */
-		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, CLOCK_TIME_NONE, Gst.SeekType.NONE, CLOCK_TIME_NONE))
+		if (!pipeline.seek (rate, format, flag, type, pos_ns, type, pos_ns))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
 			return false;
@@ -691,14 +875,14 @@ public class Pipeline : GLib.Object
 
 	public void PipelineSendEoS ()
 	{
-		this.pipeline.send_event(new Event.eos());
+		pipeline.send_event(new Event.eos());
 	}
 
 	public void PipelineStep (uint64 frames)
 	{
 #if GSTREAMER_SUPPORT_STEP
-		PipelineSetStateImpl (State.PAUSED);
-		this.pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
+		PipelineSetState (State.PAUSED);
+		pipeline.send_event(new Event.step(Format.BUFFERS,frames,1.0,true,false));
 #else
 		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
 #endif
@@ -727,10 +911,19 @@ public class Pipeline : GLib.Object
 			default:
 				return false;
 		}
-		this.pipeline.send_event(new Event.custom(type, new Structure.empty(name)));
-
+		pipeline.send_event(new Event.custom(type,
+			new Structure.empty(name)));
 		return true;
 	}
+
+	/*public void SendNewCounterEvent(uint counter) {
+	   Posix.syslog (Posix.LOG_DEBUG, "Send keep alive event ...");
+	   Gst.Structure st = new Gst.Structure("keepalive", "counter", typeof(uint), counter, null);
+	   Gst.Event evt = new Gst.Event.sink_message(new Gst.Message.custom (Gst.MessageType.INFO, pipeline, st));
+	   //evt.type = Gst.EventType.CUSTOM_DOWNSTREAM;
+	   bool success = pipeline.send_event(evt);
+	   Posix.syslog (Posix.LOG_DEBUG, "... sent keep alive event (%s)", success.to_string());
+	   }*/
 
 	/**
 	   Sets an element to the specified state
@@ -739,8 +932,12 @@ public class Pipeline : GLib.Object
 	 */
 	public bool ElementSetState (string element, int state)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Element e = pipe.get_child_by_name (element) as Element;
+		Element e;
+		Gst.Pipeline pipe;
+		State current, pending;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -750,8 +947,10 @@ public class Pipeline : GLib.Object
 		e.set_state ((State)(state));
 
 		/* Wait for the transition at most 8 secs */
-		State current, pending;
-		e.get_state (out current, out pending, (Gst.ClockTime) Gst.CLOCK_TIME_NONE);
+		e.get_state (out current, out pending,
+				    (Gst.ClockTime) 4000000000u);
+		e.get_state (out current, out pending,
+				    (Gst.ClockTime) 4000000000u);
 		if (current != state)
 		{
 			Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
@@ -765,11 +964,13 @@ public class Pipeline : GLib.Object
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
-	[DBus (no_reply = true)]
 	public void ElementAsyncSetState (string element, int state)
 	{
-		Gst.Pipeline pipe = this.pipeline as Gst.Pipeline;
-		Element e = pipe.get_child_by_name (element) as Element;
+		Element e;
+		Gst.Pipeline pipe;
+
+		pipe = pipeline as Gst.Pipeline;
+		e = pipe.get_child_by_name (element) as Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -779,7 +980,7 @@ public class Pipeline : GLib.Object
 
 	public void SetWindowId(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
 	{
-		this.windowId = (ulong)(winId);
+		windowId = (ulong)(winId);
 	}
 	
 	/**
@@ -790,5 +991,12 @@ public class Pipeline : GLib.Object
 	{
 		return true;
 	}
-}
 
+	/*public uint GetCounter() {
+	   return _counter;
+	   }
+
+	   public void SetCounter(uint c) {
+	   _counter = c;
+	   } */
+}
