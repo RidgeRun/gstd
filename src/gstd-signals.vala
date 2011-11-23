@@ -14,12 +14,10 @@
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
 
-using GLib, Posix;
-
 namespace gstd
 {
 
-public class Signals : Object {
+public class Signals : GLib.Object {
 #if GSTD_SUPPORT_SIGNALS
 	private FactoryInterface _factory = null;
 	private MainLoop _loop = null;

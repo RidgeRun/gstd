@@ -416,7 +416,7 @@ static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, Gst
 			const gchar* _tmp29_;
 			_tmp14_ = message;
 			_tmp15_ = _tmp14_->src;
-			_tmp16_ = gst_object_get_name ((GstObject*) GST_ELEMENT (_tmp15_));
+			_tmp16_ = gst_object_get_name ((GstObject*) (GST_IS_ELEMENT (_tmp15_) ? ((GstElement*) _tmp15_) : NULL));
 			src = _tmp16_;
 			_tmp17_ = message;
 			gst_message_parse_state_changed (_tmp17_, &_tmp18_, &_tmp19_, &_tmp20_);
