@@ -23,8 +23,8 @@ public class Signals : GLib.Object {
 	private MainLoop _loop = null;
 	private int _caught_intr = -1;
 	private unowned Thread<void*> _thread;
-	private	sigset_t _sigset;    // fixme: should be local to constructor - throws error: use of possibly unassigned local variable
-	private	sigset_t old_sigset; // fixme: should be local to constructor
+	private sigset_t _sigset;    // fixme: should be local to constructor - throws error: use of possibly unassigned local variable
+	private sigset_t old_sigset; // fixme: should be local to constructor
 
 	public Signals () throws ThreadError {
 		int err;

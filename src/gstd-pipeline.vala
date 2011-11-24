@@ -616,12 +616,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		return position;
 	}
 
-	/**
-	   Seeks a specific time position.
-	   Data in the pipeline is flushed.
-	   @param ipos_ns, absolute position in nanoseconds
-	 */
-	public bool pipeline_seek (int64 ipos_ns)
+	private bool pipeline_seek_impl (int64 ipos_ns)
 	{
 		/*Set the current position */
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
@@ -631,6 +626,16 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 		return true;
 	}
+	
+	/**
+	   Seeks a specific time position.
+	   Data in the pipeline is flushed.
+	   @param ipos_ns, absolute position in nanoseconds
+	 */
+	public bool pipeline_seek (int64 ipos_ns)
+	{
+		return pipeline_seek_impl(ipos_ns);
+	}
 
 	/**
 	   Seeks a specific time position.
@@ -639,7 +644,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public void pipeline_async_seek (int64 ipos_ns)
 	{
-		pipeline_seek(ipos_ns);
+		pipeline_seek_impl(ipos_ns);
 	}
 
 	/**

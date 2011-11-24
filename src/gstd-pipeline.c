@@ -146,9 +146,9 @@ static gboolean gstd_pipeline_element_get_property_buffer_impl (gstdPipeline* se
 static guint8* _vala_array_dup1 (guint8* self, int length);
 static gint64 gstd_pipeline_real_pipeline_get_duration (gstdPipelineInterface* base, GError** error);
 static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* base, GError** error);
+static gboolean gstd_pipeline_pipeline_seek_impl (gstdPipeline* self, gint64 ipos_ns);
 static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
 static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
-gboolean gstd_pipeline_interface_pipeline_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, gint64 period_ns, GError** error);
 static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error);
 static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, GError** error);
@@ -1818,19 +1818,13 @@ static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* b
 }
 
 
-/**
-   Seeks a specific time position.
-   Data in the pipeline is flushed.
-   @param ipos_ns, absolute position in nanoseconds
- */
-static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
-	gstdPipeline * self;
+static gboolean gstd_pipeline_pipeline_seek_impl (gstdPipeline* self, gint64 ipos_ns) {
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	gdouble _tmp1_;
 	gint64 _tmp2_;
 	gboolean _tmp3_ = FALSE;
-	self = (gstdPipeline*) base;
+	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = self->priv->_rate;
 	_tmp2_ = ipos_ns;
@@ -1848,20 +1842,32 @@ static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, g
 /**
    Seeks a specific time position.
    Data in the pipeline is flushed.
+   @param ipos_ns, absolute position in nanoseconds
+ */
+static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
+	gstdPipeline * self;
+	gboolean result = FALSE;
+	gint64 _tmp0_;
+	gboolean _tmp1_ = FALSE;
+	self = (gstdPipeline*) base;
+	_tmp0_ = ipos_ns;
+	_tmp1_ = gstd_pipeline_pipeline_seek_impl (self, _tmp0_);
+	result = _tmp1_;
+	return result;
+}
+
+
+/**
+   Seeks a specific time position.
+   Data in the pipeline is flushed.
    @param ipos_ms, absolute position in nanoseconds
  */
 static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
 	gstdPipeline * self;
 	gint64 _tmp0_;
-	GError * _inner_error_ = NULL;
 	self = (gstdPipeline*) base;
 	_tmp0_ = ipos_ns;
-	gstd_pipeline_interface_pipeline_seek ((gstdPipelineInterface*) self, _tmp0_, &_inner_error_);
-	if (_inner_error_ != NULL) {
-		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-		g_clear_error (&_inner_error_);
-		return;
-	}
+	gstd_pipeline_pipeline_seek_impl (self, _tmp0_);
 }
 
 
