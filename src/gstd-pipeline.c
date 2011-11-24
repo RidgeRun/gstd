@@ -92,12 +92,12 @@ struct _gstdPipelineClass {
 };
 
 struct _gstdPipelinePrivate {
-	GstElement* pipeline;
-	guint64 id;
-	gboolean initialized;
-	gchar* path;
-	gdouble rate;
-	gulong windowId;
+	GstElement* _pipeline;
+	guint64 _id;
+	gboolean _initialized;
+	gchar* _path;
+	gdouble _rate;
+	guint64 _windowId;
 };
 
 
@@ -201,9 +201,9 @@ gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* descripti
 		if (_inner_error_ != NULL) {
 			goto __catch4_g_error;
 		}
-		_gst_object_unref0 (self->priv->pipeline);
-		self->priv->pipeline = GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL;
-		_tmp3_ = self->priv->pipeline;
+		_gst_object_unref0 (self->priv->_pipeline);
+		self->priv->_pipeline = GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL;
+		_tmp3_ = self->priv->_pipeline;
 		_tmp4_ = gst_element_get_bus (_tmp3_);
 		bus = _tmp4_;
 		_tmp5_ = bus;
@@ -211,7 +211,7 @@ gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* descripti
 		_tmp6_ = bus;
 		gst_bus_add_watch_full (_tmp6_, G_PRIORITY_DEFAULT, _gstd_pipeline_bus_callback_gst_bus_func, g_object_ref (self), g_object_unref);
 		g_object_unref ((GObject*) self);
-		self->priv->initialized = TRUE;
+		self->priv->_initialized = TRUE;
 		_tmp7_ = description;
 		syslog (LOG_NOTICE, "Pipeline created, %s", _tmp7_, NULL);
 		_gst_object_unref0 (bus);
@@ -251,7 +251,7 @@ static gpointer _gst_object_ref0 (gpointer self) {
 
 static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstBus* bus, GstMessage* message) {
 	GstBusSyncReply result = 0;
-	gulong _tmp0_;
+	guint64 _tmp0_;
 	GstMessage* _tmp1_;
 	const GstStructure* _tmp2_ = NULL;
 	const GstStructure* st;
@@ -270,14 +270,14 @@ static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstB
 	GstXOverlay* _tmp15_;
 	GstXOverlay* overlay;
 	GstXOverlay* _tmp16_;
-	gulong _tmp17_;
+	guint64 _tmp17_;
 	GstXOverlay* _tmp18_;
-	gulong _tmp19_;
+	guint64 _tmp19_;
 	g_return_val_if_fail (self != NULL, 0);
 	g_return_val_if_fail (bus != NULL, 0);
 	g_return_val_if_fail (message != NULL, 0);
-	_tmp0_ = self->priv->windowId;
-	if (_tmp0_ == ((gulong) 0)) {
+	_tmp0_ = self->priv->_windowId;
+	if (_tmp0_ == ((guint64) 0)) {
 		result = GST_BUS_PASS;
 		return result;
 	}
@@ -300,7 +300,7 @@ static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstB
 		return result;
 	}
 	syslog (LOG_DEBUG, "requested xwindow-id", NULL);
-	_tmp8_ = self->priv->pipeline;
+	_tmp8_ = self->priv->_pipeline;
 	_tmp9_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp8_) ? ((GstPipeline*) _tmp8_) : NULL);
 	pipe = _tmp9_;
 	_tmp10_ = pipe;
@@ -326,11 +326,11 @@ static GstBusSyncReply gstd_pipeline_bus_sync_callback (gstdPipeline* self, GstB
 		_gst_object_unref0 (pipe);
 		return result;
 	}
-	_tmp17_ = self->priv->windowId;
-	syslog (LOG_DEBUG, "set xwindow-id %lu", _tmp17_, NULL);
+	_tmp17_ = self->priv->_windowId;
+	syslog (LOG_DEBUG, "set xwindow-id %llu", _tmp17_, NULL);
 	_tmp18_ = overlay;
-	_tmp19_ = self->priv->windowId;
-	gst_x_overlay_set_xwindow_id (_tmp18_, _tmp19_);
+	_tmp19_ = self->priv->_windowId;
+	gst_x_overlay_set_xwindow_id (_tmp18_, (gulong) _tmp19_);
 	result = GST_BUS_PASS;
 	_gst_object_unref0 (overlay);
 	_gst_object_unref0 (sink);
@@ -374,7 +374,7 @@ static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, Gst
 			err = _tmp6_;
 			_g_free0 (dbg);
 			dbg = _tmp7_;
-			_tmp8_ = self->priv->id;
+			_tmp8_ = self->priv->_id;
 			_tmp9_ = err;
 			_tmp10_ = _tmp9_->message;
 			g_signal_emit_by_name ((gstdPipelineInterface*) self, "error", _tmp8_, _tmp10_);
@@ -388,7 +388,7 @@ static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, Gst
 		case GST_MESSAGE_EOS:
 		{
 			guint64 _tmp13_;
-			_tmp13_ = self->priv->id;
+			_tmp13_ = self->priv->_id;
 			g_signal_emit_by_name ((gstdPipelineInterface*) self, "eos", _tmp13_);
 			break;
 		}
@@ -429,7 +429,7 @@ static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, Gst
 			_tmp24_ = newstate;
 			_tmp25_ = gst_element_state_get_name (_tmp24_);
 			syslog (LOG_INFO, "%s,changes state from %s to %s", _tmp21_, _tmp23_, _tmp25_, NULL);
-			_tmp26_ = self->priv->id;
+			_tmp26_ = self->priv->_id;
 			_tmp27_ = oldstate;
 			_tmp28_ = newstate;
 			_tmp29_ = src;
@@ -497,7 +497,7 @@ static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, Gst
 			dropped = _tmp43_;
 			_tmp44_ = fmt;
 			format = (gint) _tmp44_;
-			_tmp45_ = self->priv->id;
+			_tmp45_ = self->priv->_id;
 			_tmp46_ = live;
 			_tmp47_ = running_time;
 			_tmp48_ = stream_time;
@@ -534,10 +534,10 @@ static gboolean gstd_pipeline_pipeline_set_state_impl (gstdPipeline* self, GstSt
 	GstState _tmp5_;
 	GstState _tmp6_;
 	g_return_val_if_fail (self != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = state;
 	gst_element_set_state (_tmp0_, _tmp1_);
-	_tmp2_ = self->priv->pipeline;
+	_tmp2_ = self->priv->_pipeline;
 	gst_element_get_state (_tmp2_, &_tmp3_, &_tmp4_, (GstClockTime) GST_CLOCK_TIME_NONE);
 	current = _tmp3_;
 	pending = _tmp4_;
@@ -574,7 +574,7 @@ static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, Gst
 	GstElement* _tmp0_;
 	GstState _tmp1_;
 	g_return_if_fail (self != NULL);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = state;
 	gst_element_set_state (_tmp0_, _tmp1_);
 }
@@ -596,7 +596,7 @@ gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self) {
 	gboolean result = FALSE;
 	gboolean _tmp0_;
 	g_return_val_if_fail (self != NULL, FALSE);
-	_tmp0_ = self->priv->initialized;
+	_tmp0_ = self->priv->_initialized;
 	result = _tmp0_;
 	return result;
 }
@@ -610,7 +610,7 @@ static guint64 gstd_pipeline_real_pipeline_get_id (gstdPipelineInterface* base, 
 	guint64 result = 0ULL;
 	guint64 _tmp0_;
 	self = (gstdPipeline*) base;
-	_tmp0_ = self->priv->id;
+	_tmp0_ = self->priv->_id;
 	result = _tmp0_;
 	return result;
 }
@@ -624,7 +624,7 @@ static void gstd_pipeline_real_pipeline_set_id (gstdPipelineInterface* base, gui
 	guint64 _tmp0_;
 	self = (gstdPipeline*) base;
 	_tmp0_ = id;
-	self->priv->id = _tmp0_;
+	self->priv->_id = _tmp0_;
 }
 
 
@@ -636,7 +636,7 @@ gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self) {
 	const gchar* _tmp0_;
 	gchar* _tmp1_;
 	g_return_val_if_fail (self != NULL, NULL);
-	_tmp0_ = self->priv->path;
+	_tmp0_ = self->priv->_path;
 	_tmp1_ = g_strdup (_tmp0_);
 	result = _tmp1_;
 	return result;
@@ -654,8 +654,8 @@ gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbusp
 	g_return_val_if_fail (dbuspath != NULL, FALSE);
 	_tmp0_ = dbuspath;
 	_tmp1_ = g_strdup (_tmp0_);
-	_g_free0 (self->priv->path);
-	self->priv->path = _tmp1_;
+	_g_free0 (self->priv->_path);
+	self->priv->_path = _tmp1_;
 	result = TRUE;
 	return result;
 }
@@ -673,7 +673,7 @@ static gint gstd_pipeline_real_pipeline_get_state (gstdPipelineInterface* base, 
 	GstState _tmp1_ = 0;
 	GstState _tmp2_ = 0;
 	self = (gstdPipeline*) base;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	gst_element_get_state (_tmp0_, &_tmp1_, &_tmp2_, (GstClockTime) GST_CLOCK_TIME_NONE);
 	current = _tmp1_;
 	pending = _tmp2_;
@@ -717,7 +717,7 @@ static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInt
 	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -795,7 +795,7 @@ static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterfa
 	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -872,7 +872,7 @@ static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInter
 	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -951,7 +951,7 @@ static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInte
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	g_return_val_if_fail (val != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -1053,7 +1053,7 @@ static gboolean gstd_pipeline_element_get_property_boolean_impl (gstdPipeline* s
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_vala_val = FALSE;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -1164,7 +1164,7 @@ static gboolean gstd_pipeline_element_get_property_int_impl (gstdPipeline* self,
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_vala_val = 0;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -1275,7 +1275,7 @@ static gboolean gstd_pipeline_element_get_property_int64_impl (gstdPipeline* sel
 	g_return_val_if_fail (element != NULL, FALSE);
 	g_return_val_if_fail (property != NULL, FALSE);
 	_vala_val = (gint64) 0;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -1392,7 +1392,7 @@ static gboolean gstd_pipeline_element_get_property_string_impl (gstdPipeline* se
 	_tmp0_ = g_strdup ("");
 	_g_free0 (_vala_val);
 	_vala_val = _tmp0_;
-	_tmp1_ = self->priv->pipeline;
+	_tmp1_ = self->priv->_pipeline;
 	_tmp2_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp1_) ? ((GstPipeline*) _tmp1_) : NULL);
 	pipe = _tmp2_;
 	_tmp3_ = pipe;
@@ -1477,7 +1477,7 @@ static gint gstd_pipeline_real_element_get_state (gstdPipelineInterface* base, c
 	GstState _tmp12_ = 0;
 	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, 0);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -1603,7 +1603,7 @@ static gboolean gstd_pipeline_element_get_property_buffer_impl (gstdPipeline* se
 	_vala_data = (g_free (_vala_data), NULL);
 	_vala_data = _tmp1_;
 	_vala_data_length1 = 0;
-	_tmp2_ = self->priv->pipeline;
+	_tmp2_ = self->priv->_pipeline;
 	_tmp3_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp2_) ? ((GstPipeline*) _tmp2_) : NULL);
 	pipe = _tmp3_;
 	_tmp4_ = pipe;
@@ -1754,7 +1754,7 @@ static gint64 gstd_pipeline_real_pipeline_get_duration (gstdPipelineInterface* b
 	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	duration = (gint64) 0;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp2_ = gst_element_query_duration (_tmp0_, &format, &_tmp1_);
 	duration = _tmp1_;
 	if (!_tmp2_) {
@@ -1796,7 +1796,7 @@ static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* b
 	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	position = (gint64) 0;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp2_ = gst_element_query_position (_tmp0_, &format, &_tmp1_);
 	position = _tmp1_;
 	if (!_tmp2_) {
@@ -1831,8 +1831,8 @@ static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, g
 	gint64 _tmp2_;
 	gboolean _tmp3_ = FALSE;
 	self = (gstdPipeline*) base;
-	_tmp0_ = self->priv->pipeline;
-	_tmp1_ = self->priv->rate;
+	_tmp0_ = self->priv->_pipeline;
+	_tmp1_ = self->priv->_rate;
 	_tmp2_ = ipos_ns;
 	_tmp3_ = gst_element_seek (_tmp0_, _tmp1_, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, _tmp2_, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
 	if (!_tmp3_) {
@@ -1890,7 +1890,7 @@ static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, g
 	self = (gstdPipeline*) base;
 	format = GST_FORMAT_TIME;
 	cur_pos_ns = (gint64) 0;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp2_ = gst_element_query_position (_tmp0_, &format, &_tmp1_);
 	cur_pos_ns = _tmp1_;
 	if (!_tmp2_) {
@@ -1900,8 +1900,8 @@ static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, g
 	_tmp3_ = cur_pos_ns;
 	_tmp4_ = period_ns;
 	seek_ns = _tmp3_ + _tmp4_;
-	_tmp5_ = self->priv->pipeline;
-	_tmp6_ = self->priv->rate;
+	_tmp5_ = self->priv->_pipeline;
+	_tmp6_ = self->priv->_rate;
 	_tmp7_ = format;
 	_tmp8_ = seek_ns;
 	_tmp9_ = gst_element_seek (_tmp5_, _tmp6_, _tmp7_, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, _tmp8_, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
@@ -1931,9 +1931,9 @@ static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, 
 	gboolean _tmp3_ = FALSE;
 	self = (gstdPipeline*) base;
 	_tmp0_ = new_rate;
-	self->priv->rate = _tmp0_;
-	_tmp1_ = self->priv->pipeline;
-	_tmp2_ = self->priv->rate;
+	self->priv->_rate = _tmp0_;
+	_tmp1_ = self->priv->_pipeline;
+	_tmp2_ = self->priv->_rate;
 	_tmp3_ = gst_element_seek (_tmp1_, _tmp2_, GST_FORMAT_TIME, GST_SEEK_FLAG_SKIP | GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE, GST_SEEK_TYPE_NONE, (gint64) GST_CLOCK_TIME_NONE);
 	if (!_tmp3_) {
 		syslog (LOG_WARNING, "Speed could not be changed", NULL);
@@ -1950,7 +1950,7 @@ static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, G
 	GstElement* _tmp0_;
 	GstEvent* _tmp1_;
 	self = (gstdPipeline*) base;
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = gst_event_new_eos ();
 	gst_element_send_event (_tmp0_, _tmp1_);
 }
@@ -1963,7 +1963,7 @@ static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint
 	GstEvent* _tmp2_;
 	self = (gstdPipeline*) base;
 	gstd_pipeline_pipeline_set_state_impl (self, GST_STATE_PAUSED);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = frames;
 	_tmp2_ = gst_event_new_step (GST_FORMAT_BUFFERS, _tmp1_, 1.0, TRUE, FALSE);
 	gst_element_send_event (_tmp0_, _tmp2_);
@@ -2045,7 +2045,7 @@ static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInter
 			}
 		}
 	}
-	_tmp5_ = self->priv->pipeline;
+	_tmp5_ = self->priv->_pipeline;
 	_tmp6_ = type;
 	_tmp7_ = name;
 	_tmp8_ = gst_structure_empty_new (_tmp7_);
@@ -2083,7 +2083,7 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
 	gint _tmp13_;
 	self = (gstdPipeline*) base;
 	g_return_val_if_fail (element != NULL, FALSE);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -2149,7 +2149,7 @@ static void gstd_pipeline_real_element_async_set_state (gstdPipelineInterface* b
 	gint _tmp8_;
 	self = (gstdPipeline*) base;
 	g_return_if_fail (element != NULL);
-	_tmp0_ = self->priv->pipeline;
+	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
 	pipe = _tmp1_;
 	_tmp2_ = pipe;
@@ -2175,7 +2175,7 @@ static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint
 	guint64 _tmp0_;
 	self = (gstdPipeline*) base;
 	_tmp0_ = winId;
-	self->priv->windowId = (gulong) _tmp0_;
+	self->priv->_windowId = _tmp0_;
 }
 
 
@@ -2235,12 +2235,12 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 static void gstd_pipeline_instance_init (gstdPipeline * self) {
 	gchar* _tmp0_;
 	self->priv = GSTD_PIPELINE_GET_PRIVATE (self);
-	self->priv->id = (guint64) 0;
-	self->priv->initialized = FALSE;
+	self->priv->_id = (guint64) 0;
+	self->priv->_initialized = FALSE;
 	_tmp0_ = g_strdup ("");
-	self->priv->path = _tmp0_;
-	self->priv->rate = 1.0;
-	self->priv->windowId = (gulong) 0;
+	self->priv->_path = _tmp0_;
+	self->priv->_rate = 1.0;
+	self->priv->_windowId = (guint64) 0;
 }
 
 
@@ -2248,7 +2248,7 @@ static void gstd_pipeline_finalize (GObject* obj) {
 	gstdPipeline * self;
 	gboolean _tmp0_;
 	self = GSTD_PIPELINE (obj);
-	_tmp0_ = self->priv->initialized;
+	_tmp0_ = self->priv->_initialized;
 	if (_tmp0_) {
 		gboolean _tmp1_ = FALSE;
 		_tmp1_ = gstd_pipeline_pipeline_set_state_impl (self, GST_STATE_NULL);
@@ -2256,8 +2256,8 @@ static void gstd_pipeline_finalize (GObject* obj) {
 			syslog (LOG_ERR, "Failed to destroy pipeline", NULL);
 		}
 	}
-	_gst_object_unref0 (self->priv->pipeline);
-	_g_free0 (self->priv->path);
+	_gst_object_unref0 (self->priv->_pipeline);
+	_g_free0 (self->priv->_path);
 	G_OBJECT_CLASS (gstd_pipeline_parent_class)->finalize (obj);
 }
 

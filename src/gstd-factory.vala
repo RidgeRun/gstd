@@ -14,9 +14,9 @@ namespace gstd
 
 public class Factory : GLib.Object, FactoryInterface
 {
-	private GLib.DBusConnection conn;
-	private PipelineInterface[] pipes;
-	private static const int num_pipes = 20;
+	private GLib.DBusConnection _conn;
+	private PipelineInterface[] _pipes;
+	private static const int _num_pipes = 20;
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
@@ -24,11 +24,11 @@ public class Factory : GLib.Object, FactoryInterface
 	 */
 	public Factory (GLib.DBusConnection conn)
 	{
-		this.conn = conn;
-		this.pipes = new PipelineInterface[this.num_pipes];
-		for (int ids = 0; ids < this.pipes.length; ++ids)
+		_conn = conn;
+		_pipes = new PipelineInterface[_num_pipes];
+		for (int ids = 0; ids < _pipes.length; ++ids)
 		{
-			this.pipes[ids] = null;
+			_pipes[ids] = null;
 		}
 	}
 
@@ -45,24 +45,24 @@ public class Factory : GLib.Object, FactoryInterface
 		{
 			/* Create our pipeline */
 			int next_id = 0;
-			while (this.pipes[next_id] != null)
+			while (_pipes[next_id] != null)
 			{
-				next_id = (next_id + 1) % this.pipes.length;
+				next_id = (next_id + 1) % _pipes.length;
 				if (next_id == 0)
 				{
 					return "";
 				}
 			}
-			this.pipes[next_id] = new Pipeline (description);
+			_pipes[next_id] = new Pipeline (description);
 
-			if (!(this.pipes[next_id] as Pipeline).pipeline_is_initialized ())
+			if (!(_pipes[next_id] as Pipeline).pipeline_is_initialized ())
 			{
-				this.pipes[next_id] = null;
+				_pipes[next_id] = null;
 				return "";
 			}
 			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-			this.conn.register_object(objectpath, this.pipes[next_id]);
-			(this.pipes[next_id] as Pipeline).pipeline_set_path(objectpath);
+			_conn.register_object(objectpath, _pipes[next_id]);
+			(_pipes[next_id] as Pipeline).pipeline_set_path(objectpath);
 			return objectpath;
 		}
 		catch (GLib.IOError error)
@@ -79,13 +79,13 @@ public class Factory : GLib.Object, FactoryInterface
 	 */
 	public bool destroy (string objectpath)
 	{
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (this.pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				if ((this.pipes[index] as Pipeline).pipeline_get_path () == objectpath)
+				if ((_pipes[index] as Pipeline).pipeline_get_path () == objectpath)
 				{
-					this.pipes[index] = null;
+					_pipes[index] = null;
 					return true;
 				}
 			}
@@ -102,11 +102,11 @@ public class Factory : GLib.Object, FactoryInterface
 	 */
 	public bool destroy_all ()
 	{
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (this.pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				this.pipes[index] = null;
+				_pipes[index] = null;
 			}
 		}
 		return true;
@@ -120,11 +120,11 @@ public class Factory : GLib.Object, FactoryInterface
 	{
 		string[] paths = {};
 
-		for (int index = 0; index < this.pipes.length; ++index)
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (this.pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				paths += (this.pipes[index] as Pipeline).pipeline_get_path ();
+				paths += (_pipes[index] as Pipeline).pipeline_get_path ();
 			}
 		}
 		return paths;

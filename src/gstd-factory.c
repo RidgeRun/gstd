@@ -117,10 +117,10 @@ struct _gstdPipelineInterfaceIface {
 };
 
 struct _gstdFactoryPrivate {
-	GDBusConnection* conn;
-	gstdPipelineInterface** pipes;
-	gint pipes_length1;
-	gint _pipes_size_;
+	GDBusConnection* _conn;
+	gstdPipelineInterface** _pipes;
+	gint _pipes_length1;
+	gint __pipes_size_;
 };
 
 
@@ -138,7 +138,7 @@ GType gstd_pipeline_interface_get_type (void) G_GNUC_CONST;
 enum  {
 	GSTD_FACTORY_DUMMY_PROPERTY
 };
-#define GSTD_FACTORY_num_pipes 20
+#define GSTD_FACTORY__num_pipes 20
 gstdFactory* gstd_factory_new (GDBusConnection* conn);
 gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn);
 static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar* description, GError** error);
@@ -176,13 +176,13 @@ gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn) {
 	self = (gstdFactory*) g_object_new (object_type, NULL);
 	_tmp0_ = conn;
 	_tmp1_ = _g_object_ref0 (_tmp0_);
-	_g_object_unref0 (self->priv->conn);
-	self->priv->conn = _tmp1_;
-	_tmp2_ = g_new0 (gstdPipelineInterface*, GSTD_FACTORY_num_pipes + 1);
-	self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL);
-	self->priv->pipes = _tmp2_;
-	self->priv->pipes_length1 = GSTD_FACTORY_num_pipes;
-	self->priv->_pipes_size_ = self->priv->pipes_length1;
+	_g_object_unref0 (self->priv->_conn);
+	self->priv->_conn = _tmp1_;
+	_tmp2_ = g_new0 (gstdPipelineInterface*, GSTD_FACTORY__num_pipes + 1);
+	self->priv->_pipes = (_vala_array_free (self->priv->_pipes, self->priv->_pipes_length1, (GDestroyNotify) g_object_unref), NULL);
+	self->priv->_pipes = _tmp2_;
+	self->priv->_pipes_length1 = GSTD_FACTORY__num_pipes;
+	self->priv->__pipes_size_ = self->priv->_pipes_length1;
 	{
 		gint ids;
 		ids = 0;
@@ -206,13 +206,13 @@ gstdFactory* gstd_factory_construct (GType object_type, GDBusConnection* conn) {
 				}
 				_tmp3_ = FALSE;
 				_tmp6_ = ids;
-				_tmp7_ = self->priv->pipes;
-				_tmp7__length1 = self->priv->pipes_length1;
+				_tmp7_ = self->priv->_pipes;
+				_tmp7__length1 = self->priv->_pipes_length1;
 				if (!(_tmp6_ < _tmp7__length1)) {
 					break;
 				}
-				_tmp8_ = self->priv->pipes;
-				_tmp8__length1 = self->priv->pipes_length1;
+				_tmp8_ = self->priv->_pipes;
+				_tmp8__length1 = self->priv->_pipes_length1;
 				_tmp9_ = ids;
 				_g_object_unref0 (_tmp8_[_tmp9_]);
 				_tmp8_[_tmp9_] = NULL;
@@ -282,16 +282,16 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 			gstdPipelineInterface** _tmp4_;
 			gint _tmp4__length1;
 			gint _tmp5_;
-			_tmp0_ = self->priv->pipes;
-			_tmp0__length1 = self->priv->pipes_length1;
+			_tmp0_ = self->priv->_pipes;
+			_tmp0__length1 = self->priv->_pipes_length1;
 			_tmp1_ = next_id;
 			_tmp2_ = _tmp0_[_tmp1_];
 			if (!(_tmp2_ != NULL)) {
 				break;
 			}
 			_tmp3_ = next_id;
-			_tmp4_ = self->priv->pipes;
-			_tmp4__length1 = self->priv->pipes_length1;
+			_tmp4_ = self->priv->_pipes;
+			_tmp4__length1 = self->priv->_pipes_length1;
 			next_id = (_tmp3_ + 1) % _tmp4__length1;
 			_tmp5_ = next_id;
 			if (_tmp5_ == 0) {
@@ -301,16 +301,16 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 				return result;
 			}
 		}
-		_tmp7_ = self->priv->pipes;
-		_tmp7__length1 = self->priv->pipes_length1;
+		_tmp7_ = self->priv->_pipes;
+		_tmp7__length1 = self->priv->_pipes_length1;
 		_tmp8_ = next_id;
 		_tmp9_ = description;
 		_tmp10_ = gstd_pipeline_new (_tmp9_);
 		_g_object_unref0 (_tmp7_[_tmp8_]);
 		_tmp7_[_tmp8_] = (gstdPipelineInterface*) _tmp10_;
 		_tmp11_ = _tmp7_[_tmp8_];
-		_tmp12_ = self->priv->pipes;
-		_tmp12__length1 = self->priv->pipes_length1;
+		_tmp12_ = self->priv->_pipes;
+		_tmp12__length1 = self->priv->_pipes_length1;
 		_tmp13_ = next_id;
 		_tmp14_ = _tmp12_[_tmp13_];
 		_tmp15_ = gstd_pipeline_pipeline_is_initialized (GSTD_IS_PIPELINE (_tmp14_) ? ((gstdPipeline*) _tmp14_) : NULL);
@@ -320,8 +320,8 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 			gint _tmp17_;
 			gstdPipelineInterface* _tmp18_;
 			gchar* _tmp19_;
-			_tmp16_ = self->priv->pipes;
-			_tmp16__length1 = self->priv->pipes_length1;
+			_tmp16_ = self->priv->_pipes;
+			_tmp16__length1 = self->priv->_pipes_length1;
 			_tmp17_ = next_id;
 			_g_object_unref0 (_tmp16_[_tmp17_]);
 			_tmp16_[_tmp17_] = NULL;
@@ -337,10 +337,10 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 		_tmp24_ = _tmp23_;
 		_g_free0 (_tmp22_);
 		objectpath = _tmp24_;
-		_tmp25_ = self->priv->conn;
+		_tmp25_ = self->priv->_conn;
 		_tmp26_ = objectpath;
-		_tmp27_ = self->priv->pipes;
-		_tmp27__length1 = self->priv->pipes_length1;
+		_tmp27_ = self->priv->_pipes;
+		_tmp27__length1 = self->priv->_pipes_length1;
 		_tmp28_ = next_id;
 		_tmp29_ = _tmp27_[_tmp28_];
 		gstd_pipeline_interface_register_object (_tmp29_, _tmp25_, _tmp26_, &_inner_error_);
@@ -354,8 +354,8 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 			g_clear_error (&_inner_error_);
 			return NULL;
 		}
-		_tmp30_ = self->priv->pipes;
-		_tmp30__length1 = self->priv->pipes_length1;
+		_tmp30_ = self->priv->_pipes;
+		_tmp30__length1 = self->priv->_pipes_length1;
 		_tmp31_ = next_id;
 		_tmp32_ = _tmp30_[_tmp31_];
 		_tmp33_ = objectpath;
@@ -416,13 +416,13 @@ static gboolean gstd_factory_real_destroy (gstdFactoryInterface* base, const gch
 				}
 				_tmp0_ = FALSE;
 				_tmp3_ = index;
-				_tmp4_ = self->priv->pipes;
-				_tmp4__length1 = self->priv->pipes_length1;
+				_tmp4_ = self->priv->_pipes;
+				_tmp4__length1 = self->priv->_pipes_length1;
 				if (!(_tmp3_ < _tmp4__length1)) {
 					break;
 				}
-				_tmp5_ = self->priv->pipes;
-				_tmp5__length1 = self->priv->pipes_length1;
+				_tmp5_ = self->priv->_pipes;
+				_tmp5__length1 = self->priv->_pipes_length1;
 				_tmp6_ = index;
 				_tmp7_ = _tmp5_[_tmp6_];
 				if (_tmp7_ != NULL) {
@@ -434,8 +434,8 @@ static gboolean gstd_factory_real_destroy (gstdFactoryInterface* base, const gch
 					gchar* _tmp12_;
 					const gchar* _tmp13_;
 					gboolean _tmp14_;
-					_tmp8_ = self->priv->pipes;
-					_tmp8__length1 = self->priv->pipes_length1;
+					_tmp8_ = self->priv->_pipes;
+					_tmp8__length1 = self->priv->_pipes_length1;
 					_tmp9_ = index;
 					_tmp10_ = _tmp8_[_tmp9_];
 					_tmp11_ = gstd_pipeline_pipeline_get_path (GSTD_IS_PIPELINE (_tmp10_) ? ((gstdPipeline*) _tmp10_) : NULL);
@@ -448,8 +448,8 @@ static gboolean gstd_factory_real_destroy (gstdFactoryInterface* base, const gch
 						gint _tmp15__length1;
 						gint _tmp16_;
 						gstdPipelineInterface* _tmp17_;
-						_tmp15_ = self->priv->pipes;
-						_tmp15__length1 = self->priv->pipes_length1;
+						_tmp15_ = self->priv->_pipes;
+						_tmp15__length1 = self->priv->_pipes_length1;
 						_tmp16_ = index;
 						_g_object_unref0 (_tmp15_[_tmp16_]);
 						_tmp15_[_tmp16_] = NULL;
@@ -499,13 +499,13 @@ static gboolean gstd_factory_real_destroy_all (gstdFactoryInterface* base, GErro
 				}
 				_tmp0_ = FALSE;
 				_tmp3_ = index;
-				_tmp4_ = self->priv->pipes;
-				_tmp4__length1 = self->priv->pipes_length1;
+				_tmp4_ = self->priv->_pipes;
+				_tmp4__length1 = self->priv->_pipes_length1;
 				if (!(_tmp3_ < _tmp4__length1)) {
 					break;
 				}
-				_tmp5_ = self->priv->pipes;
-				_tmp5__length1 = self->priv->pipes_length1;
+				_tmp5_ = self->priv->_pipes;
+				_tmp5__length1 = self->priv->_pipes_length1;
 				_tmp6_ = index;
 				_tmp7_ = _tmp5_[_tmp6_];
 				if (_tmp7_ != NULL) {
@@ -513,8 +513,8 @@ static gboolean gstd_factory_real_destroy_all (gstdFactoryInterface* base, GErro
 					gint _tmp8__length1;
 					gint _tmp9_;
 					gstdPipelineInterface* _tmp10_;
-					_tmp8_ = self->priv->pipes;
-					_tmp8__length1 = self->priv->pipes_length1;
+					_tmp8_ = self->priv->_pipes;
+					_tmp8__length1 = self->priv->_pipes_length1;
 					_tmp9_ = index;
 					_g_object_unref0 (_tmp8_[_tmp9_]);
 					_tmp8_[_tmp9_] = NULL;
@@ -579,13 +579,13 @@ static gchar** gstd_factory_real_list (gstdFactoryInterface* base, int* result_l
 				}
 				_tmp1_ = FALSE;
 				_tmp4_ = index;
-				_tmp5_ = self->priv->pipes;
-				_tmp5__length1 = self->priv->pipes_length1;
+				_tmp5_ = self->priv->_pipes;
+				_tmp5__length1 = self->priv->_pipes_length1;
 				if (!(_tmp4_ < _tmp5__length1)) {
 					break;
 				}
-				_tmp6_ = self->priv->pipes;
-				_tmp6__length1 = self->priv->pipes_length1;
+				_tmp6_ = self->priv->_pipes;
+				_tmp6__length1 = self->priv->_pipes_length1;
 				_tmp7_ = index;
 				_tmp8_ = _tmp6_[_tmp7_];
 				if (_tmp8_ != NULL) {
@@ -598,8 +598,8 @@ static gchar** gstd_factory_real_list (gstdFactoryInterface* base, int* result_l
 					gchar* _tmp13_ = NULL;
 					_tmp9_ = paths;
 					_tmp9__length1 = paths_length1;
-					_tmp10_ = self->priv->pipes;
-					_tmp10__length1 = self->priv->pipes_length1;
+					_tmp10_ = self->priv->_pipes;
+					_tmp10__length1 = self->priv->_pipes_length1;
 					_tmp11_ = index;
 					_tmp12_ = _tmp10_[_tmp11_];
 					_tmp13_ = gstd_pipeline_pipeline_get_path (GSTD_IS_PIPELINE (_tmp12_) ? ((gstdPipeline*) _tmp12_) : NULL);
@@ -657,8 +657,8 @@ static void gstd_factory_instance_init (gstdFactory * self) {
 static void gstd_factory_finalize (GObject* obj) {
 	gstdFactory * self;
 	self = GSTD_FACTORY (obj);
-	_g_object_unref0 (self->priv->conn);
-	self->priv->pipes = (_vala_array_free (self->priv->pipes, self->priv->pipes_length1, (GDestroyNotify) g_object_unref), NULL);
+	_g_object_unref0 (self->priv->_conn);
+	self->priv->_pipes = (_vala_array_free (self->priv->_pipes, self->priv->_pipes_length1, (GDestroyNotify) g_object_unref), NULL);
 	G_OBJECT_CLASS (gstd_factory_parent_class)->finalize (obj);
 }
 

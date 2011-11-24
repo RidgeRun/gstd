@@ -15,12 +15,12 @@ namespace gstd
 public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
-	private Gst.Element pipeline;
-	private uint64 id = 0;
-	private bool initialized = false;
-	private string path = "";
-	private double rate = 1.0;
-	private ulong windowId = 0;
+	private Gst.Element _pipeline;
+	private uint64 _id = 0;
+	private bool _initialized = false;
+	private string _path = "";
+	private double _rate = 1.0;
+	private uint64 _windowId = 0;
 
 	/**
 	   Create a new instance of a Pipeline
@@ -32,10 +32,10 @@ public class Pipeline : GLib.Object, PipelineInterface
 		try
 		{
 			/* Create the pipe */
-			this.pipeline = Gst.parse_launch (description) as Gst.Element;
+			_pipeline = Gst.parse_launch (description) as Gst.Element;
 
 			/*Get and watch bus */
-			Gst.Bus bus = this.pipeline.get_bus ();
+			Gst.Bus bus = _pipeline.get_bus ();
 			bus.set_sync_handler(bus_sync_callback);
 			bus.add_watch (bus_callback);
 			/* The bus watch increases our ref count, so we need to unreference
@@ -45,7 +45,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			unref();
 
 			/* Set pipeline state to initialized */
-			this.initialized = true;
+			_initialized = true;
 			Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
 		}
 		catch (GLib.Error e)
@@ -60,7 +60,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	~Pipeline ()
 	{
 		/* Destroy the pipeline */
-		if (this.initialized)
+		if (_initialized)
 		{
 			if (!pipeline_set_state_impl (Gst.State.NULL))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
@@ -69,7 +69,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	private Gst.BusSyncReply bus_sync_callback (Gst.Bus bus, Gst.Message message)
 	{
-		if (this.windowId == 0)
+		if (_windowId == 0)
 			return Gst.BusSyncReply.PASS;
 
 		unowned Gst.Structure ? st = message.get_structure();
@@ -77,7 +77,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return Gst.BusSyncReply.PASS;
 
 		Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		GLib.assert(pipe != null);
 
 		var sink = pipe.get_child_by_name("videosink") as Gst.Element;
@@ -88,8 +88,8 @@ public class Pipeline : GLib.Object, PipelineInterface
 		if (overlay == null)
 			return Gst.BusSyncReply.PASS;
 
-		Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %lu", this.windowId);
-		overlay.set_xwindow_id(this.windowId);
+		Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
+		overlay.set_xwindow_id((ulong)_windowId);
 
 		return Gst.BusSyncReply.PASS;
 	}
@@ -108,7 +108,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_error (out err, out dbg);
 
 				/*Sending Error Signal */
-				error(this.id, err.message);
+				error(_id, err.message);
 
 				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
 				break;
@@ -116,7 +116,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			case Gst.MessageType.EOS:
 
 				/*Sending Eos Signal */
-				eos (this.id);
+				eos (_id);
 				break;
 
 			case Gst.MessageType.STATE_CHANGED:
@@ -132,7 +132,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src, oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
-				state_changed (this.id, oldstate, newstate, src);
+				state_changed (_id, oldstate, newstate, src);
 				break;
 
 #if GSTREAMER_SUPPORT_QOS_SIGNAL
@@ -156,7 +156,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_qos_stats(out fmt, out processed, out dropped);
 				format = fmt;
 
-				qos(this.id, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
+				qos(_id, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
 #endif
 			default:
@@ -168,11 +168,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	private bool pipeline_set_state_impl (Gst.State state)
 	{
-		this.pipeline.set_state (state);
+		_pipeline.set_state (state);
 
 		/* Wait until state change is done */
 		Gst.State current, pending;
-		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		if (current != state)
 		{
 			Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
@@ -188,7 +188,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	private void pipeline_async_set_state_impl(Gst.State state)
 	{
-		this.pipeline.set_state (state);
+		_pipeline.set_state (state);
 	}
 	
 	public void pipeline_async_set_state(int state)
@@ -201,7 +201,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool pipeline_is_initialized ()
 	{
-		return this.initialized;
+		return _initialized;
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class Pipeline : GLib.Object, PipelineInterface
           */
 	public uint64 pipeline_get_id()
 	{
-		return this.id;
+		return _id;
 	}
 
 	/**
@@ -217,7 +217,7 @@ public class Pipeline : GLib.Object, PipelineInterface
           */
 	public void pipeline_set_id(uint64 id)
 	{
-		this.id = id;
+		_id = id;
 	}
 
 	/**
@@ -225,7 +225,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public string pipeline_get_path()
 	{
-		return this.path;
+		return _path;
 	}
 
 	/**
@@ -233,7 +233,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool pipeline_set_path (string dbuspath)
 	{
-		this.path = dbuspath;
+		_path = dbuspath;
 		return true;
 	}
 
@@ -243,7 +243,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public int pipeline_get_state ()
 	{
 		Gst.State current, pending;
-		this.pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		return current;
 	}
 
@@ -255,7 +255,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_boolean (string element, string property, bool val)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -283,7 +283,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_int (string element, string property, int val)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -310,7 +310,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param val, long property value     */
 	public bool element_set_property_int64 (string element, string property, int64 val)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -338,7 +338,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_string (string element, string property, string val)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -373,7 +373,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = false;
 
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -408,7 +408,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = 0;
 
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -443,7 +443,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = 0;
 
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -478,7 +478,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = "";
 
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -506,7 +506,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public int element_get_state (string element)
 	{
 		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -537,7 +537,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		caps = "";
 		data = new uint8[0];
 
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -574,7 +574,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		/* Query duration */
 		var format = Gst.Format.TIME;
 		int64 duration = 0;
-		if (!this.pipeline.query_duration (ref format, out duration))
+		if (!_pipeline.query_duration (ref format, out duration))
 		{
 			return -1;
 		}
@@ -600,7 +600,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		var format = Gst.Format.TIME;
 		int64 position = 0;
 
-		if (!this.pipeline.query_position (ref format, out position))
+		if (!_pipeline.query_position (ref format, out position))
 		{
 			return -1;
 		}
@@ -624,7 +624,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public bool pipeline_seek (int64 ipos_ns)
 	{
 		/*Set the current position */
-		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -654,7 +654,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		int64 cur_pos_ns = 0;
 
 		/*Gets the current position */
-		if (!this.pipeline.query_position (ref format, out cur_pos_ns))
+		if (!_pipeline.query_position (ref format, out cur_pos_ns))
 		{
 			return false;
 		}
@@ -663,7 +663,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		int64 seek_ns = cur_pos_ns + period_ns;
 
 		/*Set the current position */
-		if (!this.pipeline.seek (this.rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -681,10 +681,10 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public bool pipeline_speed (double new_rate)
 	{
 		/*Sets the new rate */
-		this.rate = new_rate;
+		_rate = new_rate;
 
 		/*Changes the rate on the pipeline */
-		if (!this.pipeline.seek (this.rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
 			return false;
@@ -694,14 +694,14 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	public void pipeline_send_eos ()
 	{
-		this.pipeline.send_event(new Gst.Event.eos());
+		_pipeline.send_event(new Gst.Event.eos());
 	}
 
 	public void pipeline_step (uint64 frames)
 	{
 #if GSTREAMER_SUPPORT_STEP
 		pipeline_set_state_impl (Gst.State.PAUSED);
-		this.pipeline.send_event(new Gst.Event.step(Gst.Format.BUFFERS,frames,1.0,true,false));
+		_pipeline.send_event(new Gst.Event.step(Gst.Format.BUFFERS,frames,1.0,true,false));
 #else
 		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
 #endif
@@ -730,7 +730,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			default:
 				return false;
 		}
-		this.pipeline.send_event(new Gst.Event.custom(type, new Gst.Structure.empty(name)));
+		_pipeline.send_event(new Gst.Event.custom(type, new Gst.Structure.empty(name)));
 
 		return true;
 	}
@@ -742,7 +742,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_state (string element, int state)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name(element) as Gst.Element;
 		if (e == null)
 		{
@@ -770,7 +770,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public void element_async_set_state (string element, int state)
 	{
-		var pipe = this.pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;
 		if (e == null)
 		{
@@ -781,7 +781,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	public void set_window_id(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
 	{
-		this.windowId = (ulong)(winId);
+		_windowId = winId;
 	}
 	
 	/**
