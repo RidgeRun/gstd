@@ -57,9 +57,13 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
 	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	void (*element_set_property_boolean_asnyc) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
+	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+	void (*element_set_property_int64_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
 	gboolean (*element_set_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
+	void (*element_set_property_string_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 	void (*element_get_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
 	void (*element_get_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
 	void (*element_get_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
@@ -67,7 +71,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*element_get_property_buffer) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
 	gint64 (*pipeline_get_duration) (gstdPipelineInterface* self, GError** error);
 	gint64 (*pipeline_get_position) (gstdPipelineInterface* self, GError** error);
-	gboolean (*pipeline_speed) (gstdPipelineInterface* self, gdouble newrate, GError** error);
+	gboolean (*pipeline_set_speed) (gstdPipelineInterface* self, gdouble newrate, GError** error);
 	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
@@ -75,7 +79,9 @@ struct _gstdPipelineInterfaceIface {
 	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
 	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
 	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
+	void (*pipeline_send_eos_async) (gstdPipelineInterface* self, GError** error);
 	gboolean (*pipeline_send_custom_event) (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
+	void (*pipeline_send_custom_event_async) (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
 	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
 	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
 	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
@@ -129,9 +135,17 @@ gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self);
 gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbuspath);
 static gint gstd_pipeline_real_pipeline_get_state (gstdPipelineInterface* base, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
+static void gstd_pipeline_real_element_set_property_boolean_asnyc (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
+gboolean gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error);
+static void gstd_pipeline_real_element_set_property_int_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error);
+gboolean gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error);
+static void gstd_pipeline_real_element_set_property_int64_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error);
+gboolean gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error);
+static void gstd_pipeline_real_element_set_property_string_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error);
+gboolean gstd_pipeline_interface_element_set_property_string (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 static void gstd_pipeline_real_element_get_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
 static gboolean gstd_pipeline_element_get_property_boolean_impl (gstdPipeline* self, const gchar* element, const gchar* property, gboolean* val);
 static void gstd_pipeline_real_element_get_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
@@ -150,10 +164,14 @@ static gboolean gstd_pipeline_pipeline_seek_impl (gstdPipeline* self, gint64 ipo
 static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
 static void gstd_pipeline_real_pipeline_seek_async (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
 static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, gint64 period_ns, GError** error);
-static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error);
+static gboolean gstd_pipeline_real_pipeline_set_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error);
 static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, GError** error);
+static void gstd_pipeline_real_pipeline_send_eos_async (gstdPipelineInterface* base, GError** error);
+void gstd_pipeline_interface_pipeline_send_eos (gstdPipelineInterface* self, GError** error);
 static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint64 frames, GError** error);
 static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
+static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
+gboolean gstd_pipeline_interface_pipeline_send_custom_event (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
 static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_real_element_set_state_async (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint64 winId, GError** error);
@@ -765,6 +783,41 @@ static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInt
 }
 
 
+static void gstd_pipeline_real_element_set_property_boolean_asnyc (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		gboolean _tmp2_;
+		_tmp0_ = element;
+		_tmp1_ = property;
+		_tmp2_ = val;
+		gstd_pipeline_interface_element_set_property_boolean ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch5_g_error;
+		}
+	}
+	goto __finally5;
+	__catch5_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally5:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+}
+
+
 /**
    Sets an int property for an element on the pipeline
    @param element, whose property needs to be set
@@ -840,6 +893,41 @@ static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterfa
 	_gst_object_unref0 (e);
 	_gst_object_unref0 (pipe);
 	return result;
+}
+
+
+static void gstd_pipeline_real_element_set_property_int_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		gint _tmp2_;
+		_tmp0_ = element;
+		_tmp1_ = property;
+		_tmp2_ = val;
+		gstd_pipeline_interface_element_set_property_int ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch6_g_error;
+		}
+	}
+	goto __finally6;
+	__catch6_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally6:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -920,6 +1008,41 @@ static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInter
 }
 
 
+static void gstd_pipeline_real_element_set_property_int64_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		gint64 _tmp2_;
+		_tmp0_ = element;
+		_tmp1_ = property;
+		_tmp2_ = val;
+		gstd_pipeline_interface_element_set_property_int64 ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch7_g_error;
+		}
+	}
+	goto __finally7;
+	__catch7_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally7:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+}
+
+
 /**
    Sets a string property for an element on the pipeline
    @param element, whose property needs to be set
@@ -996,6 +1119,42 @@ static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInte
 	_gst_object_unref0 (e);
 	_gst_object_unref0 (pipe);
 	return result;
+}
+
+
+static void gstd_pipeline_real_element_set_property_string_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	g_return_if_fail (val != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		const gchar* _tmp2_;
+		_tmp0_ = element;
+		_tmp1_ = property;
+		_tmp2_ = val;
+		gstd_pipeline_interface_element_set_property_string ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch8_g_error;
+		}
+	}
+	goto __finally8;
+	__catch8_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally8:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -1928,7 +2087,7 @@ static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, g
         otherwise.  Values greater than 1 (or -1 for reverse)
         play faster than normal, otherwise slower than normal.
  */
-static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error) {
+static gboolean gstd_pipeline_real_pipeline_set_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error) {
 	gstdPipeline * self;
 	gboolean result = FALSE;
 	gdouble _tmp0_;
@@ -1959,6 +2118,33 @@ static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, G
 	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = gst_event_new_eos ();
 	gst_element_send_event (_tmp0_, _tmp1_);
+}
+
+
+static void gstd_pipeline_real_pipeline_send_eos_async (gstdPipelineInterface* base, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	{
+		gstd_pipeline_interface_pipeline_send_eos ((gstdPipelineInterface*) self, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch9_g_error;
+		}
+	}
+	goto __finally9;
+	__catch9_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally9:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -2059,6 +2245,39 @@ static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInter
 	gst_element_send_event (_tmp5_, _tmp9_);
 	result = TRUE;
 	return result;
+}
+
+
+static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (stype != NULL);
+	g_return_if_fail (name != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		_tmp0_ = stype;
+		_tmp1_ = name;
+		gstd_pipeline_interface_pipeline_send_custom_event ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch10_g_error;
+		}
+	}
+	goto __finally10;
+	__catch10_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally10:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
 }
 
 
@@ -2213,9 +2432,13 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 	iface->pipeline_set_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_set_id;
 	iface->pipeline_get_state = (gint (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_state;
 	iface->element_set_property_boolean = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean;
+	iface->element_set_property_boolean_asnyc = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean_asnyc;
 	iface->element_set_property_int = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int;
+	iface->element_set_property_int_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int_async;
 	iface->element_set_property_int64 = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64;
+	iface->element_set_property_int64_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64_async;
 	iface->element_set_property_string = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_element_set_property_string;
+	iface->element_set_property_string_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_element_set_property_string_async;
 	iface->element_get_property_boolean = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_boolean;
 	iface->element_get_property_int = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int;
 	iface->element_get_property_int64 = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int64;
@@ -2227,10 +2450,12 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 	iface->pipeline_seek = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_seek;
 	iface->pipeline_seek_async = (void (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_seek_async;
 	iface->pipeline_skip = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_skip;
-	iface->pipeline_speed = (gboolean (*)(gstdPipelineInterface*, gdouble, GError**)) gstd_pipeline_real_pipeline_speed;
+	iface->pipeline_set_speed = (gboolean (*)(gstdPipelineInterface*, gdouble, GError**)) gstd_pipeline_real_pipeline_set_speed;
 	iface->pipeline_send_eos = (void (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_send_eos;
+	iface->pipeline_send_eos_async = (void (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_send_eos_async;
 	iface->pipeline_step = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_step;
 	iface->pipeline_send_custom_event = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_pipeline_send_custom_event;
+	iface->pipeline_send_custom_event_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_pipeline_send_custom_event_async;
 	iface->element_set_state = (gboolean (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_state;
 	iface->element_set_state_async = (void (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_state_async;
 	iface->set_window_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_set_window_id;

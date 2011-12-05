@@ -267,12 +267,23 @@ public class Pipeline : GLib.Object, PipelineInterface
 		if (spec == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
-				              element, property);
+					element, property);
 			return false;
 		}
 
 		e.set (property, val, null);
 		return true;
+	}
+	
+	public void element_set_property_boolean_asnyc (string element, string property, bool val)
+	{
+		try
+		{
+			element_set_property_boolean(element, property, val);
+		}
+		catch (Error err)
+		{
+		}
 	}
 
 	/**
@@ -302,6 +313,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		return true;
 	}
+	
+	public void element_set_property_int_async (string element, string property, int val)
+	{
+		try
+		{
+			element_set_property_int(element, property, val);
+		}
+		catch (Error err)
+		{
+		}
+	}
 
 	/**
 	   Sets an long property for an element on the pipeline
@@ -328,6 +350,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		e.set (property, val, null);
 		return true;
+	}
+	
+	public void element_set_property_int64_async (string element, string property, int64 val)
+	{
+		try
+		{
+			element_set_property_int64(element, property, val);
+		}
+		catch (Error err)
+		{
+		}
 	}
 
 	/**
@@ -357,6 +390,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 		e.set (property, val, null);
 
 		return true;
+	}
+	
+	public void element_set_property_string_async (string element, string property, string val)
+	{
+		try
+		{
+			element_set_property_string(element, property, val);
+		}
+		catch (Error err)
+		{
+		}
 	}
 
 	public void element_get_property_boolean(string element, string property, out bool val, out bool success)
@@ -683,7 +727,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	        otherwise.  Values greater than 1 (or -1 for reverse)
 	        play faster than normal, otherwise slower than normal.
 	 */
-	public bool pipeline_speed (double new_rate)
+	public bool pipeline_set_speed (double new_rate)
 	{
 		/*Sets the new rate */
 		_rate = new_rate;
@@ -700,6 +744,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public void pipeline_send_eos ()
 	{
 		_pipeline.send_event(new Gst.Event.eos());
+	}
+	
+	public void pipeline_send_eos_async ()
+	{
+		try
+		{
+			pipeline_send_eos();
+		}
+		catch (Error err)
+		{
+		}
 	}
 
 	public void pipeline_step (uint64 frames)
@@ -738,6 +793,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 		_pipeline.send_event(new Gst.Event.custom(type, new Gst.Structure.empty(name)));
 
 		return true;
+	}
+	
+	public void pipeline_send_custom_event_async(string stype, string name)
+	{
+		try
+		{
+			pipeline_send_custom_event(stype, name);
+		}
+		catch (Error err)
+		{
+		}
 	}
 
 	/**

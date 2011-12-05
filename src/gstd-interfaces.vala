@@ -60,14 +60,26 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyBooleanAsnyc", no_reply = true)]
+		public abstract void element_set_property_boolean_asnyc(string element, string property, bool val) throws DBusError, IOError;
+
 		[DBus (name = "ElementSetPropertyInt")]
 		public abstract bool element_set_property_int(string element, string property, int val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyIntAsync", no_reply = true)]
+		public abstract void element_set_property_int_async(string element, string property, int val) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyInt64")]
 		public abstract bool element_set_property_int64(string element, string property, int64 val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyInt64Async", no_reply = true)]
+		public abstract void element_set_property_int64_async(string element, string property, int64 val) throws DBusError, IOError;
+
 		[DBus (name = "ElementSetPropertyString")]
 		public abstract bool element_set_property_string(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyStringAsync", no_reply = true)]
+		public abstract void element_set_property_string_async(string element, string property, string val) throws DBusError, IOError;
 
 		[DBus (name = "ElementGetPropertyBoolean")]
 		public abstract void element_get_property_boolean(string element, string property, out bool val, out bool success) throws DBusError, IOError;
@@ -90,8 +102,8 @@ namespace gstd {
 		[DBus (name = "PipelineGetPosition")]
 		public abstract int64 pipeline_get_position() throws DBusError, IOError;
 
-		[DBus (name = "PipelineSpeed")]
-		public abstract bool pipeline_speed(double newrate) throws DBusError, IOError;
+		[DBus (name = "PipelineSetSpeed")]
+		public abstract bool pipeline_set_speed(double newrate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSkip")]
 		public abstract bool pipeline_skip(int64 period_ns) throws DBusError, IOError;
@@ -114,8 +126,14 @@ namespace gstd {
 		[DBus (name = "PipelineSendEos")]
 		public abstract void pipeline_send_eos() throws DBusError, IOError;
 
+		[DBus (name = "PipelineSendEosAsync", no_reply = true)]
+		public abstract void pipeline_send_eos_async() throws DBusError, IOError;
+
 		[DBus (name = "PipelineSendCustomEvent")]
 		public abstract bool pipeline_send_custom_event(string type, string name) throws DBusError, IOError;
+
+		[DBus (name = "PipelineSendCustomEventAsync", no_reply = true)]
+		public abstract void pipeline_send_custom_event_async(string type, string name) throws DBusError, IOError;
 
 		[DBus (name = "SetWindowId")]
 		public abstract void set_window_id(uint64 winId) throws DBusError, IOError;
@@ -160,14 +178,26 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyBooleanAsnyc", no_reply = true)]
+		public abstract void element_set_property_boolean_asnyc(string element, string property, bool val) throws DBusError, IOError;
+
 		[DBus (name = "ElementSetPropertyInt")]
 		public abstract bool element_set_property_int(string element, string property, int val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyIntAsync", no_reply = true)]
+		public abstract void element_set_property_int_async(string element, string property, int val) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyInt64")]
 		public abstract bool element_set_property_int64(string element, string property, int64 val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyInt64Async", no_reply = true)]
+		public abstract void element_set_property_int64_async(string element, string property, int64 val) throws DBusError, IOError;
+
 		[DBus (name = "ElementSetPropertyString")]
 		public abstract bool element_set_property_string(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyStringAsync", no_reply = true)]
+		public abstract void element_set_property_string_async(string element, string property, string val) throws DBusError, IOError;
 
 		[DBus (name = "ElementGetPropertyBoolean")]
 		public abstract void element_get_property_boolean(string element, string property, out bool val, out bool success) throws DBusError, IOError;
@@ -190,8 +220,8 @@ namespace gstd {
 		[DBus (name = "PipelineGetPosition")]
 		public abstract int64 pipeline_get_position() throws DBusError, IOError;
 
-		[DBus (name = "PipelineSpeed")]
-		public abstract bool pipeline_speed(double newrate) throws DBusError, IOError;
+		[DBus (name = "PipelineSetSpeed")]
+		public abstract bool pipeline_set_speed(double newrate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSkip")]
 		public abstract bool pipeline_skip(int64 period_ns) throws DBusError, IOError;
@@ -214,8 +244,14 @@ namespace gstd {
 		[DBus (name = "PipelineSendEos")]
 		public abstract void pipeline_send_eos() throws DBusError, IOError;
 
+		[DBus (name = "PipelineSendEosAsync", no_reply = true)]
+		public abstract void pipeline_send_eos_async() throws DBusError, IOError;
+
 		[DBus (name = "PipelineSendCustomEvent")]
 		public abstract bool pipeline_send_custom_event(string type, string name) throws DBusError, IOError;
+
+		[DBus (name = "PipelineSendCustomEventAsync", no_reply = true)]
+		public abstract void pipeline_send_custom_event_async(string type, string name) throws DBusError, IOError;
 
 		[DBus (name = "SetWindowId")]
 		public abstract void set_window_id(uint64 winId) throws DBusError, IOError;

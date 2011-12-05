@@ -73,6 +73,13 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="ElementSetPropertyBooleanAsnyc">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="b" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>    
     <method name="ElementSetPropertyInt">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -80,6 +87,13 @@
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
+    </method>
+    <method name="ElementSetPropertyIntAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
@@ -89,6 +103,13 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
+    <method name="ElementSetPropertyInt64Async">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="x" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="ElementSetPropertyString">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -96,6 +117,13 @@
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
+    </method>
+    <method name="ElementSetPropertyStringAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementGetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -148,7 +176,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineSpeed">
+    <method name="PipelineSetSpeed">
         <arg type="d" name ="newrate" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
@@ -186,12 +214,22 @@
         </arg>
     </method>
     <method name="PipelineSendEos"/>
+    <method name="PipelineSendEosAsync">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="PipelineSendCustomEvent">
         <arg type="s" name ="type" direction = "in" />
         <arg type="s" name ="name" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+    </method>
+    <method name="PipelineSendCustomEventAsync">
+        <arg type="s" name ="type" direction = "in" />
+        <arg type="s" name ="name" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="SetWindowId">
         <arg type="t" name="winId" direction="in"/>
