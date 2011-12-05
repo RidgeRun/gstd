@@ -57,7 +57,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
 	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-	void (*element_set_property_boolean_asnyc) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	void (*element_set_property_boolean_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -135,7 +135,7 @@ gchar* gstd_pipeline_pipeline_get_path (gstdPipeline* self);
 gboolean gstd_pipeline_pipeline_set_path (gstdPipeline* self, const gchar* dbuspath);
 static gint gstd_pipeline_real_pipeline_get_state (gstdPipelineInterface* base, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
-static void gstd_pipeline_real_element_set_property_boolean_asnyc (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
+static void gstd_pipeline_real_element_set_property_boolean_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_int (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error);
 static void gstd_pipeline_real_element_set_property_int_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint val, GError** error);
@@ -783,7 +783,7 @@ static gboolean gstd_pipeline_real_element_set_property_boolean (gstdPipelineInt
 }
 
 
-static void gstd_pipeline_real_element_set_property_boolean_asnyc (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error) {
+static void gstd_pipeline_real_element_set_property_boolean_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gboolean val, GError** error) {
 	gstdPipeline * self;
 	GError * _inner_error_ = NULL;
 	self = (gstdPipeline*) base;
@@ -2432,7 +2432,7 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 	iface->pipeline_set_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_set_id;
 	iface->pipeline_get_state = (gint (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_state;
 	iface->element_set_property_boolean = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean;
-	iface->element_set_property_boolean_asnyc = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean_asnyc;
+	iface->element_set_property_boolean_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean, GError**)) gstd_pipeline_real_element_set_property_boolean_async;
 	iface->element_set_property_int = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int;
 	iface->element_set_property_int_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int_async;
 	iface->element_set_property_int64 = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64;

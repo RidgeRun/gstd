@@ -91,7 +91,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
 	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-	void (*element_set_property_boolean_asnyc) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	void (*element_set_property_boolean_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);

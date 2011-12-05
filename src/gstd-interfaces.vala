@@ -60,8 +60,8 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
 
-		[DBus (name = "ElementSetPropertyBooleanAsnyc", no_reply = true)]
-		public abstract void element_set_property_boolean_asnyc(string element, string property, bool val) throws DBusError, IOError;
+		[DBus (name = "ElementSetPropertyBooleanAsync", no_reply = true)]
+		public abstract void element_set_property_boolean_async(string element, string property, bool val) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyInt")]
 		public abstract bool element_set_property_int(string element, string property, int val) throws DBusError, IOError;
@@ -178,8 +178,8 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
 
-		[DBus (name = "ElementSetPropertyBooleanAsnyc", no_reply = true)]
-		public abstract void element_set_property_boolean_asnyc(string element, string property, bool val) throws DBusError, IOError;
+		[DBus (name = "ElementSetPropertyBooleanAsync", no_reply = true)]
+		public abstract void element_set_property_boolean_async(string element, string property, bool val) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyInt")]
 		public abstract bool element_set_property_int(string element, string property, int val) throws DBusError, IOError;

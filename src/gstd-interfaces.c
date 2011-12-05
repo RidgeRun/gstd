@@ -87,7 +87,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
 	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-	void (*element_set_property_boolean_asnyc) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	void (*element_set_property_boolean_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -125,7 +125,7 @@ struct _gstdPipelineInterfaceSyncIface {
 	gboolean (*pipeline_set_state) (gstdPipelineInterfaceSync* self, gint state, GError** error);
 	void (*pipeline_set_state_async) (gstdPipelineInterfaceSync* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-	void (*element_set_property_boolean_asnyc) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+	void (*element_set_property_boolean_async) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 	void (*element_set_property_int_async) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -214,7 +214,7 @@ guint64 gstd_pipeline_interface_pipeline_get_id (gstdPipelineInterface* self, GE
 gboolean gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterface* self, gint state, GError** error);
 void gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-void gstd_pipeline_interface_element_set_property_boolean_asnyc (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+void gstd_pipeline_interface_element_set_property_boolean_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 void gstd_pipeline_interface_element_set_property_int_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -257,7 +257,7 @@ static guint64 gstd_pipeline_interface_proxy_pipeline_get_id (gstdPipelineInterf
 static gboolean gstd_pipeline_interface_proxy_pipeline_set_state (gstdPipelineInterface* self, gint state, GError** error);
 static void gstd_pipeline_interface_proxy_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-static void gstd_pipeline_interface_proxy_element_set_property_boolean_asnyc (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+static void gstd_pipeline_interface_proxy_element_set_property_boolean_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_int (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 static void gstd_pipeline_interface_proxy_element_set_property_int_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -292,7 +292,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_get_id (gstdPipelineInterface
 static void _dbus_gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_element_set_property_boolean_asnyc (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_element_set_property_boolean_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_int_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -337,7 +337,7 @@ guint64 gstd_pipeline_interface_sync_pipeline_get_id (gstdPipelineInterfaceSync*
 gboolean gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
 void gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_boolean (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-void gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+void gstd_pipeline_interface_sync_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_int (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 void gstd_pipeline_interface_sync_element_set_property_int_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_int64 (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -376,7 +376,7 @@ static guint64 gstd_pipeline_interface_sync_proxy_pipeline_get_id (gstdPipelineI
 static gboolean gstd_pipeline_interface_sync_proxy_pipeline_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
 static void gstd_pipeline_interface_sync_proxy_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_boolean (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
-static void gstd_pipeline_interface_sync_proxy_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
+static void gstd_pipeline_interface_sync_proxy_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_int (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 static void gstd_pipeline_interface_sync_proxy_element_set_property_int_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_int64 (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -411,7 +411,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_get_id (gstdPipelineInte
 static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_int (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_int_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_int64 (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -529,12 +529,12 @@ static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_pro
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_property, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_val, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_out[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_property_boolean = {-1, "ElementSetPropertyBoolean", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_element = {-1, "element", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_property = {-1, "property", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_val = {-1, "val", "b"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_property, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_val, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_property_boolean_asnyc = {-1, "ElementSetPropertyBooleanAsnyc", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_asnyc_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_element = {-1, "element", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_property = {-1, "property", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_val = {-1, "val", "b"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_property, &_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_val, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_property_boolean_async = {-1, "ElementSetPropertyBooleanAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_int_element = {-1, "element", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_int_property = {-1, "property", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_int_val = {-1, "val", "i"};
@@ -686,7 +686,7 @@ static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_sta
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_out[] = {NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_state_async = {-1, "ElementSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_out)};
-static const GDBusMethodInfo * const _gstd_pipeline_interface_dbus_method_info[] = {&_gstd_pipeline_interface_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean_asnyc, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string_async, &_gstd_pipeline_interface_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_speed, &_gstd_pipeline_interface_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_dbus_method_info_element_get_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos_async, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event_async, &_gstd_pipeline_interface_dbus_method_info_set_window_id, &_gstd_pipeline_interface_dbus_method_info_ping, &_gstd_pipeline_interface_dbus_method_info_element_set_state, &_gstd_pipeline_interface_dbus_method_info_element_set_state_async, NULL};
+static const GDBusMethodInfo * const _gstd_pipeline_interface_dbus_method_info[] = {&_gstd_pipeline_interface_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string_async, &_gstd_pipeline_interface_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_speed, &_gstd_pipeline_interface_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_dbus_method_info_element_get_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos_async, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event_async, &_gstd_pipeline_interface_dbus_method_info_set_window_id, &_gstd_pipeline_interface_dbus_method_info_ping, &_gstd_pipeline_interface_dbus_method_info_element_set_state, &_gstd_pipeline_interface_dbus_method_info_element_set_state_async, NULL};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_eos_pipe_id = {-1, "pipe_id", "t"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_eos[] = {&_gstd_pipeline_interface_dbus_arg_info_eos_pipe_id, NULL};
 static const GDBusSignalInfo _gstd_pipeline_interface_dbus_signal_info_eos = {-1, "Eos", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_eos)};
@@ -742,12 +742,12 @@ static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_se
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_property, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_val, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_out[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean = {-1, "ElementSetPropertyBoolean", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_element = {-1, "element", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_property = {-1, "property", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_val = {-1, "val", "b"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_property, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_val, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean_asnyc = {-1, "ElementSetPropertyBooleanAsnyc", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_asnyc_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_element = {-1, "element", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_property = {-1, "property", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_val = {-1, "val", "b"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_property, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_val, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean_async = {-1, "ElementSetPropertyBooleanAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_int_element = {-1, "element", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_int_property = {-1, "property", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_int_val = {-1, "val", "i"};
@@ -899,7 +899,7 @@ static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_se
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_out[] = {NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_state_async = {-1, "ElementSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_out)};
-static const GDBusMethodInfo * const _gstd_pipeline_interface_sync_dbus_method_info[] = {&_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean_asnyc, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_speed, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos_async, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event_async, &_gstd_pipeline_interface_sync_dbus_method_info_set_window_id, &_gstd_pipeline_interface_sync_dbus_method_info_ping, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state_async, NULL};
+static const GDBusMethodInfo * const _gstd_pipeline_interface_sync_dbus_method_info[] = {&_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_speed, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos_async, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event_async, &_gstd_pipeline_interface_sync_dbus_method_info_set_window_id, &_gstd_pipeline_interface_sync_dbus_method_info_ping, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state_async, NULL};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_eos_pipe_id = {-1, "pipe_id", "t"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_eos[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_eos_pipe_id, NULL};
 static const GDBusSignalInfo _gstd_pipeline_interface_sync_dbus_signal_info_eos = {-1, "Eos", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_eos)};
@@ -1924,9 +1924,9 @@ gboolean gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInter
 }
 
 
-void gstd_pipeline_interface_element_set_property_boolean_asnyc (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
+void gstd_pipeline_interface_element_set_property_boolean_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->element_set_property_boolean_asnyc (self, element, property, val, error);
+	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->element_set_property_boolean_async (self, element, property, val, error);
 }
 
 
@@ -2502,13 +2502,13 @@ static gboolean gstd_pipeline_interface_proxy_element_set_property_boolean (gstd
 }
 
 
-static void gstd_pipeline_interface_proxy_element_set_property_boolean_asnyc (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
+static void gstd_pipeline_interface_proxy_element_set_property_boolean_async (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyBooleanAsnyc");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyBooleanAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (element));
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (property));
@@ -3425,7 +3425,7 @@ static void gstd_pipeline_interface_proxy_gstd_pipeline_interface_interface_init
 	iface->pipeline_set_state = gstd_pipeline_interface_proxy_pipeline_set_state;
 	iface->pipeline_set_state_async = gstd_pipeline_interface_proxy_pipeline_set_state_async;
 	iface->element_set_property_boolean = gstd_pipeline_interface_proxy_element_set_property_boolean;
-	iface->element_set_property_boolean_asnyc = gstd_pipeline_interface_proxy_element_set_property_boolean_asnyc;
+	iface->element_set_property_boolean_async = gstd_pipeline_interface_proxy_element_set_property_boolean_async;
 	iface->element_set_property_int = gstd_pipeline_interface_proxy_element_set_property_int;
 	iface->element_set_property_int_async = gstd_pipeline_interface_proxy_element_set_property_int_async;
 	iface->element_set_property_int64 = gstd_pipeline_interface_proxy_element_set_property_int64;
@@ -3591,7 +3591,7 @@ static void _dbus_gstd_pipeline_interface_element_set_property_boolean (gstdPipe
 }
 
 
-static void _dbus_gstd_pipeline_interface_element_set_property_boolean_asnyc (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_element_set_property_boolean_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gchar* element = NULL;
@@ -3610,7 +3610,7 @@ static void _dbus_gstd_pipeline_interface_element_set_property_boolean_asnyc (gs
 	_tmp83_ = g_variant_iter_next_value (&_arguments_iter);
 	val = g_variant_get_boolean (_tmp83_);
 	g_variant_unref (_tmp83_);
-	gstd_pipeline_interface_element_set_property_boolean_asnyc (self, element, property, val, &error);
+	gstd_pipeline_interface_element_set_property_boolean_async (self, element, property, val, &error);
 	_g_free0 (element);
 	_g_free0 (property);
 }
@@ -4456,8 +4456,8 @@ static void gstd_pipeline_interface_dbus_interface_method_call (GDBusConnection*
 		_dbus_gstd_pipeline_interface_pipeline_set_state_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyBoolean") == 0) {
 		_dbus_gstd_pipeline_interface_element_set_property_boolean (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyBooleanAsnyc") == 0) {
-		_dbus_gstd_pipeline_interface_element_set_property_boolean_asnyc (object, parameters, invocation);
+	} else if (strcmp (method_name, "ElementSetPropertyBooleanAsync") == 0) {
+		_dbus_gstd_pipeline_interface_element_set_property_boolean_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyInt") == 0) {
 		_dbus_gstd_pipeline_interface_element_set_property_int (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyIntAsync") == 0) {
@@ -4672,9 +4672,9 @@ gboolean gstd_pipeline_interface_sync_element_set_property_boolean (gstdPipeline
 }
 
 
-void gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
+void gstd_pipeline_interface_sync_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->element_set_property_boolean_asnyc (self, element, property, val, error);
+	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->element_set_property_boolean_async (self, element, property, val, error);
 }
 
 
@@ -5170,13 +5170,13 @@ static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_boolean 
 }
 
 
-static void gstd_pipeline_interface_sync_proxy_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
+static void gstd_pipeline_interface_sync_proxy_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyBooleanAsnyc");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetPropertyBooleanAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (element));
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (property));
@@ -6093,7 +6093,7 @@ static void gstd_pipeline_interface_sync_proxy_gstd_pipeline_interface_sync_inte
 	iface->pipeline_set_state = gstd_pipeline_interface_sync_proxy_pipeline_set_state;
 	iface->pipeline_set_state_async = gstd_pipeline_interface_sync_proxy_pipeline_set_state_async;
 	iface->element_set_property_boolean = gstd_pipeline_interface_sync_proxy_element_set_property_boolean;
-	iface->element_set_property_boolean_asnyc = gstd_pipeline_interface_sync_proxy_element_set_property_boolean_asnyc;
+	iface->element_set_property_boolean_async = gstd_pipeline_interface_sync_proxy_element_set_property_boolean_async;
 	iface->element_set_property_int = gstd_pipeline_interface_sync_proxy_element_set_property_int;
 	iface->element_set_property_int_async = gstd_pipeline_interface_sync_proxy_element_set_property_int_async;
 	iface->element_set_property_int64 = gstd_pipeline_interface_sync_proxy_element_set_property_int64;
@@ -6259,7 +6259,7 @@ static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean (gst
 }
 
 
-static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gchar* element = NULL;
@@ -6278,7 +6278,7 @@ static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean_asny
 	_tmp187_ = g_variant_iter_next_value (&_arguments_iter);
 	val = g_variant_get_boolean (_tmp187_);
 	g_variant_unref (_tmp187_);
-	gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (self, element, property, val, &error);
+	gstd_pipeline_interface_sync_element_set_property_boolean_async (self, element, property, val, &error);
 	_g_free0 (element);
 	_g_free0 (property);
 }
@@ -7124,8 +7124,8 @@ static void gstd_pipeline_interface_sync_dbus_interface_method_call (GDBusConnec
 		_dbus_gstd_pipeline_interface_sync_pipeline_set_state_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyBoolean") == 0) {
 		_dbus_gstd_pipeline_interface_sync_element_set_property_boolean (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementSetPropertyBooleanAsnyc") == 0) {
-		_dbus_gstd_pipeline_interface_sync_element_set_property_boolean_asnyc (object, parameters, invocation);
+	} else if (strcmp (method_name, "ElementSetPropertyBooleanAsync") == 0) {
+		_dbus_gstd_pipeline_interface_sync_element_set_property_boolean_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyInt") == 0) {
 		_dbus_gstd_pipeline_interface_sync_element_set_property_int (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyIntAsync") == 0) {

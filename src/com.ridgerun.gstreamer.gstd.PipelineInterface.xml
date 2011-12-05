@@ -73,7 +73,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="ElementSetPropertyBooleanAsnyc">
+    <method name="ElementSetPropertyBooleanAsync">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="b" name ="val" direction = "in" />

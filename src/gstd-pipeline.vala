@@ -275,7 +275,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		return true;
 	}
 	
-	public void element_set_property_boolean_asnyc (string element, string property, bool val)
+	public void element_set_property_boolean_async (string element, string property, bool val)
 	{
 		try
 		{
