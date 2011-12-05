@@ -186,14 +186,14 @@ public class Pipeline : GLib.Object, PipelineInterface
 		return pipeline_set_state_impl((Gst.State)(state));
 	}
 
-	private void pipeline_async_set_state_impl(Gst.State state)
+	private void pipeline_set_state_async_impl(Gst.State state)
 	{
 		_pipeline.set_state (state);
 	}
 	
-	public void pipeline_async_set_state(int state)
+	public void pipeline_set_state_async(int state)
 	{
-		pipeline_async_set_state_impl((Gst.State)(state));
+		pipeline_set_state_async_impl((Gst.State)(state));
 	}
 
 	/**
@@ -642,7 +642,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   Data in the pipeline is flushed.
 	   @param ipos_ms, absolute position in nanoseconds
 	 */
-	public void pipeline_async_seek (int64 ipos_ns)
+	public void pipeline_seek_async (int64 ipos_ns)
 	{
 		pipeline_seek_impl(ipos_ns);
 	}
@@ -773,7 +773,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
-	public void element_async_set_state (string element, int state)
+	public void element_set_state_async (string element, int state)
 	{
 		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name (element) as Gst.Element;

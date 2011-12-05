@@ -85,7 +85,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*pipeline_set_id) (gstdPipelineInterface* self, guint64 id, GError** error);
 	guint64 (*pipeline_get_id) (gstdPipelineInterface* self, GError** error);
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
-	void (*pipeline_async_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -101,7 +101,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
-	void (*pipeline_async_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_seek_async) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
 	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
 	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
@@ -109,7 +109,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
 	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
 	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
-	void (*element_async_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+	void (*element_set_state_async) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 };
 
 struct _gstdPipelineInterfaceSyncIface {
@@ -117,7 +117,7 @@ struct _gstdPipelineInterfaceSyncIface {
 	void (*pipeline_set_id) (gstdPipelineInterfaceSync* self, guint64 id, GError** error);
 	guint64 (*pipeline_get_id) (gstdPipelineInterfaceSync* self, GError** error);
 	gboolean (*pipeline_set_state) (gstdPipelineInterfaceSync* self, gint state, GError** error);
-	void (*pipeline_async_set_state) (gstdPipelineInterfaceSync* self, gint state, GError** error);
+	void (*pipeline_set_state_async) (gstdPipelineInterfaceSync* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -133,7 +133,7 @@ struct _gstdPipelineInterfaceSyncIface {
 	gboolean (*pipeline_skip) (gstdPipelineInterfaceSync* self, gint64 period_ns, GError** error);
 	gboolean (*pipeline_seek) (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 	void (*pipeline_step) (gstdPipelineInterfaceSync* self, guint64 frames, GError** error);
-	void (*pipeline_async_seek) (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_seek_async) (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 	gint (*pipeline_get_state) (gstdPipelineInterfaceSync* self, GError** error);
 	gint (*element_get_state) (gstdPipelineInterfaceSync* self, const gchar* element, GError** error);
 	void (*pipeline_send_eos) (gstdPipelineInterfaceSync* self, GError** error);
@@ -141,7 +141,7 @@ struct _gstdPipelineInterfaceSyncIface {
 	void (*set_window_id) (gstdPipelineInterfaceSync* self, guint64 winId, GError** error);
 	gboolean (*ping) (gstdPipelineInterfaceSync* self, GError** error);
 	gboolean (*element_set_state) (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
-	void (*element_async_set_state) (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
+	void (*element_set_state_async) (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
 };
 
 
@@ -200,7 +200,7 @@ GType gstd_pipeline_interface_get_type (void) G_GNUC_CONST;
 void gstd_pipeline_interface_pipeline_set_id (gstdPipelineInterface* self, guint64 id, GError** error);
 guint64 gstd_pipeline_interface_pipeline_get_id (gstdPipelineInterface* self, GError** error);
 gboolean gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterface* self, gint state, GError** error);
-void gstd_pipeline_interface_pipeline_async_set_state (gstdPipelineInterface* self, gint state, GError** error);
+void gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -216,7 +216,7 @@ gboolean gstd_pipeline_interface_pipeline_speed (gstdPipelineInterface* self, gd
 gboolean gstd_pipeline_interface_pipeline_skip (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 gboolean gstd_pipeline_interface_pipeline_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 void gstd_pipeline_interface_pipeline_step (gstdPipelineInterface* self, guint64 frames, GError** error);
-void gstd_pipeline_interface_pipeline_async_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+void gstd_pipeline_interface_pipeline_seek_async (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 gint gstd_pipeline_interface_pipeline_get_state (gstdPipelineInterface* self, GError** error);
 gint gstd_pipeline_interface_element_get_state (gstdPipelineInterface* self, const gchar* element, GError** error);
 void gstd_pipeline_interface_pipeline_send_eos (gstdPipelineInterface* self, GError** error);
@@ -224,7 +224,7 @@ gboolean gstd_pipeline_interface_pipeline_send_custom_event (gstdPipelineInterfa
 void gstd_pipeline_interface_set_window_id (gstdPipelineInterface* self, guint64 winId, GError** error);
 gboolean gstd_pipeline_interface_ping (gstdPipelineInterface* self, GError** error);
 gboolean gstd_pipeline_interface_element_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
-void gstd_pipeline_interface_element_async_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+void gstd_pipeline_interface_element_set_state_async (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 static void g_cclosure_user_marshal_VOID__UINT64 (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_VOID__UINT64_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_VOID__UINT64_INT_INT_STRING (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
@@ -237,7 +237,7 @@ static void _dbus_handle_gstd_pipeline_interface_qos (gstdPipelineInterface* sel
 static void gstd_pipeline_interface_proxy_pipeline_set_id (gstdPipelineInterface* self, guint64 id, GError** error);
 static guint64 gstd_pipeline_interface_proxy_pipeline_get_id (gstdPipelineInterface* self, GError** error);
 static gboolean gstd_pipeline_interface_proxy_pipeline_set_state (gstdPipelineInterface* self, gint state, GError** error);
-static void gstd_pipeline_interface_proxy_pipeline_async_set_state (gstdPipelineInterface* self, gint state, GError** error);
+static void gstd_pipeline_interface_proxy_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_boolean (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_int (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -253,7 +253,7 @@ static gboolean gstd_pipeline_interface_proxy_pipeline_speed (gstdPipelineInterf
 static gboolean gstd_pipeline_interface_proxy_pipeline_skip (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 static gboolean gstd_pipeline_interface_proxy_pipeline_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 static void gstd_pipeline_interface_proxy_pipeline_step (gstdPipelineInterface* self, guint64 frames, GError** error);
-static void gstd_pipeline_interface_proxy_pipeline_async_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+static void gstd_pipeline_interface_proxy_pipeline_seek_async (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 static gint gstd_pipeline_interface_proxy_pipeline_get_state (gstdPipelineInterface* self, GError** error);
 static gint gstd_pipeline_interface_proxy_element_get_state (gstdPipelineInterface* self, const gchar* element, GError** error);
 static void gstd_pipeline_interface_proxy_pipeline_send_eos (gstdPipelineInterface* self, GError** error);
@@ -261,12 +261,12 @@ static gboolean gstd_pipeline_interface_proxy_pipeline_send_custom_event (gstdPi
 static void gstd_pipeline_interface_proxy_set_window_id (gstdPipelineInterface* self, guint64 winId, GError** error);
 static gboolean gstd_pipeline_interface_proxy_ping (gstdPipelineInterface* self, GError** error);
 static gboolean gstd_pipeline_interface_proxy_element_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
-static void gstd_pipeline_interface_proxy_element_async_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+static void gstd_pipeline_interface_proxy_element_set_state_async (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_interface_proxy_gstd_pipeline_interface_interface_init (gstdPipelineInterfaceIface* iface);
 static void _dbus_gstd_pipeline_interface_pipeline_set_id (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_get_id (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_pipeline_async_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_boolean (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -282,7 +282,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_speed (gstdPipelineInterface*
 static void _dbus_gstd_pipeline_interface_pipeline_skip (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_seek (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_step (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_pipeline_async_seek (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_pipeline_seek_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_get_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_get_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_pipeline_send_eos (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -290,7 +290,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_send_custom_event (gstdPipeli
 static void _dbus_gstd_pipeline_interface_set_window_id (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_ping (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_element_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_element_async_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_element_set_state_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void gstd_pipeline_interface_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data);
 static GVariant* gstd_pipeline_interface_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data);
 static gboolean gstd_pipeline_interface_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data);
@@ -305,7 +305,7 @@ GType gstd_pipeline_interface_sync_get_type (void) G_GNUC_CONST;
 void gstd_pipeline_interface_sync_pipeline_set_id (gstdPipelineInterfaceSync* self, guint64 id, GError** error);
 guint64 gstd_pipeline_interface_sync_pipeline_get_id (gstdPipelineInterfaceSync* self, GError** error);
 gboolean gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
-void gstd_pipeline_interface_sync_pipeline_async_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
+void gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_boolean (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_int (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_property_int64 (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -321,7 +321,7 @@ gboolean gstd_pipeline_interface_sync_pipeline_speed (gstdPipelineInterfaceSync*
 gboolean gstd_pipeline_interface_sync_pipeline_skip (gstdPipelineInterfaceSync* self, gint64 period_ns, GError** error);
 gboolean gstd_pipeline_interface_sync_pipeline_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 void gstd_pipeline_interface_sync_pipeline_step (gstdPipelineInterfaceSync* self, guint64 frames, GError** error);
-void gstd_pipeline_interface_sync_pipeline_async_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
+void gstd_pipeline_interface_sync_pipeline_seek_async (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 gint gstd_pipeline_interface_sync_pipeline_get_state (gstdPipelineInterfaceSync* self, GError** error);
 gint gstd_pipeline_interface_sync_element_get_state (gstdPipelineInterfaceSync* self, const gchar* element, GError** error);
 void gstd_pipeline_interface_sync_pipeline_send_eos (gstdPipelineInterfaceSync* self, GError** error);
@@ -329,7 +329,7 @@ gboolean gstd_pipeline_interface_sync_pipeline_send_custom_event (gstdPipelineIn
 void gstd_pipeline_interface_sync_set_window_id (gstdPipelineInterfaceSync* self, guint64 winId, GError** error);
 gboolean gstd_pipeline_interface_sync_ping (gstdPipelineInterfaceSync* self, GError** error);
 gboolean gstd_pipeline_interface_sync_element_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
-void gstd_pipeline_interface_sync_element_async_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
+void gstd_pipeline_interface_sync_element_set_state_async (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_interface_sync_proxy_g_signal (GDBusProxy* proxy, const gchar* sender_name, const gchar* signal_name, GVariant* parameters);
 static void _dbus_handle_gstd_pipeline_interface_sync_eos (gstdPipelineInterfaceSync* self, GVariant* parameters);
 static void _dbus_handle_gstd_pipeline_interface_sync_error (gstdPipelineInterfaceSync* self, GVariant* parameters);
@@ -338,7 +338,7 @@ static void _dbus_handle_gstd_pipeline_interface_sync_qos (gstdPipelineInterface
 static void gstd_pipeline_interface_sync_proxy_pipeline_set_id (gstdPipelineInterfaceSync* self, guint64 id, GError** error);
 static guint64 gstd_pipeline_interface_sync_proxy_pipeline_get_id (gstdPipelineInterfaceSync* self, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_pipeline_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
-static void gstd_pipeline_interface_sync_proxy_pipeline_async_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error);
+static void gstd_pipeline_interface_sync_proxy_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_boolean (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_int (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint val, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_property_int64 (gstdPipelineInterfaceSync* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -354,7 +354,7 @@ static gboolean gstd_pipeline_interface_sync_proxy_pipeline_speed (gstdPipelineI
 static gboolean gstd_pipeline_interface_sync_proxy_pipeline_skip (gstdPipelineInterfaceSync* self, gint64 period_ns, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_pipeline_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 static void gstd_pipeline_interface_sync_proxy_pipeline_step (gstdPipelineInterfaceSync* self, guint64 frames, GError** error);
-static void gstd_pipeline_interface_sync_proxy_pipeline_async_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
+static void gstd_pipeline_interface_sync_proxy_pipeline_seek_async (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error);
 static gint gstd_pipeline_interface_sync_proxy_pipeline_get_state (gstdPipelineInterfaceSync* self, GError** error);
 static gint gstd_pipeline_interface_sync_proxy_element_get_state (gstdPipelineInterfaceSync* self, const gchar* element, GError** error);
 static void gstd_pipeline_interface_sync_proxy_pipeline_send_eos (gstdPipelineInterfaceSync* self, GError** error);
@@ -362,12 +362,12 @@ static gboolean gstd_pipeline_interface_sync_proxy_pipeline_send_custom_event (g
 static void gstd_pipeline_interface_sync_proxy_set_window_id (gstdPipelineInterfaceSync* self, guint64 winId, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_ping (gstdPipelineInterfaceSync* self, GError** error);
 static gboolean gstd_pipeline_interface_sync_proxy_element_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
-static void gstd_pipeline_interface_sync_proxy_element_async_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
+static void gstd_pipeline_interface_sync_proxy_element_set_state_async (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_interface_sync_proxy_gstd_pipeline_interface_sync_interface_init (gstdPipelineInterfaceSyncIface* iface);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_set_id (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_get_id (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_sync_pipeline_async_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_boolean (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_int (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_property_int64 (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -383,7 +383,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_speed (gstdPipelineInter
 static void _dbus_gstd_pipeline_interface_sync_pipeline_skip (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_seek (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_step (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_sync_pipeline_async_seek (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_sync_pipeline_seek_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_get_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_get_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_pipeline_send_eos (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
@@ -391,7 +391,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_send_custom_event (gstdP
 static void _dbus_gstd_pipeline_interface_sync_set_window_id (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_ping (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void _dbus_gstd_pipeline_interface_sync_element_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
-static void _dbus_gstd_pipeline_interface_sync_element_async_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
+static void _dbus_gstd_pipeline_interface_sync_element_set_state_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation);
 static void gstd_pipeline_interface_sync_dbus_interface_method_call (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* method_name, GVariant* parameters, GDBusMethodInvocation* invocation, gpointer user_data);
 static GVariant* gstd_pipeline_interface_sync_dbus_interface_get_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GError** error, gpointer user_data);
 static gboolean gstd_pipeline_interface_sync_dbus_interface_set_property (GDBusConnection* connection, const gchar* sender, const gchar* object_path, const gchar* interface_name, const gchar* property_name, GVariant* value, GError** error, gpointer user_data);
@@ -470,10 +470,10 @@ static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_set_st
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_out[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_set_state = {-1, "PipelineSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_state, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_async_set_state = {-1, "PipelineAsyncSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_set_state_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_state = {-1, "state", "i"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_state, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_set_state_async = {-1, "PipelineSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_set_state_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_element = {-1, "element", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_property = {-1, "property", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_property_boolean_val = {-1, "val", "b"};
@@ -565,10 +565,10 @@ static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_step_f
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_step_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_step_frames, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_step_out[] = {NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_step = {-1, "PipelineStep", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_step_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_step_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_ipos_ns = {-1, "ipos_ns", "x"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_ipos_ns, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_async_seek = {-1, "PipelineAsyncSeek", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_async_seek_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_ipos_ns = {-1, "ipos_ns", "x"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_in[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_ipos_ns, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_pipeline_seek_async = {-1, "PipelineSeekAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_pipeline_seek_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_pipeline_get_state_result = {-1, "result", "i"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_get_state_in[] = {NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_pipeline_get_state_out[] = {&_gstd_pipeline_interface_dbus_arg_info_pipeline_get_state_result, NULL};
@@ -601,12 +601,12 @@ static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_sta
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_state_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_state_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_out[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_state_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_state = {-1, "ElementSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_async_set_state_element = {-1, "element", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_async_set_state_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_async_set_state_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_async_set_state_element, &_gstd_pipeline_interface_dbus_arg_info_element_async_set_state_state, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_async_set_state_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_async_set_state = {-1, "ElementAsyncSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_async_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_async_set_state_out)};
-static const GDBusMethodInfo * const _gstd_pipeline_interface_dbus_method_info[] = {&_gstd_pipeline_interface_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_async_set_state, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_dbus_method_info_pipeline_speed, &_gstd_pipeline_interface_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_dbus_method_info_pipeline_async_seek, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_dbus_method_info_element_get_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_dbus_method_info_set_window_id, &_gstd_pipeline_interface_dbus_method_info_ping, &_gstd_pipeline_interface_dbus_method_info_element_set_state, &_gstd_pipeline_interface_dbus_method_info_element_async_set_state, NULL};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_element = {-1, "element", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_state = {-1, "state", "i"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_in[] = {&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_element, &_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_state, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_element_set_state_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_dbus_method_info_element_set_state_async = {-1, "ElementSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_element_set_state_async_out)};
+static const GDBusMethodInfo * const _gstd_pipeline_interface_dbus_method_info[] = {&_gstd_pipeline_interface_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_dbus_method_info_pipeline_speed, &_gstd_pipeline_interface_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_dbus_method_info_element_get_state, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_dbus_method_info_set_window_id, &_gstd_pipeline_interface_dbus_method_info_ping, &_gstd_pipeline_interface_dbus_method_info_element_set_state, &_gstd_pipeline_interface_dbus_method_info_element_set_state_async, NULL};
 static const GDBusArgInfo _gstd_pipeline_interface_dbus_arg_info_eos_pipe_id = {-1, "pipe_id", "t"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_dbus_arg_info_eos[] = {&_gstd_pipeline_interface_dbus_arg_info_eos_pipe_id, NULL};
 static const GDBusSignalInfo _gstd_pipeline_interface_dbus_signal_info_eos = {-1, "Eos", (GDBusArgInfo **) (&_gstd_pipeline_interface_dbus_arg_info_eos)};
@@ -651,10 +651,10 @@ static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_s
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_out[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state = {-1, "PipelineSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_state, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_async_set_state = {-1, "PipelineAsyncSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_set_state_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_state = {-1, "state", "i"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_state, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state_async = {-1, "PipelineSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_set_state_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_element = {-1, "element", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_property = {-1, "property", "s"};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_property_boolean_val = {-1, "val", "b"};
@@ -746,10 +746,10 @@ static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_s
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_step_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_step_frames, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_step_out[] = {NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_step = {-1, "PipelineStep", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_step_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_step_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_ipos_ns = {-1, "ipos_ns", "x"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_ipos_ns, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_async_seek = {-1, "PipelineAsyncSeek", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_async_seek_out)};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_ipos_ns = {-1, "ipos_ns", "x"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_ipos_ns, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek_async = {-1, "PipelineSeekAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_seek_async_out)};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_get_state_result = {-1, "result", "i"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_get_state_in[] = {NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_pipeline_get_state_out[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_pipeline_get_state_result, NULL};
@@ -782,12 +782,12 @@ static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_se
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_state, NULL};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_out[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_result, NULL};
 static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_state = {-1, "ElementSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_out)};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_element = {-1, "element", "s"};
-static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_state = {-1, "state", "i"};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_state, NULL};
-static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_out[] = {NULL};
-static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_async_set_state = {-1, "ElementAsyncSetState", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_async_set_state_out)};
-static const GDBusMethodInfo * const _gstd_pipeline_interface_sync_dbus_method_info[] = {&_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_async_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_speed, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_async_seek, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_sync_dbus_method_info_set_window_id, &_gstd_pipeline_interface_sync_dbus_method_info_ping, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_async_set_state, NULL};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_element = {-1, "element", "s"};
+static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_state = {-1, "state", "i"};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_in[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_element, &_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_state, NULL};
+static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_out[] = {NULL};
+static const GDBusMethodInfo _gstd_pipeline_interface_sync_dbus_method_info_element_set_state_async = {-1, "ElementSetStateAsync", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_in), (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_element_set_state_async_out)};
+static const GDBusMethodInfo * const _gstd_pipeline_interface_sync_dbus_method_info[] = {&_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_id, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_set_state_async, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_boolean, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_int64, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_string, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_property_buffer, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_duration, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_position, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_speed, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_skip, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_step, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_seek_async, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_get_state, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_eos, &_gstd_pipeline_interface_sync_dbus_method_info_pipeline_send_custom_event, &_gstd_pipeline_interface_sync_dbus_method_info_set_window_id, &_gstd_pipeline_interface_sync_dbus_method_info_ping, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state, &_gstd_pipeline_interface_sync_dbus_method_info_element_set_state_async, NULL};
 static const GDBusArgInfo _gstd_pipeline_interface_sync_dbus_arg_info_eos_pipe_id = {-1, "pipe_id", "t"};
 static const GDBusArgInfo * const _gstd_pipeline_interface_sync_dbus_arg_info_eos[] = {&_gstd_pipeline_interface_sync_dbus_arg_info_eos_pipe_id, NULL};
 static const GDBusSignalInfo _gstd_pipeline_interface_sync_dbus_signal_info_eos = {-1, "Eos", (GDBusArgInfo **) (&_gstd_pipeline_interface_sync_dbus_arg_info_eos)};
@@ -1800,9 +1800,9 @@ gboolean gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterface* self
 }
 
 
-void gstd_pipeline_interface_pipeline_async_set_state (gstdPipelineInterface* self, gint state, GError** error) {
+void gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->pipeline_async_set_state (self, state, error);
+	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->pipeline_set_state_async (self, state, error);
 }
 
 
@@ -1896,9 +1896,9 @@ void gstd_pipeline_interface_pipeline_step (gstdPipelineInterface* self, guint64
 }
 
 
-void gstd_pipeline_interface_pipeline_async_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error) {
+void gstd_pipeline_interface_pipeline_seek_async (gstdPipelineInterface* self, gint64 ipos_ns, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->pipeline_async_seek (self, ipos_ns, error);
+	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->pipeline_seek_async (self, ipos_ns, error);
 }
 
 
@@ -1944,9 +1944,9 @@ gboolean gstd_pipeline_interface_element_set_state (gstdPipelineInterface* self,
 }
 
 
-void gstd_pipeline_interface_element_async_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error) {
+void gstd_pipeline_interface_element_set_state_async (gstdPipelineInterface* self, const gchar* element, gint state, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->element_async_set_state (self, element, state, error);
+	GSTD_PIPELINE_INTERFACE_GET_INTERFACE (self)->element_set_state_async (self, element, state, error);
 }
 
 
@@ -2300,13 +2300,13 @@ static gboolean gstd_pipeline_interface_proxy_pipeline_set_state (gstdPipelineIn
 }
 
 
-static void gstd_pipeline_interface_proxy_pipeline_async_set_state (gstdPipelineInterface* self, gint state, GError** error) {
+static void gstd_pipeline_interface_proxy_pipeline_set_state_async (gstdPipelineInterface* self, gint state, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncSetState");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineSetStateAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (state));
 	_arguments = g_variant_builder_end (&_arguments_builder);
@@ -2902,13 +2902,13 @@ static void gstd_pipeline_interface_proxy_pipeline_step (gstdPipelineInterface* 
 }
 
 
-static void gstd_pipeline_interface_proxy_pipeline_async_seek (gstdPipelineInterface* self, gint64 ipos_ns, GError** error) {
+static void gstd_pipeline_interface_proxy_pipeline_seek_async (gstdPipelineInterface* self, gint64 ipos_ns, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncSeek");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineSeekAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int64 (ipos_ns));
 	_arguments = g_variant_builder_end (&_arguments_builder);
@@ -3143,13 +3143,13 @@ static gboolean gstd_pipeline_interface_proxy_element_set_state (gstdPipelineInt
 }
 
 
-static void gstd_pipeline_interface_proxy_element_async_set_state (gstdPipelineInterface* self, const gchar* element, gint state, GError** error) {
+static void gstd_pipeline_interface_proxy_element_set_state_async (gstdPipelineInterface* self, const gchar* element, gint state, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementAsyncSetState");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetStateAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (element));
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (state));
@@ -3165,7 +3165,7 @@ static void gstd_pipeline_interface_proxy_gstd_pipeline_interface_interface_init
 	iface->pipeline_set_id = gstd_pipeline_interface_proxy_pipeline_set_id;
 	iface->pipeline_get_id = gstd_pipeline_interface_proxy_pipeline_get_id;
 	iface->pipeline_set_state = gstd_pipeline_interface_proxy_pipeline_set_state;
-	iface->pipeline_async_set_state = gstd_pipeline_interface_proxy_pipeline_async_set_state;
+	iface->pipeline_set_state_async = gstd_pipeline_interface_proxy_pipeline_set_state_async;
 	iface->element_set_property_boolean = gstd_pipeline_interface_proxy_element_set_property_boolean;
 	iface->element_set_property_int = gstd_pipeline_interface_proxy_element_set_property_int;
 	iface->element_set_property_int64 = gstd_pipeline_interface_proxy_element_set_property_int64;
@@ -3181,7 +3181,7 @@ static void gstd_pipeline_interface_proxy_gstd_pipeline_interface_interface_init
 	iface->pipeline_skip = gstd_pipeline_interface_proxy_pipeline_skip;
 	iface->pipeline_seek = gstd_pipeline_interface_proxy_pipeline_seek;
 	iface->pipeline_step = gstd_pipeline_interface_proxy_pipeline_step;
-	iface->pipeline_async_seek = gstd_pipeline_interface_proxy_pipeline_async_seek;
+	iface->pipeline_seek_async = gstd_pipeline_interface_proxy_pipeline_seek_async;
 	iface->pipeline_get_state = gstd_pipeline_interface_proxy_pipeline_get_state;
 	iface->element_get_state = gstd_pipeline_interface_proxy_element_get_state;
 	iface->pipeline_send_eos = gstd_pipeline_interface_proxy_pipeline_send_eos;
@@ -3189,7 +3189,7 @@ static void gstd_pipeline_interface_proxy_gstd_pipeline_interface_interface_init
 	iface->set_window_id = gstd_pipeline_interface_proxy_set_window_id;
 	iface->ping = gstd_pipeline_interface_proxy_ping;
 	iface->element_set_state = gstd_pipeline_interface_proxy_element_set_state;
-	iface->element_async_set_state = gstd_pipeline_interface_proxy_element_async_set_state;
+	iface->element_set_state_async = gstd_pipeline_interface_proxy_element_set_state_async;
 }
 
 
@@ -3273,7 +3273,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_set_state (gstdPipelineInterf
 }
 
 
-static void _dbus_gstd_pipeline_interface_pipeline_async_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_pipeline_set_state_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gint state = 0;
@@ -3282,7 +3282,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_async_set_state (gstdPipeline
 	_tmp77_ = g_variant_iter_next_value (&_arguments_iter);
 	state = g_variant_get_int32 (_tmp77_);
 	g_variant_unref (_tmp77_);
-	gstd_pipeline_interface_pipeline_async_set_state (self, state, &error);
+	gstd_pipeline_interface_pipeline_set_state_async (self, state, &error);
 }
 
 
@@ -3818,7 +3818,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_step (gstdPipelineInterface* 
 }
 
 
-static void _dbus_gstd_pipeline_interface_pipeline_async_seek (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_pipeline_seek_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gint64 ipos_ns = 0LL;
@@ -3827,7 +3827,7 @@ static void _dbus_gstd_pipeline_interface_pipeline_async_seek (gstdPipelineInter
 	_tmp107_ = g_variant_iter_next_value (&_arguments_iter);
 	ipos_ns = g_variant_get_int64 (_tmp107_);
 	g_variant_unref (_tmp107_);
-	gstd_pipeline_interface_pipeline_async_seek (self, ipos_ns, &error);
+	gstd_pipeline_interface_pipeline_seek_async (self, ipos_ns, &error);
 }
 
 
@@ -4029,7 +4029,7 @@ static void _dbus_gstd_pipeline_interface_element_set_state (gstdPipelineInterfa
 }
 
 
-static void _dbus_gstd_pipeline_interface_element_async_set_state (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_element_set_state_async (gstdPipelineInterface* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gchar* element = NULL;
@@ -4043,7 +4043,7 @@ static void _dbus_gstd_pipeline_interface_element_async_set_state (gstdPipelineI
 	_tmp115_ = g_variant_iter_next_value (&_arguments_iter);
 	state = g_variant_get_int32 (_tmp115_);
 	g_variant_unref (_tmp115_);
-	gstd_pipeline_interface_element_async_set_state (self, element, state, &error);
+	gstd_pipeline_interface_element_set_state_async (self, element, state, &error);
 	_g_free0 (element);
 }
 
@@ -4059,8 +4059,8 @@ static void gstd_pipeline_interface_dbus_interface_method_call (GDBusConnection*
 		_dbus_gstd_pipeline_interface_pipeline_get_id (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineSetState") == 0) {
 		_dbus_gstd_pipeline_interface_pipeline_set_state (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSetState") == 0) {
-		_dbus_gstd_pipeline_interface_pipeline_async_set_state (object, parameters, invocation);
+	} else if (strcmp (method_name, "PipelineSetStateAsync") == 0) {
+		_dbus_gstd_pipeline_interface_pipeline_set_state_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyBoolean") == 0) {
 		_dbus_gstd_pipeline_interface_element_set_property_boolean (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyInt") == 0) {
@@ -4091,8 +4091,8 @@ static void gstd_pipeline_interface_dbus_interface_method_call (GDBusConnection*
 		_dbus_gstd_pipeline_interface_pipeline_seek (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineStep") == 0) {
 		_dbus_gstd_pipeline_interface_pipeline_step (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSeek") == 0) {
-		_dbus_gstd_pipeline_interface_pipeline_async_seek (object, parameters, invocation);
+	} else if (strcmp (method_name, "PipelineSeekAsync") == 0) {
+		_dbus_gstd_pipeline_interface_pipeline_seek_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineGetState") == 0) {
 		_dbus_gstd_pipeline_interface_pipeline_get_state (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementGetState") == 0) {
@@ -4107,8 +4107,8 @@ static void gstd_pipeline_interface_dbus_interface_method_call (GDBusConnection*
 		_dbus_gstd_pipeline_interface_ping (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetState") == 0) {
 		_dbus_gstd_pipeline_interface_element_set_state (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementAsyncSetState") == 0) {
-		_dbus_gstd_pipeline_interface_element_async_set_state (object, parameters, invocation);
+	} else if (strcmp (method_name, "ElementSetStateAsync") == 0) {
+		_dbus_gstd_pipeline_interface_element_set_state_async (object, parameters, invocation);
 	} else {
 		g_object_unref (invocation);
 	}
@@ -4255,9 +4255,9 @@ gboolean gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineInterfaceS
 }
 
 
-void gstd_pipeline_interface_sync_pipeline_async_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error) {
+void gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->pipeline_async_set_state (self, state, error);
+	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->pipeline_set_state_async (self, state, error);
 }
 
 
@@ -4351,9 +4351,9 @@ void gstd_pipeline_interface_sync_pipeline_step (gstdPipelineInterfaceSync* self
 }
 
 
-void gstd_pipeline_interface_sync_pipeline_async_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error) {
+void gstd_pipeline_interface_sync_pipeline_seek_async (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->pipeline_async_seek (self, ipos_ns, error);
+	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->pipeline_seek_async (self, ipos_ns, error);
 }
 
 
@@ -4399,9 +4399,9 @@ gboolean gstd_pipeline_interface_sync_element_set_state (gstdPipelineInterfaceSy
 }
 
 
-void gstd_pipeline_interface_sync_element_async_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error) {
+void gstd_pipeline_interface_sync_element_set_state_async (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error) {
 	g_return_if_fail (self != NULL);
-	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->element_async_set_state (self, element, state, error);
+	GSTD_PIPELINE_INTERFACE_SYNC_GET_INTERFACE (self)->element_set_state_async (self, element, state, error);
 }
 
 
@@ -4675,13 +4675,13 @@ static gboolean gstd_pipeline_interface_sync_proxy_pipeline_set_state (gstdPipel
 }
 
 
-static void gstd_pipeline_interface_sync_proxy_pipeline_async_set_state (gstdPipelineInterfaceSync* self, gint state, GError** error) {
+static void gstd_pipeline_interface_sync_proxy_pipeline_set_state_async (gstdPipelineInterfaceSync* self, gint state, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncSetState");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineSetStateAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (state));
 	_arguments = g_variant_builder_end (&_arguments_builder);
@@ -5277,13 +5277,13 @@ static void gstd_pipeline_interface_sync_proxy_pipeline_step (gstdPipelineInterf
 }
 
 
-static void gstd_pipeline_interface_sync_proxy_pipeline_async_seek (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error) {
+static void gstd_pipeline_interface_sync_proxy_pipeline_seek_async (gstdPipelineInterfaceSync* self, gint64 ipos_ns, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineAsyncSeek");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "PipelineSeekAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int64 (ipos_ns));
 	_arguments = g_variant_builder_end (&_arguments_builder);
@@ -5518,13 +5518,13 @@ static gboolean gstd_pipeline_interface_sync_proxy_element_set_state (gstdPipeli
 }
 
 
-static void gstd_pipeline_interface_sync_proxy_element_async_set_state (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error) {
+static void gstd_pipeline_interface_sync_proxy_element_set_state_async (gstdPipelineInterfaceSync* self, const gchar* element, gint state, GError** error) {
 	GDBusMessage *_message;
 	GVariant *_arguments;
 	GVariantBuilder _arguments_builder;
 	G_DBUS_ERROR;
 	G_IO_ERROR;
-	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementAsyncSetState");
+	_message = g_dbus_message_new_method_call (g_dbus_proxy_get_name ((GDBusProxy *) self), g_dbus_proxy_get_object_path ((GDBusProxy *) self), "com.ridgerun.gstreamer.gstd.PipelineInterface", "ElementSetStateAsync");
 	g_variant_builder_init (&_arguments_builder, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_string (element));
 	g_variant_builder_add_value (&_arguments_builder, g_variant_new_int32 (state));
@@ -5540,7 +5540,7 @@ static void gstd_pipeline_interface_sync_proxy_gstd_pipeline_interface_sync_inte
 	iface->pipeline_set_id = gstd_pipeline_interface_sync_proxy_pipeline_set_id;
 	iface->pipeline_get_id = gstd_pipeline_interface_sync_proxy_pipeline_get_id;
 	iface->pipeline_set_state = gstd_pipeline_interface_sync_proxy_pipeline_set_state;
-	iface->pipeline_async_set_state = gstd_pipeline_interface_sync_proxy_pipeline_async_set_state;
+	iface->pipeline_set_state_async = gstd_pipeline_interface_sync_proxy_pipeline_set_state_async;
 	iface->element_set_property_boolean = gstd_pipeline_interface_sync_proxy_element_set_property_boolean;
 	iface->element_set_property_int = gstd_pipeline_interface_sync_proxy_element_set_property_int;
 	iface->element_set_property_int64 = gstd_pipeline_interface_sync_proxy_element_set_property_int64;
@@ -5556,7 +5556,7 @@ static void gstd_pipeline_interface_sync_proxy_gstd_pipeline_interface_sync_inte
 	iface->pipeline_skip = gstd_pipeline_interface_sync_proxy_pipeline_skip;
 	iface->pipeline_seek = gstd_pipeline_interface_sync_proxy_pipeline_seek;
 	iface->pipeline_step = gstd_pipeline_interface_sync_proxy_pipeline_step;
-	iface->pipeline_async_seek = gstd_pipeline_interface_sync_proxy_pipeline_async_seek;
+	iface->pipeline_seek_async = gstd_pipeline_interface_sync_proxy_pipeline_seek_async;
 	iface->pipeline_get_state = gstd_pipeline_interface_sync_proxy_pipeline_get_state;
 	iface->element_get_state = gstd_pipeline_interface_sync_proxy_element_get_state;
 	iface->pipeline_send_eos = gstd_pipeline_interface_sync_proxy_pipeline_send_eos;
@@ -5564,7 +5564,7 @@ static void gstd_pipeline_interface_sync_proxy_gstd_pipeline_interface_sync_inte
 	iface->set_window_id = gstd_pipeline_interface_sync_proxy_set_window_id;
 	iface->ping = gstd_pipeline_interface_sync_proxy_ping;
 	iface->element_set_state = gstd_pipeline_interface_sync_proxy_element_set_state;
-	iface->element_async_set_state = gstd_pipeline_interface_sync_proxy_element_async_set_state;
+	iface->element_set_state_async = gstd_pipeline_interface_sync_proxy_element_set_state_async;
 }
 
 
@@ -5648,7 +5648,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state (gstdPipelineI
 }
 
 
-static void _dbus_gstd_pipeline_interface_sync_pipeline_async_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_sync_pipeline_set_state_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gint state = 0;
@@ -5657,7 +5657,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_async_set_state (gstdPip
 	_tmp167_ = g_variant_iter_next_value (&_arguments_iter);
 	state = g_variant_get_int32 (_tmp167_);
 	g_variant_unref (_tmp167_);
-	gstd_pipeline_interface_sync_pipeline_async_set_state (self, state, &error);
+	gstd_pipeline_interface_sync_pipeline_set_state_async (self, state, &error);
 }
 
 
@@ -6193,7 +6193,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_step (gstdPipelineInterf
 }
 
 
-static void _dbus_gstd_pipeline_interface_sync_pipeline_async_seek (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_sync_pipeline_seek_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gint64 ipos_ns = 0LL;
@@ -6202,7 +6202,7 @@ static void _dbus_gstd_pipeline_interface_sync_pipeline_async_seek (gstdPipeline
 	_tmp197_ = g_variant_iter_next_value (&_arguments_iter);
 	ipos_ns = g_variant_get_int64 (_tmp197_);
 	g_variant_unref (_tmp197_);
-	gstd_pipeline_interface_sync_pipeline_async_seek (self, ipos_ns, &error);
+	gstd_pipeline_interface_sync_pipeline_seek_async (self, ipos_ns, &error);
 }
 
 
@@ -6404,7 +6404,7 @@ static void _dbus_gstd_pipeline_interface_sync_element_set_state (gstdPipelineIn
 }
 
 
-static void _dbus_gstd_pipeline_interface_sync_element_async_set_state (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
+static void _dbus_gstd_pipeline_interface_sync_element_set_state_async (gstdPipelineInterfaceSync* self, GVariant* parameters, GDBusMethodInvocation* invocation) {
 	GError* error = NULL;
 	GVariantIter _arguments_iter;
 	gchar* element = NULL;
@@ -6418,7 +6418,7 @@ static void _dbus_gstd_pipeline_interface_sync_element_async_set_state (gstdPipe
 	_tmp205_ = g_variant_iter_next_value (&_arguments_iter);
 	state = g_variant_get_int32 (_tmp205_);
 	g_variant_unref (_tmp205_);
-	gstd_pipeline_interface_sync_element_async_set_state (self, element, state, &error);
+	gstd_pipeline_interface_sync_element_set_state_async (self, element, state, &error);
 	_g_free0 (element);
 }
 
@@ -6434,8 +6434,8 @@ static void gstd_pipeline_interface_sync_dbus_interface_method_call (GDBusConnec
 		_dbus_gstd_pipeline_interface_sync_pipeline_get_id (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineSetState") == 0) {
 		_dbus_gstd_pipeline_interface_sync_pipeline_set_state (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSetState") == 0) {
-		_dbus_gstd_pipeline_interface_sync_pipeline_async_set_state (object, parameters, invocation);
+	} else if (strcmp (method_name, "PipelineSetStateAsync") == 0) {
+		_dbus_gstd_pipeline_interface_sync_pipeline_set_state_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyBoolean") == 0) {
 		_dbus_gstd_pipeline_interface_sync_element_set_property_boolean (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetPropertyInt") == 0) {
@@ -6466,8 +6466,8 @@ static void gstd_pipeline_interface_sync_dbus_interface_method_call (GDBusConnec
 		_dbus_gstd_pipeline_interface_sync_pipeline_seek (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineStep") == 0) {
 		_dbus_gstd_pipeline_interface_sync_pipeline_step (object, parameters, invocation);
-	} else if (strcmp (method_name, "PipelineAsyncSeek") == 0) {
-		_dbus_gstd_pipeline_interface_sync_pipeline_async_seek (object, parameters, invocation);
+	} else if (strcmp (method_name, "PipelineSeekAsync") == 0) {
+		_dbus_gstd_pipeline_interface_sync_pipeline_seek_async (object, parameters, invocation);
 	} else if (strcmp (method_name, "PipelineGetState") == 0) {
 		_dbus_gstd_pipeline_interface_sync_pipeline_get_state (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementGetState") == 0) {
@@ -6482,8 +6482,8 @@ static void gstd_pipeline_interface_sync_dbus_interface_method_call (GDBusConnec
 		_dbus_gstd_pipeline_interface_sync_ping (object, parameters, invocation);
 	} else if (strcmp (method_name, "ElementSetState") == 0) {
 		_dbus_gstd_pipeline_interface_sync_element_set_state (object, parameters, invocation);
-	} else if (strcmp (method_name, "ElementAsyncSetState") == 0) {
-		_dbus_gstd_pipeline_interface_sync_element_async_set_state (object, parameters, invocation);
+	} else if (strcmp (method_name, "ElementSetStateAsync") == 0) {
+		_dbus_gstd_pipeline_interface_sync_element_set_state_async (object, parameters, invocation);
 	} else {
 		g_object_unref (invocation);
 	}

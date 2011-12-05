@@ -55,7 +55,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*pipeline_set_id) (gstdPipelineInterface* self, guint64 id, GError** error);
 	guint64 (*pipeline_get_id) (gstdPipelineInterface* self, GError** error);
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
-	void (*pipeline_async_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -71,7 +71,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
-	void (*pipeline_async_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_seek_async) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
 	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
 	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
@@ -79,7 +79,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
 	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
 	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
-	void (*element_async_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+	void (*element_set_state_async) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 };
 
 struct _gstdPipeline {
@@ -120,8 +120,8 @@ static GstBusSyncReply _gstd_pipeline_bus_sync_callback_gst_bus_sync_handler (Gs
 static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, GstMessage* message);
 static gboolean _gstd_pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* base, gint state, GError** error);
-static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, GstState state);
-static void gstd_pipeline_real_pipeline_async_set_state (gstdPipelineInterface* base, gint state, GError** error);
+static void gstd_pipeline_pipeline_set_state_async_impl (gstdPipeline* self, GstState state);
+static void gstd_pipeline_real_pipeline_set_state_async (gstdPipelineInterface* base, gint state, GError** error);
 gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self);
 static guint64 gstd_pipeline_real_pipeline_get_id (gstdPipelineInterface* base, GError** error);
 static void gstd_pipeline_real_pipeline_set_id (gstdPipelineInterface* base, guint64 id, GError** error);
@@ -148,14 +148,14 @@ static gint64 gstd_pipeline_real_pipeline_get_duration (gstdPipelineInterface* b
 static gint64 gstd_pipeline_real_pipeline_get_position (gstdPipelineInterface* base, GError** error);
 static gboolean gstd_pipeline_pipeline_seek_impl (gstdPipeline* self, gint64 ipos_ns);
 static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
-static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
+static void gstd_pipeline_real_pipeline_seek_async (gstdPipelineInterface* base, gint64 ipos_ns, GError** error);
 static gboolean gstd_pipeline_real_pipeline_skip (gstdPipelineInterface* base, gint64 period_ns, GError** error);
 static gboolean gstd_pipeline_real_pipeline_speed (gstdPipelineInterface* base, gdouble new_rate, GError** error);
 static void gstd_pipeline_real_pipeline_send_eos (gstdPipelineInterface* base, GError** error);
 static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint64 frames, GError** error);
 static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
 static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
-static void gstd_pipeline_real_element_async_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
+static void gstd_pipeline_real_element_set_state_async (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint64 winId, GError** error);
 static gboolean gstd_pipeline_real_ping (gstdPipelineInterface* base, GError** error);
 static void gstd_pipeline_finalize (GObject* obj);
@@ -570,7 +570,7 @@ static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* ba
 }
 
 
-static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, GstState state) {
+static void gstd_pipeline_pipeline_set_state_async_impl (gstdPipeline* self, GstState state) {
 	GstElement* _tmp0_;
 	GstState _tmp1_;
 	g_return_if_fail (self != NULL);
@@ -580,12 +580,12 @@ static void gstd_pipeline_pipeline_async_set_state_impl (gstdPipeline* self, Gst
 }
 
 
-static void gstd_pipeline_real_pipeline_async_set_state (gstdPipelineInterface* base, gint state, GError** error) {
+static void gstd_pipeline_real_pipeline_set_state_async (gstdPipelineInterface* base, gint state, GError** error) {
 	gstdPipeline * self;
 	gint _tmp0_;
 	self = (gstdPipeline*) base;
 	_tmp0_ = state;
-	gstd_pipeline_pipeline_async_set_state_impl (self, (GstState) _tmp0_);
+	gstd_pipeline_pipeline_set_state_async_impl (self, (GstState) _tmp0_);
 }
 
 
@@ -1862,7 +1862,7 @@ static gboolean gstd_pipeline_real_pipeline_seek (gstdPipelineInterface* base, g
    Data in the pipeline is flushed.
    @param ipos_ms, absolute position in nanoseconds
  */
-static void gstd_pipeline_real_pipeline_async_seek (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
+static void gstd_pipeline_real_pipeline_seek_async (gstdPipelineInterface* base, gint64 ipos_ns, GError** error) {
 	gstdPipeline * self;
 	gint64 _tmp0_;
 	self = (gstdPipeline*) base;
@@ -2141,7 +2141,7 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
    @param element, whose state is to be set
    @param state, desired element state
  */
-static void gstd_pipeline_real_element_async_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
+static void gstd_pipeline_real_element_set_state_async (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
 	gstdPipeline * self;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -2208,7 +2208,7 @@ static void gstd_pipeline_class_init (gstdPipelineClass * klass) {
 static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineInterfaceIface * iface) {
 	gstd_pipeline_gstd_pipeline_interface_parent_iface = g_type_interface_peek_parent (iface);
 	iface->pipeline_set_state = (gboolean (*)(gstdPipelineInterface*, gint, GError**)) gstd_pipeline_real_pipeline_set_state;
-	iface->pipeline_async_set_state = (void (*)(gstdPipelineInterface*, gint, GError**)) gstd_pipeline_real_pipeline_async_set_state;
+	iface->pipeline_set_state_async = (void (*)(gstdPipelineInterface*, gint, GError**)) gstd_pipeline_real_pipeline_set_state_async;
 	iface->pipeline_get_id = (guint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_id;
 	iface->pipeline_set_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_set_id;
 	iface->pipeline_get_state = (gint (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_state;
@@ -2225,14 +2225,14 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 	iface->pipeline_get_duration = (gint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_duration;
 	iface->pipeline_get_position = (gint64 (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_get_position;
 	iface->pipeline_seek = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_seek;
-	iface->pipeline_async_seek = (void (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_async_seek;
+	iface->pipeline_seek_async = (void (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_seek_async;
 	iface->pipeline_skip = (gboolean (*)(gstdPipelineInterface*, gint64, GError**)) gstd_pipeline_real_pipeline_skip;
 	iface->pipeline_speed = (gboolean (*)(gstdPipelineInterface*, gdouble, GError**)) gstd_pipeline_real_pipeline_speed;
 	iface->pipeline_send_eos = (void (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_pipeline_send_eos;
 	iface->pipeline_step = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_pipeline_step;
 	iface->pipeline_send_custom_event = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_pipeline_send_custom_event;
 	iface->element_set_state = (gboolean (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_state;
-	iface->element_async_set_state = (void (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_async_set_state;
+	iface->element_set_state_async = (void (*)(gstdPipelineInterface*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_state_async;
 	iface->set_window_id = (void (*)(gstdPipelineInterface*, guint64, GError**)) gstd_pipeline_real_set_window_id;
 	iface->ping = (gboolean (*)(gstdPipelineInterface*, GError**)) gstd_pipeline_real_ping;
 }

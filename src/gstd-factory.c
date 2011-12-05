@@ -89,7 +89,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*pipeline_set_id) (gstdPipelineInterface* self, guint64 id, GError** error);
 	guint64 (*pipeline_get_id) (gstdPipelineInterface* self, GError** error);
 	gboolean (*pipeline_set_state) (gstdPipelineInterface* self, gint state, GError** error);
-	void (*pipeline_async_set_state) (gstdPipelineInterface* self, gint state, GError** error);
+	void (*pipeline_set_state_async) (gstdPipelineInterface* self, gint state, GError** error);
 	gboolean (*element_set_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean val, GError** error);
 	gboolean (*element_set_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
@@ -105,7 +105,7 @@ struct _gstdPipelineInterfaceIface {
 	gboolean (*pipeline_skip) (gstdPipelineInterface* self, gint64 period_ns, GError** error);
 	gboolean (*pipeline_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	void (*pipeline_step) (gstdPipelineInterface* self, guint64 frames, GError** error);
-	void (*pipeline_async_seek) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
+	void (*pipeline_seek_async) (gstdPipelineInterface* self, gint64 ipos_ns, GError** error);
 	gint (*pipeline_get_state) (gstdPipelineInterface* self, GError** error);
 	gint (*element_get_state) (gstdPipelineInterface* self, const gchar* element, GError** error);
 	void (*pipeline_send_eos) (gstdPipelineInterface* self, GError** error);
@@ -113,7 +113,7 @@ struct _gstdPipelineInterfaceIface {
 	void (*set_window_id) (gstdPipelineInterface* self, guint64 winId, GError** error);
 	gboolean (*ping) (gstdPipelineInterface* self, GError** error);
 	gboolean (*element_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
-	void (*element_async_set_state) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
+	void (*element_set_state_async) (gstdPipelineInterface* self, const gchar* element, gint state, GError** error);
 };
 
 struct _gstdFactoryPrivate {

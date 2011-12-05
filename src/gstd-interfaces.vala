@@ -54,8 +54,8 @@ namespace gstd {
 		[DBus (name = "PipelineSetState")]
 		public abstract bool pipeline_set_state(int state) throws DBusError, IOError;
 
-		[DBus (name = "PipelineAsyncSetState", no_reply = true)]
-		public abstract void pipeline_async_set_state(int state) throws DBusError, IOError;
+		[DBus (name = "PipelineSetStateAsync", no_reply = true)]
+		public abstract void pipeline_set_state_async(int state) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
@@ -102,8 +102,8 @@ namespace gstd {
 		[DBus (name = "PipelineStep")]
 		public abstract void pipeline_step(uint64 frames) throws DBusError, IOError;
 
-		[DBus (name = "PipelineAsyncSeek", no_reply = true)]
-		public abstract void pipeline_async_seek(int64 ipos_ns) throws DBusError, IOError;
+		[DBus (name = "PipelineSeekAsync", no_reply = true)]
+		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
@@ -126,8 +126,8 @@ namespace gstd {
 		[DBus (name = "ElementSetState")]
 		public abstract bool element_set_state(string element, int state) throws DBusError, IOError;
 
-		[DBus (name = "ElementAsyncSetState", no_reply = true)]
-		public abstract void element_async_set_state(string element, int state) throws DBusError, IOError;
+		[DBus (name = "ElementSetStateAsync", no_reply = true)]
+		public abstract void element_set_state_async(string element, int state) throws DBusError, IOError;
 
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);
@@ -154,8 +154,8 @@ namespace gstd {
 		[DBus (name = "PipelineSetState")]
 		public abstract bool pipeline_set_state(int state) throws DBusError, IOError;
 
-		[DBus (name = "PipelineAsyncSetState", no_reply = true)]
-		public abstract void pipeline_async_set_state(int state) throws DBusError, IOError;
+		[DBus (name = "PipelineSetStateAsync", no_reply = true)]
+		public abstract void pipeline_set_state_async(int state) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
@@ -202,8 +202,8 @@ namespace gstd {
 		[DBus (name = "PipelineStep")]
 		public abstract void pipeline_step(uint64 frames) throws DBusError, IOError;
 
-		[DBus (name = "PipelineAsyncSeek", no_reply = true)]
-		public abstract void pipeline_async_seek(int64 ipos_ns) throws DBusError, IOError;
+		[DBus (name = "PipelineSeekAsync", no_reply = true)]
+		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
@@ -226,8 +226,8 @@ namespace gstd {
 		[DBus (name = "ElementSetState")]
 		public abstract bool element_set_state(string element, int state) throws DBusError, IOError;
 
-		[DBus (name = "ElementAsyncSetState", no_reply = true)]
-		public abstract void element_async_set_state(string element, int state) throws DBusError, IOError;
+		[DBus (name = "ElementSetStateAsync", no_reply = true)]
+		public abstract void element_set_state_async(string element, int state) throws DBusError, IOError;
 
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);
