@@ -126,7 +126,6 @@ static GstBusSyncReply _gstd_pipeline_bus_sync_callback_gst_bus_sync_handler (Gs
 static gboolean gstd_pipeline_bus_callback (gstdPipeline* self, GstBus* bus, GstMessage* message);
 static gboolean _gstd_pipeline_bus_callback_gst_bus_func (GstBus* bus, GstMessage* message, gpointer self);
 static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* base, gint state, GError** error);
-static void gstd_pipeline_pipeline_set_state_async_impl (gstdPipeline* self, GstState state);
 static void gstd_pipeline_real_pipeline_set_state_async (gstdPipelineInterface* base, gint state, GError** error);
 gboolean gstd_pipeline_pipeline_is_initialized (gstdPipeline* self);
 static guint64 gstd_pipeline_real_pipeline_get_id (gstdPipelineInterface* base, GError** error);
@@ -172,6 +171,7 @@ static void gstd_pipeline_real_pipeline_step (gstdPipelineInterface* base, guint
 static gboolean gstd_pipeline_real_pipeline_send_custom_event (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
 static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInterface* base, const gchar* stype, const gchar* name, GError** error);
 gboolean gstd_pipeline_interface_pipeline_send_custom_event (gstdPipelineInterface* self, const gchar* type, const gchar* name, GError** error);
+static gboolean gstd_pipeline_element_set_state_impl (gstdPipeline* self, const gchar* element, GstState state);
 static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_real_element_set_state_async (gstdPipelineInterface* base, const gchar* element, gint state, GError** error);
 static void gstd_pipeline_real_set_window_id (gstdPipelineInterface* base, guint64 winId, GError** error);
@@ -588,22 +588,20 @@ static gboolean gstd_pipeline_real_pipeline_set_state (gstdPipelineInterface* ba
 }
 
 
-static void gstd_pipeline_pipeline_set_state_async_impl (gstdPipeline* self, GstState state) {
-	GstElement* _tmp0_;
-	GstState _tmp1_;
-	g_return_if_fail (self != NULL);
-	_tmp0_ = self->priv->_pipeline;
-	_tmp1_ = state;
-	gst_element_set_state (_tmp0_, _tmp1_);
-}
-
-
+/** @Note This function is identically to pipeline_set_state(). The difference is, that is is marked as noreply method in the XML definition of the DBus interface.
+ * Imagine, a client wants to reuse a pipeline to play several audio files, without blocking the client application (UI) when doing the DBus calls.
+ * In this case, the client would send the following non-blocking DBus requests to gstd:
+ * 1. pipeline_set_state_async(READY)
+ * 2. element_set_property_async("filesrc", "location", "2.wav")
+ * 3. pipeline_set_state_async(PLAY)
+ * It needs to be ensured, that pipeline_set_state_async() has finished the state transtition to READY before gstd executes element_set_property_async().
+ * Therefore, pipeline_set_state_async() needs to be synchronous internally. */
 static void gstd_pipeline_real_pipeline_set_state_async (gstdPipelineInterface* base, gint state, GError** error) {
 	gstdPipeline * self;
 	gint _tmp0_;
 	self = (gstdPipeline*) base;
 	_tmp0_ = state;
-	gstd_pipeline_pipeline_set_state_async_impl (self, (GstState) _tmp0_);
+	gstd_pipeline_pipeline_set_state_impl (self, (GstState) _tmp0_);
 }
 
 
@@ -2286,8 +2284,7 @@ static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInt
    @param element, whose state is to be set
    @param state, desired element state
  */
-static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
-	gstdPipeline * self;
+static gboolean gstd_pipeline_element_set_state_impl (gstdPipeline* self, const gchar* element, GstState state) {
 	gboolean result = FALSE;
 	GstElement* _tmp0_;
 	GstPipeline* _tmp1_;
@@ -2298,15 +2295,15 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
 	GstElement* e;
 	GstElement* _tmp5_;
 	GstElement* _tmp7_;
-	gint _tmp8_;
+	GstState _tmp8_;
 	GstState current = 0;
 	GstState pending = 0;
 	GstElement* _tmp9_;
 	GstState _tmp10_ = 0;
 	GstState _tmp11_ = 0;
 	GstState _tmp12_;
-	gint _tmp13_;
-	self = (gstdPipeline*) base;
+	GstState _tmp13_;
+	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (element != NULL, FALSE);
 	_tmp0_ = self->priv->_pipeline;
 	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
@@ -2327,7 +2324,7 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
 	}
 	_tmp7_ = e;
 	_tmp8_ = state;
-	gst_element_set_state (_tmp7_, (GstState) _tmp8_);
+	gst_element_set_state (_tmp7_, _tmp8_);
 	_tmp9_ = e;
 	gst_element_get_state (_tmp9_, &_tmp10_, &_tmp11_, (GstClockTime) GST_CLOCK_TIME_NONE);
 	current = _tmp10_;
@@ -2335,14 +2332,11 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
 	_tmp12_ = current;
 	_tmp13_ = state;
 	if (_tmp12_ != _tmp13_) {
-		gint _tmp14_;
-		gchar* _tmp15_ = NULL;
-		gchar* _tmp16_;
+		GstState _tmp14_;
+		const gchar* _tmp15_ = NULL;
 		_tmp14_ = state;
-		_tmp15_ = g_strdup_printf ("%i", _tmp14_);
-		_tmp16_ = _tmp15_;
-		syslog (LOG_ERR, "Element, failed to change state %s", _tmp16_, NULL);
-		_g_free0 (_tmp16_);
+		_tmp15_ = gst_element_state_get_name (_tmp14_);
+		syslog (LOG_ERR, "Element, failed to change state %s", _tmp15_, NULL);
 		result = FALSE;
 		_gst_object_unref0 (e);
 		_gst_object_unref0 (pipe);
@@ -2355,43 +2349,32 @@ static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* bas
 }
 
 
-/**
-   Sets an element to the specified state, returning before the state change may have occurred
-   @param element, whose state is to be set
-   @param state, desired element state
- */
+static gboolean gstd_pipeline_real_element_set_state (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
+	gstdPipeline * self;
+	gboolean result = FALSE;
+	const gchar* _tmp0_;
+	gint _tmp1_;
+	gboolean _tmp2_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_val_if_fail (element != NULL, FALSE);
+	_tmp0_ = element;
+	_tmp1_ = state;
+	_tmp2_ = gstd_pipeline_element_set_state_impl (self, _tmp0_, (GstState) _tmp1_);
+	result = _tmp2_;
+	return result;
+}
+
+
+/** @note this function waits until the transition is done, see also pipeline_set_state_async */
 static void gstd_pipeline_real_element_set_state_async (gstdPipelineInterface* base, const gchar* element, gint state, GError** error) {
 	gstdPipeline * self;
-	GstElement* _tmp0_;
-	GstPipeline* _tmp1_;
-	GstPipeline* pipe;
-	GstPipeline* _tmp2_;
-	const gchar* _tmp3_;
-	GstObject* _tmp4_ = NULL;
-	GstElement* e;
-	GstElement* _tmp5_;
-	GstElement* _tmp7_;
-	gint _tmp8_;
+	const gchar* _tmp0_;
+	gint _tmp1_;
 	self = (gstdPipeline*) base;
 	g_return_if_fail (element != NULL);
-	_tmp0_ = self->priv->_pipeline;
-	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
-	pipe = _tmp1_;
-	_tmp2_ = pipe;
-	_tmp3_ = element;
-	_tmp4_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) _tmp2_, _tmp3_);
-	e = GST_IS_ELEMENT (_tmp4_) ? ((GstElement*) _tmp4_) : NULL;
-	_tmp5_ = e;
-	if (_tmp5_ == NULL) {
-		const gchar* _tmp6_;
-		_tmp6_ = element;
-		syslog (LOG_WARNING, "Element %s not found on pipeline", _tmp6_, NULL);
-	}
-	_tmp7_ = e;
-	_tmp8_ = state;
-	gst_element_set_state (_tmp7_, (GstState) _tmp8_);
-	_gst_object_unref0 (e);
-	_gst_object_unref0 (pipe);
+	_tmp0_ = element;
+	_tmp1_ = state;
+	gstd_pipeline_element_set_state_impl (self, _tmp0_, (GstState) _tmp1_);
 }
 
 

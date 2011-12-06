@@ -185,15 +185,18 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		return pipeline_set_state_impl((Gst.State)(state));
 	}
-
-	private void pipeline_set_state_async_impl(Gst.State state)
-	{
-		_pipeline.set_state (state);
-	}
 	
+	/** @Note This function is identically to pipeline_set_state(). The difference is, that is is marked as noreply method in the XML definition of the DBus interface.
+	 * Imagine, a client wants to reuse a pipeline to play several audio files, without blocking the client application (UI) when doing the DBus calls.
+	 * In this case, the client would send the following non-blocking DBus requests to gstd:
+	 * 1. pipeline_set_state_async(READY)
+	 * 2. element_set_property_async("filesrc", "location", "2.wav")
+	 * 3. pipeline_set_state_async(PLAY)
+	 * It needs to be ensured, that pipeline_set_state_async() has finished the state transtition to READY before gstd executes element_set_property_async().
+	 * Therefore, pipeline_set_state_async() needs to be synchronous internally. */
 	public void pipeline_set_state_async(int state)
 	{
-		pipeline_set_state_async_impl((Gst.State)(state));
+		pipeline_set_state_impl((Gst.State)(state));
 	}
 
 	/**
@@ -811,7 +814,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param element, whose state is to be set
 	   @param state, desired element state
 	 */
-	public bool element_set_state (string element, int state)
+	private bool element_set_state_impl (string element, Gst.State state)
 	{
 		var pipe = _pipeline as Gst.Pipeline;
 		var e = pipe.get_child_by_name(element) as Gst.Element;
@@ -821,9 +824,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return false;
 		}
 
-		e.set_state ((Gst.State)(state));
+		e.set_state (state);
 
-		/* Wait for the transition at most 8 secs */
+		/* Wait for the transition */
 		Gst.State current, pending;
 		e.get_state (out current, out pending, (Gst.ClockTime) Gst.CLOCK_TIME_NONE);
 		if (current != state)
@@ -833,21 +836,16 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 		return true;
 	}
+	
+	public bool element_set_state (string element, int state)
+	{
+		return element_set_state_impl(element, (Gst.State)(state));
+	}
 
-	/**
-	   Sets an element to the specified state, returning before the state change may have occurred
-	   @param element, whose state is to be set
-	   @param state, desired element state
-	 */
+	/** @note this function waits until the transition is done, see also pipeline_set_state_async */
 	public void element_set_state_async (string element, int state)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
-		if (e == null)
-		{
-			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
-		}
-		e.set_state ((Gst.State)(state));
+		element_set_state_impl(element, (Gst.State)(state));
 	}
 
 	public void set_window_id(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"
