@@ -18,7 +18,6 @@ public class Pipeline : GLib.Object, PipelineInterface
 	private Gst.Element _pipeline;
 	private uint64 _id = 0;
 	private bool _initialized = false;
-	private string _path = "";
 	private double _rate = 1.0;
 	private uint64 _windowId = 0;
 
@@ -224,21 +223,14 @@ public class Pipeline : GLib.Object, PipelineInterface
 	}
 
 	/**
-	   Returns the dbus-path assigned when created
+	   Set/get the dbus-path assigned when created
 	 */
-	public string pipeline_get_path()
-	{
-		return _path;
-	}
+	public string? path {get; set; default = null;}
 
 	/**
-	   Sets a dbus-path,this is assigned when connected to daemon
+	   Set/get the DBus registration id assigned when created
 	 */
-	public bool pipeline_set_path (string dbuspath)
-	{
-		_path = dbuspath;
-		return true;
-	}
+	public uint registration_id {get; set; default = 0;}
 
 	/**
 	   Gets the pipeline state

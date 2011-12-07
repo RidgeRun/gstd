@@ -53,17 +53,19 @@ public class Factory : GLib.Object, FactoryInterface
 					return "";
 				}
 			}
-			_pipes[next_id] = new Pipeline (description);
-
-			if (!(_pipes[next_id] as Pipeline).pipeline_is_initialized ())
-			{
-				_pipes[next_id] = null;
+			/* create GStreamer pipe */
+			Pipeline pipe = new Pipeline (description);
+			if (!pipe.pipeline_is_initialized())
 				return "";
-			}
+
+			/* store pointer */
+			_pipes[next_id] = pipe;
+
+			/* register to dbus*/
 			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-			_conn.register_object(objectpath, _pipes[next_id]);
-			(_pipes[next_id] as Pipeline).pipeline_set_path(objectpath);
-			return objectpath;
+			pipe.registration_id = _conn.register_object(objectpath, _pipes[next_id]);
+			pipe.path = objectpath;
+			return pipe.path;
 		}
 		catch (GLib.IOError error)
 		{
@@ -83,8 +85,12 @@ public class Factory : GLib.Object, FactoryInterface
 		{
 			if (_pipes[index] != null)
 			{
-				if ((_pipes[index] as Pipeline).pipeline_get_path () == objectpath)
+				Pipeline pipe = _pipes[index] as Pipeline;
+				if (pipe.path == objectpath)
 				{
+					Posix.syslog (Posix.LOG_ERR, "REFCOUNT: %u", pipe.ref_count);
+					if (!_conn.unregister_object(pipe.registration_id))
+						Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
 					_pipes[index] = null;
 					return true;
 				}
@@ -106,6 +112,8 @@ public class Factory : GLib.Object, FactoryInterface
 		{
 			if (_pipes[index] != null)
 			{
+				if (!_conn.unregister_object((_pipes[index] as Pipeline).registration_id))
+					Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
 				_pipes[index] = null;
 			}
 		}
@@ -124,7 +132,7 @@ public class Factory : GLib.Object, FactoryInterface
 		{
 			if (_pipes[index] != null)
 			{
-				paths += (_pipes[index] as Pipeline).pipeline_get_path ();
+				paths += (_pipes[index] as Pipeline).path;
 			}
 		}
 		return paths;
