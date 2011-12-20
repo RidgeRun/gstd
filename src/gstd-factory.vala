@@ -81,6 +81,8 @@ public class Factory : GLib.Object, FactoryInterface
 	 */
 	public bool destroy (string objectpath)
 	{
+		// find pipe and destroy it
+		bool destroyed = false;
 		for (int index = 0; index < _pipes.length; ++index)
 		{
 			if (_pipes[index] != null)
@@ -92,13 +94,35 @@ public class Factory : GLib.Object, FactoryInterface
 					if (!_conn.unregister_object(pipe.registration_id))
 						Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
 					_pipes[index] = null;
-					return true;
+					destroyed = true;
+					break;
 				}
 			}
 		}
 
-		Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
-		return false;
+		if (!destroyed)
+		{
+			Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
+			return false;
+		}
+
+		bool empty = true;
+		for (int index = 0; index < _pipes.length; ++index)
+		{
+			if (_pipes[index] != null)
+			{
+				empty = false;
+				break;
+			}
+		}
+
+		if (empty)
+		{
+			Posix.syslog (Posix.LOG_ERR, "Last pipe has been destroyed");
+			last_pipe_destroyed();
+		}
+
+		return true;
 	}
 	
 	/**
@@ -117,6 +141,9 @@ public class Factory : GLib.Object, FactoryInterface
 				_pipes[index] = null;
 			}
 		}
+
+		last_pipe_destroyed();
+
 		return true;
 	}
 
@@ -148,6 +175,11 @@ public class Factory : GLib.Object, FactoryInterface
 		/*Gstd received the Ping method call */
 		return true;
 	}
+
+	/** 
+	   Emitted when the last pipe has been destroyed.
+	  */
+	public signal void last_pipe_destroyed();
 }
 
 }

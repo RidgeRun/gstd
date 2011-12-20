@@ -12,11 +12,15 @@
 /*Global Variable*/
 private bool useSystemBus = false;
 private bool useSessionBus = false;
+private string busName;
+private bool autoTerminate = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
 private int signalPollRate = 0;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
+	{"busname", '\0', 0, OptionArg.STRING, ref busName, "Bus name, default is com.ridgerun.gstreamer.gstd", null},
+	{"autoterminate", '\0', 0, OptionArg.NONE, ref autoTerminate, "Automatically terminate gstd after the last pipe has been destroyed.", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
 #if GSTD_SUPPORT_SIGNALS
 	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
@@ -36,6 +40,8 @@ public int main (string[] args)
 	try {
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
 		Posix.syslog(Posix.LOG_ERR, "Started");
+
+		busName = "com.ridgerun.gstreamer.gstd";
 
 		var opt = new GLib.OptionContext ("");
 		opt.add_main_entries (options, null);
@@ -84,18 +90,22 @@ public int main (string[] args)
 		                                                 GLib.BusType.STARTER);
 
 		/* Create the factory */
-		gstd.FactoryInterface factory = new gstd.Factory (connection);
+		gstd.Factory factory = new gstd.Factory(connection);
+
+		/* In case autoTerminate is enabled, quit mainloop after the last pipe has been destroyed */
+		if (autoTerminate)
+			factory.last_pipe_destroyed.connect(() => {loop.quit();});
 
 		/* Register factory to DBus */
 		GLib.Bus.own_name_on_connection (
 			connection,
-			"com.ridgerun.gstreamer.gstd",
+			busName,
 			GLib.BusNameOwnerFlags.NONE,
 			(connection, name) =>
 			{
 				try
 				{
-					connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", factory);
+					connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
 				}
 				catch (IOError e)
 				{
@@ -125,3 +135,4 @@ public int main (string[] args)
 	Posix.syslog(Posix.LOG_ERR, "Ended");
 	return 0;
 }
+
