@@ -750,7 +750,7 @@ static void gstd_factory_class_init (gstdFactoryClass * klass) {
 	g_type_class_add_private (klass, sizeof (gstdFactoryPrivate));
 	G_OBJECT_CLASS (klass)->finalize = gstd_factory_finalize;
 	/** 
-	   Emitted when the last pipe has been closed.
+	   Emitted when the last pipe has been destroyed.
 	  */
 	g_signal_new ("last_pipe_destroyed", GSTD_TYPE_FACTORY, G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }

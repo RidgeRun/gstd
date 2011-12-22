@@ -11,6 +11,7 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
+/*Global Variable*/
 
 #include <glib.h>
 #include <glib-object.h>

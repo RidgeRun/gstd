@@ -1,4 +1,4 @@
-AC_INIT([gstd],[1.1.1],[gstd-devel@lists.sourceforge.net])
+AC_INIT([gstd],[1.3],[gstd-devel@lists.sourceforge.net])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -8,7 +8,7 @@ AC_PROG_LN_S
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
-AC_CONFIG_FILES(gstd-1.0.pc:gstd-1.0.pc.in)
+AC_CONFIG_FILES(gstd-1.3.pc:gstd-1.3.pc.in)
 AC_CONFIG_FILES(com.ridgerun.gstreamer.gstd.service:com.ridgerun.gstreamer.gstd.service.in)
 
 AM_PROG_VALAC([0.12])
