@@ -1,7 +1,7 @@
 /*
  * gstd/src/gst-client.vala
  *
- * Command line utility for sending D-Bus messages to GStreamer daemon with 
+ * Command line utility for sending D-Bus messages to GStreamer daemon with
  *  interactive support.
  *
  * BSD License*
@@ -30,39 +30,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using GLib;
-using Gst;
-
+namespace gstd
+{
 public class GstdCli : GLib.Object
 {
-	private DBus.Connection conn;
-	private dynamic DBus.Object factory;
-	private string active_pipe = null;
+	private GLib.DBusConnection conn;
+	private FactoryInterface factory;
+	private string active_pipe;
 	private bool cli_enable = false;
-	dynamic DBus.Object pipeline = null;
+	private PipelineInterface pipeline;
 
 	/**
 	 * Used as reference in option parser
 	 */
-	static string obj_path; // Used in non cli mode
-	static bool _signals = false;
+	private static string obj_path; // Used in non cli mode
+	private static bool _signals = false;
 	[CCode (array_length = false, array_null_terminated = true)]
-	static string[] _remaining_args;
-	static bool useSessionBus = false;
-#if HAVE_READLINE
+	private static string[] _remaining_args;
+	private static bool useSessionBus = false;
+	# if HAVE_READLINE
 	// true: This client is used by an interactive shell. false: This client is used as an interpreter of a script
-	static bool isInteractive;
+	private static bool isInteractive;
 	// true: If a command fails, the client process exits. Prefered for script execution.
-	static bool isStrict = false;
-#endif
+	private static bool isStrict = false;
+	# endif
 
 	/**
 	 * Application command line options
 	 */
-	const OptionEntry[] options = {
+	private const OptionEntry[] options = {
 		{ "session", '\0', 0, OptionArg.NONE, ref useSessionBus,
 		  "Use dbus session bus.", null},
-		  
+
 		{ "path", 'p', 0, OptionArg.STRING, ref obj_path,
 		  "Pipeline path or path_id.  Required for commands that " +
 		  "effect a specific pipeline.  Usage: -p <path_id>", null},
@@ -71,7 +70,7 @@ public class GstdCli : GLib.Object
 		  "Flag to enable reception of dbus signals from GStreamer " +
 		  "Daemon.  Usage: -s 1", null},
 
-		{ "", '\0', 0, OptionArg.FILENAME_ARRAY, ref _remaining_args,
+		{ "", 0, 0, OptionArg.STRING_ARRAY, ref _remaining_args,
 		  null, N_("[COMMANDS...]")},
 
 		{ null}
@@ -80,7 +79,7 @@ public class GstdCli : GLib.Object
 	/* Command descriptions for the help
 	   Each description is: name of the command, syntax, description
 	 */
-	private string[, ] cmds = {
+	private const string[, ] cmds = {
 		{ "create", "create <\"gst-launch like pipeline description in quotes\">",
 		  "Creates a new pipeline and returns the dbus-path to access it"},
 		{ "destroy", "destroy", "Destroys the pipeline specified by_path(-p) or the"
@@ -88,10 +87,6 @@ public class GstdCli : GLib.Object
 		{ "destroy-all", "destroy-all", "Destroys all pipelines on the factory."},
 		{ "play", "play", "Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to play state"},
-		{ "tplay", "temporized-play", "Sets the pipeline specified by_path (-p) or the active "
-		  + "pipeline to play state for a specifed duration"},
-		{ "abort-autostop", "abort-autostop", "Aborts the auto stop property in the pipeline "
-		  + "specified by_path (-p) or the active pipeline."},
 		{ "ready", "ready", "Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to ready state"},
 		{ "pause", "pause", "Sets the pipeline specified by_path(-p) or the active "
@@ -114,7 +109,7 @@ public class GstdCli : GLib.Object
 		  "Gets an element's property value of the pipeline"},
 		{ "get-duration", "get-duration", "Gets the pipeline duration time"},
 		{ "get-position", "get-position", "Gets the pipeline position"},
-		{ "sh", "sh \"<shell command with optional parameters>\"", 
+		{ "sh", "sh \"<shell command with optional parameters>\"",
 		  "Execute a shell command using interactive console"},
 		{ "get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
 		  + " or the active pipeline"},
@@ -137,14 +132,13 @@ public class GstdCli : GLib.Object
 		  "\t\tNegative rate causes reverse playback."},
 		{ "step", "step [number of frames]", "Step the number of frames, if no number is provided, 1 is assumed"},
 		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
-		{ "send-custom-event", "send-custom-event <custom type> <name of event>", 
+		{ "send-custom-event", "send-custom-event <custom type> <name of event>",
 		  "Send a custom event on the pipeline. The event type can be:\n" +
 		  "\t\t* UPSTREAM\n" +
 		  "\t\t* DOWNSTREAM\n" +
 		  "\t\t* DOWNSTREAM_OOB\n" +
 		  "\t\t* BOTH\n" +
-		  "\t\t* BOTH_OOB\n"
-		},
+		  "\t\t* BOTH_OOB\n"},
 		{ "element-set-state", "element-set-state <element_name> <state>",
 		  "Sets the element state" +
 		  "\t\tSupported <state>s include: null, ready, paused, playing"},
@@ -152,24 +146,22 @@ public class GstdCli : GLib.Object
 		  "Sets the element state, it does not wait the change to be done"},
 		{ "exit", "exit", "Exit/quit active console"},
 		{ "quit", "quit", "Exit/quit active console"},
-#if HAVE_READLINE
+		# if HAVE_READLINE
 		{ "strict", "strict", "Enable/disable strict execution mode."},
-#endif
+		# endif
 		{ "version", "version", "Show gst-client version."}
 	};
 
 	/*
 	 * Constructor
 	 */
-	public GstdCli (string[] args) throws DBus.Error, GLib.Error
+	public GstdCli (string[] args) throws GLib.Error
 	{
 		parse_options(args);
 
 		/*Getting a Gstd Factory proxy object */
-		conn = DBus.Bus.get ((useSessionBus) ? DBus.BusType.SESSION : DBus.BusType.SYSTEM);
-		factory = conn.get_object ("com.ridgerun.gstreamer.gstd",
-		                           "/com/ridgerun/gstreamer/gstd/factory",
-		                           "com.ridgerun.gstreamer.gstd.FactoryInterface");
+		conn = GLib.Bus.get_sync ((useSessionBus) ? GLib.BusType.SESSION : GLib.BusType.SYSTEM);
+		factory = conn.get_proxy_sync ("com.ridgerun.gstreamer.gstd", "/com/ridgerun/gstreamer/gstd/factory");
 	}
 
 	/**
@@ -204,7 +196,7 @@ public class GstdCli : GLib.Object
 		}
 
 		try {
-			string new_objpath = factory.Create (description);
+			string new_objpath = factory.create (description);
 
 			if (new_objpath == "")
 			{
@@ -235,92 +227,39 @@ public class GstdCli : GLib.Object
 	{
 		/*This needs to be reviewed, casting compiles but does not
 		   function */
-		bool ret = factory.Destroy (objpath);
-		if (!ret)
+		try
 		{
-			stderr.printf ("Error:\nFailed to put the pipeline to null\n");
-			return false;
-		}
-		stdout.printf ("Pipeline with path:%s, destroyed\n", objpath);
-		stdout.printf ("Ok.\n");
-		return true;
-	}
-
-	private bool pipeline_play (dynamic DBus.Object pipeline, bool sync)
-	{
-		try {
-			if (sync)
+			if (!factory.destroy (objpath))
 			{
-				bool ret = pipeline.PipelineSetState (State.PLAYING);
-				if (!ret)
-				{
-					stdout.printf ("Error:\nFailed to put the pipeline to play\n");
-					return false;
-				}
-			}
-			else
-				pipeline.PipelineAsyncSetState (State.PLAYING);
-			stdout.printf ("Ok.\n");
-			return true;
-		}
-		catch (Error e)
-		{
-			stdout.printf ("Error:\n%s\n", e.message);
-			return false;
-		}
-	}
-
-	private bool pipeline_tplay (dynamic DBus.Object pipeline, int64 timeout)
-	{
-		try {
-			/* Setting the auto-stop property */
-			bool ret = pipeline.PipelineSetAutoStop(timeout);
-			if (!ret)
-			{
-				stdout.printf ("Error:\nThere is an auto-stop process running.\n");
+				stderr.printf ("Error:\nFailed to put the pipeline to null\n");
 				return false;
 			}
-
-			/* Setting the pipeline to PLAY state */
-			ret = pipeline.PipelineSetState (State.PLAYING);
-			if (!ret)
-			{
-				stdout.printf ("Error:\nFailed to put the pipeline to play\n");
-				return false;
-			}
-
+			stdout.printf ("Pipeline with path:%s, destroyed\n", objpath);
 			stdout.printf ("Ok.\n");
 			return true;
 		}
 		catch (Error e)
 		{
-			stdout.printf ("Error:\n%s\n", e.message);
+			stderr.printf("Error:\nFailed to destroy pipe\n");
 			return false;
 		}
 	}
 
-
-	private void pipeline_abort_autostop (dynamic DBus.Object pipeline)
-	{
-		/* Aborting the auto-stop */
-		pipeline.PipelineAbortAutoStop();
-		stdout.printf ("Ok.\n");
-	}
-
-	private bool pipeline_ready (dynamic DBus.Object pipeline, bool sync)
+	private bool pipeline_set_state(PipelineInterface pipeline, bool sync, Gst.State state)
 	{
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.PipelineSetState (State.READY);
+				bool ret = pipeline.pipeline_set_state (state);
 				if (!ret)
 				{
-					stdout.printf ("Error:\nFailed to put the pipeline to ready\n");
+					stdout.printf ("Error:\nFailed to change pipeline state\n");
 					return false;
 				}
 			}
 			else
-				pipeline.PipelineAsyncSetState (State.READY);
+				pipeline.pipeline_async_set_state (state);
+
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -331,52 +270,24 @@ public class GstdCli : GLib.Object
 		}
 	}
 
-	private bool pipeline_pause (dynamic DBus.Object pipeline, bool sync)
+	private bool pipeline_play (PipelineInterface pipeline, bool sync)
 	{
-		try {
-			if (sync)
-			{
-				bool ret = pipeline.PipelineSetState (State.PAUSED);
-				if (!ret)
-				{
-					stdout.printf ("Error:\nFailed to put the pipeline to pause\n");
-					return false;
-				}
-			}
-			else
-				pipeline.PipelineAsyncSetState (State.PAUSED);
-			stdout.printf ("Ok.\n");
-			return true;
-		}
-		catch (Error e)
-		{
-			stdout.printf ("Error:\n%s\n", e.message);
-			return false;
-		}
+		return pipeline_set_state(pipeline, sync, Gst.State.PLAYING);
 	}
 
-	private bool pipeline_null (dynamic DBus.Object pipeline, bool sync)
+	private bool pipeline_ready (PipelineInterface pipeline, bool sync)
 	{
-		try {
-			if (sync)
-			{
-				bool ret = pipeline.PipelineSetState (State.NULL);
-				if (!ret)
-				{
-					stderr.printf ("Error:\nFailed to put the pipeline to null\n");
-					return false;
-				}
-			}
-			else
-				pipeline.PipelineAsyncSetState (State.NULL);
-			stdout.printf ("Ok.\n");
-			return true;
-		}
-		catch (Error e)
-		{
-			stdout.printf ("Error:\n%s\n", e.message);
-			return false;
-		}
+		return pipeline_set_state(pipeline, sync, Gst.State.READY);
+	}
+
+	private bool pipeline_pause (PipelineInterface pipeline, bool sync)
+	{
+		return pipeline_set_state(pipeline, sync, Gst.State.PAUSED);
+	}
+
+	private bool pipeline_null (PipelineInterface pipeline, bool sync)
+	{
+		return pipeline_set_state(pipeline, sync, Gst.State.NULL);
 	}
 
 	private bool gstd_ping ()
@@ -384,7 +295,7 @@ public class GstdCli : GLib.Object
 		bool ret = false;
 
 		try {
-			ret = factory.Ping ();
+			ret = factory.ping ();
 		}
 		catch (Error e)
 		{
@@ -395,15 +306,16 @@ public class GstdCli : GLib.Object
 		stdout.printf ("pong\n");
 		return ret;
 	}
-	
+
 	private bool pipeline_ping ()
 	{
-		if(pipeline == null)
+		if (pipeline == null)
 			return false;
-		
-		try {
-			bool result = pipeline.Ping ();
-			
+
+		try
+		{
+			bool result = pipeline.ping ();
+
 			stdout.printf("Pipeline ping result = %s\n", result ? "Success" : "Failed");
 			return result;
 		}
@@ -414,11 +326,9 @@ public class GstdCli : GLib.Object
 		}
 	}
 
-	private bool pipeline_get_property (dynamic DBus.Object pipeline,
+	private bool pipeline_get_property (PipelineInterface pipeline,
 	                                    string[] args)
 	{
-		bool ret = true;
-
 		if (args[1] == null || args[2] == null || args[3] == null)
 		{
 			stdout.printf ("Error:\nMissing argument.Execute:'help get'\n");
@@ -427,77 +337,87 @@ public class GstdCli : GLib.Object
 
 		string element = args[1];
 		string property = args[2];
-		bool success;
 
-		switch (args[3].down ())
+		try
 		{
-			case "boolean" :
-				bool boolean_v;
-				pipeline.ElementGetPropertyBoolean (element, property, out boolean_v, out success);
-				if (!success)
-				{
-					stdout.printf("Failed to get property value");
-					ret = false;
-					break;
-				}
-				stdout.printf ("The '%s' value on element '%s' is: %s\n",
-				               property, element, boolean_v ? "true" : "false");
-				break;
+			bool ret = true;
+			bool success;
 
-			case "integer":
-				int integer_v;
-				pipeline.ElementGetPropertyInt (element, property, out integer_v, out success);
-				if (!success)
-				{
-					stdout.printf("Failed to get property value");
-					ret = false;
+			switch (args[3].down ())
+			{
+				case "boolean" :
+					bool boolean_v;
+					pipeline.element_get_property_boolean (element, property, out boolean_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %s\n",
+					               property, element, boolean_v ? "true" : "false");
 					break;
-				}
-				stdout.printf ("The '%s' value on element '%s' is: %d\n",
-				               property, element, integer_v);
-				break;
 
-			case "int64":
-				int64 int64_v;
-				pipeline.ElementGetPropertyInt64 (element, property, out int64_v, out success);
-				if (!success)
-				{
-					stdout.printf("Failed to get property value");
-					ret = false;
+				case "integer":
+					int integer_v;
+					pipeline.element_get_property_int (element, property, out integer_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %d\n",
+					               property, element, integer_v);
 					break;
-				}
-				stdout.printf ("The '%s' value on element '%s' is: %lld\n",
-				               property, element, int64_v);
-				break;
 
-			case "string":
-				string string_v;
-				pipeline.ElementGetPropertyString (element, property, out string_v, out success);
-				if (!success)
-				{
-					stdout.printf("Failed to get property value");
-					ret = false;
+				case "int64":
+					int64 int64_v;
+					pipeline.element_get_property_int64 (element, property, out int64_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %lld\n",
+					               property, element, int64_v);
 					break;
-				}
-				stdout.printf ("The '%s' value on element '%s' is: %s\n",
-				               property, element, string_v);
-				break;
 
-			default:
-				stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
+				case "string":
+					string string_v;
+					pipeline.element_get_property_string (element, property, out string_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %s\n",
+					               property, element, string_v);
+					break;
+
+				default:
+					stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
+					return false;
+			}
+
+			if (!ret)
+			{
+				stdout.printf ("Error:\nFailed to get property:%s\n", property);
 				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
 		}
-
-		if (!ret)
+		catch (Error e)
 		{
-			stdout.printf ("Error:\nFailed to get property:%s\n", property);
+			stderr.printf ("Error:\nFailed to get property:%s\n", property);
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool pipeline_set_property (dynamic DBus.Object pipeline,
+	private bool pipeline_set_property (PipelineInterface pipeline,
 	                                    string[] args)
 	{
 		bool ret;
@@ -512,94 +432,123 @@ public class GstdCli : GLib.Object
 		string element = args[1];
 		string property = args[2];
 
-		switch (args[3].down ())
+		try
 		{
-			case "boolean":
-				bool boolean_v = bool.parse(args[4].down());
-				stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
-				               property, element, boolean_v ? "true" : "false");
-				ret = pipeline.ElementSetPropertyBoolean (element, property, boolean_v);
-				break;
+			switch (args[3].down ())
+			{
+				case "boolean":
+					bool boolean_v = bool.parse(args[4].down());
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
+					               property, element, boolean_v ? "true" : "false");
+					ret = pipeline.element_set_property_boolean (element, property, boolean_v);
+					break;
 
-			case "integer":
-				int integer_v = int.parse(args[4]);
-				stdout.printf ("Trying to set '%s' on element '%s' to the value:%d\n",
-				               property, element, integer_v);
-				ret = pipeline.ElementSetPropertyInt (element, property, integer_v);
-				break;
+				case "integer":
+					int integer_v = int.parse(args[4]);
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%d\n",
+					               property, element, integer_v);
+					ret = pipeline.element_set_property_int (element, property, integer_v);
+					break;
 
-			case "int64":
-				int64 int64_v = int64.parse(args[4]);
-				stdout.printf ("Trying to set '%s' on element '%s' to the value:%lld\n",
-				               property, element, int64_v);
-				ret = pipeline.ElementSetPropertyInt64 (element, property, int64_v);
-				break;
+				case "int64":
+					int64 int64_v = int64.parse(args[4]);
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%lld\n",
+					               property, element, int64_v);
+					ret = pipeline.element_set_property_int64 (element, property, int64_v);
+					break;
 
-			case "string":
-				string string_v = args[4];
-				stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
-				               property, element, string_v);
-				ret = pipeline.ElementSetPropertyString (element, property, string_v);
-				break;
+				case "string":
+					string string_v = args[4];
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
+					               property, element, string_v);
+					ret = pipeline.element_set_property_string (element, property, string_v);
+					break;
 
-			default:
-				stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
+				default:
+					stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
+					return false;
+			}
+
+			if (!ret)
+			{
+				stderr.printf ("Error:\nFailed to set property:%s\n", property);
 				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
 		}
-
-		if (!ret)
+		catch (Error e)
 		{
 			stderr.printf ("Error:\nFailed to set property:%s\n", property);
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool pipeline_get_duration (dynamic DBus.Object pipeline)
+	private bool pipeline_get_duration (PipelineInterface pipeline)
 	{
-		int64 time = pipeline.PipelineGetDuration ();
-		if (time < 0)
+		try
 		{
-			stderr.printf ("Error:\nFailed to get pipeline duration\n");
+			int64 time = pipeline.pipeline_get_duration ();
+			if (time < 0)
+			{
+				stderr.printf ("Error:\nFailed to get pipeline duration\n");
+				return false;
+			}
+			time /= 1000000;
+			stdout.printf ("The duration on the pipeline is %u:%02u:%02u.%03u\n",
+			               (uint)(time / (1000 * 60 * 60)),
+			               (uint)((time / (1000 * 60)) % 60),
+			               (uint)((time / 1000) % 60),
+			               (uint)(time % 1000));
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		time /= 1000000;
-		stdout.printf ("The duration on the pipeline is %u:%02u:%02u.%03u\n",
-		               (uint)(time / (1000 * 60 * 60)),
-		               (uint)((time / (1000 * 60)) % 60),
-		               (uint)((time / 1000) % 60),
-		               (uint)(time % 1000));
-		stdout.printf ("Ok.\n");
-		return true;
 	}
 
-	private bool pipeline_get_position (dynamic DBus.Object pipeline)
+	private bool pipeline_get_position (PipelineInterface pipeline)
 	{
-		int64 pos = pipeline.PipelineGetPosition ();
-		if (pos < 0)
+		try
 		{
-			stderr.printf ("Error:\nFailed to get position the pipeline to null\n");
+			int64 pos = pipeline.pipeline_get_position ();
+			if (pos < 0)
+			{
+				stderr.printf ("Error:\nFailed to get position the pipeline to null\n");
+				return false;
+			}
+			pos /= 1000000;
+			stdout.printf ("The position on the pipeline is %u:%02u:%02u.%03u\n",
+			               (uint)(pos / (1000 * 60 * 60)),
+			               (uint)((pos / (1000 * 60)) % 60),
+			               (uint)((pos / 1000) % 60),
+			               (uint)(pos % 1000));
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		pos /= 1000000;
-		stdout.printf ("The position on the pipeline is %u:%02u:%02u.%03u\n",
-		               (uint)(pos / (1000 * 60 * 60)),
-		               (uint)((pos / (1000 * 60)) % 60),
-		               (uint)((pos / 1000) % 60),
-		               (uint)(pos % 1000));
-		stdout.printf ("Ok.\n");
-		return true;
 	}
 
-	private bool pipeline_get_state (dynamic DBus.Object pipeline)
+	private bool pipeline_get_state (PipelineInterface pipeline)
 	{
-		State state = pipeline.PipelineGetState ();
-		stdout.printf ("The pipeline state is: %s\n", state.to_string());
-		return true;
+		try
+		{
+			Gst.State state = (Gst.State)(pipeline.pipeline_get_state());
+			stdout.printf ("The pipeline state is: %s\n", state.to_string());
+			return true;
+		}
+		catch (Error e)
+		{
+			return false;
+		}
 	}
-	
-	private bool element_get_state ( dynamic DBus.Object pipeline, string[] args)
+
+	private bool element_get_state ( PipelineInterface pipeline, string[] args)
 	{
 		if (args[1] == null)
 		{
@@ -608,13 +557,20 @@ public class GstdCli : GLib.Object
 		}
 
 		string element = args[1];
-		State state = pipeline.ElementGetState (element);
-		stdout.printf ("The state of %s is: %s\n", element, state.to_string ());
-		return true;
+
+		try
+		{
+			Gst.State state = (Gst.State)(pipeline.element_get_state (element));
+			stdout.printf ("The state of %s is: %s\n", element, state.to_string ());
+			return true;
+		}
+		catch (Error e)
+		{
+			return false;
+		}
 	}
 
-
-	private bool pipeline_seek (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_seek (PipelineInterface pipeline, string[] args)
 	{
 		if (args[1] == null)
 		{
@@ -624,17 +580,25 @@ public class GstdCli : GLib.Object
 
 		int64 pos_ms = int.parse(args[1]);
 		pos_ms *= 1000000;
-		bool ret = pipeline.PipelineSeek (pos_ms);
-		if (!ret)
+
+		try
 		{
-			stderr.printf ("Error:\nSeek fail: Media type not seekable\n");
+			bool ret = pipeline.pipeline_seek (pos_ms);
+			if (!ret)
+			{
+				stderr.printf ("Error:\nSeek fail: Media type not seekable\n");
+				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool pipeline_skip (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_skip (PipelineInterface pipeline, string[] args)
 	{
 		if (args[1] == null)
 		{
@@ -644,17 +608,25 @@ public class GstdCli : GLib.Object
 
 		int64 period_ms = int.parse(args[1]);
 		period_ms *= 1000000;
-		bool ret = pipeline.PipelineSkip (period_ms);
-		if (!ret)
+
+		try
 		{
-			stderr.printf ("Error:\nSkip fail: Media type not seekable\n");
+			bool ret = pipeline.pipeline_skip (period_ms);
+			if (!ret)
+			{
+				stderr.printf ("Error:\nSkip fail: Media type not seekable\n");
+				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool pipeline_speed (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_speed (PipelineInterface pipeline, string[] args)
 	{
 		if (args[1] == null)
 		{
@@ -663,37 +635,60 @@ public class GstdCli : GLib.Object
 		}
 
 		double rate = double.parse(args[1]);
-		bool ret = pipeline.PipelineSpeed (rate);
-		if (!ret)
+
+		try
 		{
-			stderr.printf ("Error:\nSpeed could not be set\n");
+			bool ret = pipeline.pipeline_speed (rate);
+			if (!ret)
+			{
+				stderr.printf ("Error:\nSpeed could not be set\n");
+				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool pipeline_send_eos (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_send_eos (PipelineInterface pipeline, string[] args)
 	{
-		pipeline.PipelineSendEoS ();
-		stdout.printf ("Ok.\n");
-		return true;
+		try
+		{
+			pipeline.pipeline_send_eos ();
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
+			return false;
+		}
 	}
 
-	private bool pipeline_step (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_step (PipelineInterface pipeline, string[] args)
 	{
 		uint64 nframes = 1;
 
-		if (args[1] != null) {
+		if (args[1] != null)
+		{
 			nframes = uint64.parse(args[1]);
 		}
 
-	    pipeline.PipelineStep (nframes);
-		stdout.printf ("Ok.\n");
-		return true;
+		try
+		{
+			pipeline.pipeline_step (nframes);
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
+			return false;
+		}
 	}
 
-	private bool pipeline_send_custom_event (dynamic DBus.Object pipeline, string[] args)
+	private bool pipeline_send_custom_event (PipelineInterface pipeline, string[] args)
 	{
 		bool ret;
 
@@ -703,15 +698,23 @@ public class GstdCli : GLib.Object
 			return false;
 		}
 
-		ret = pipeline.PipelineSendCustomEvent(args[1],args[2]);
-		if (!ret)
+		try
 		{
-			stderr.printf ("Error:\nUnknown custom event type\n");
+			ret = pipeline.pipeline_send_custom_event(args[1], args[2]);
+			if (!ret)
+			{
+				stderr.printf ("Error:\nUnknown custom event type\n");
+				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return true;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return true;
 	}
+
 	private int string_to_state (string state)
 	{
 		switch (state.down ())
@@ -734,8 +737,8 @@ public class GstdCli : GLib.Object
 		}
 	}
 
-	private bool element_set_state (dynamic DBus.Object pipeline,
-	                                    string[] args)
+	private bool element_set_state (PipelineInterface pipeline,
+	                                string[] args)
 	{
 		bool ret;
 		int state;
@@ -749,21 +752,26 @@ public class GstdCli : GLib.Object
 		string element = args[1];
 		state = string_to_state (args[2]);
 
-		ret = pipeline.ElementSetState (element, state);
-
-		if (!ret)
+		try
 		{
-			stderr.printf ("Error:\nFailed to set element state: %s\n", args[2]);
+			ret = pipeline.element_set_state (element, state);
+			if (!ret)
+			{
+				stderr.printf ("Error:\nFailed to set element state: %s\n", args[2]);
+				return false;
+			}
+			stdout.printf ("Ok.\n");
+			return ret;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
-	private bool element_async_set_state (dynamic DBus.Object pipeline,
-	                                    string[] args)
+	private bool element_async_set_state (PipelineInterface pipeline,
+	                                      string[] args)
 	{
-		bool ret;
 		int state;
 
 		if (args[1] == null || args[2] == null)
@@ -775,15 +783,15 @@ public class GstdCli : GLib.Object
 		string element = args[1];
 		state = string_to_state (args[2]);
 
-		ret = pipeline.ElementAsyncSetState (element, state);
-
-		if (!ret)
+		try
 		{
-			stderr.printf ("Error:\nFailed to set element async state: %s\n", args[2]);
+			pipeline.element_async_set_state (element, state);
+			return true;
+		}
+		catch (Error e)
+		{
 			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return ret;
 	}
 
 	private bool set_active (string path)
@@ -844,26 +852,34 @@ public class GstdCli : GLib.Object
 
 	private bool pipeline_list ()
 	{
-		string[] paths = factory.List();
-
-		if (paths.length == 0)
+		try
 		{
-			stdout.printf ("There are no pipelines on factory!\n");
+			string[] paths = factory.list();
+
+			if (paths.length == 0)
+			{
+				stdout.printf ("There are no pipelines on factory!\n");
+				return true;
+			}
+
+			stdout.printf ("The actual pipelines are:\n");
+			for (int index = 0; index < paths.length; ++index)
+			{
+				stdout.printf ("  %i. %s\n", index + 1, paths[index]);
+			}
+			stdout.printf ("Ok.\n");
 			return true;
 		}
-		
-		stdout.printf ("The actual pipelines are:\n");
-		for (int index = 0; index < paths.length; ++index)
+		catch (Error e)
 		{
-			stdout.printf ("  %i. %s\n", index + 1, paths[index]);
+			return false;
 		}
-		stdout.printf ("Ok.\n");
-		return true;
 	}
 
 	private bool shell (string command)
 	{
-		try {
+		try
+		{
 			GLib.Process.spawn_command_line_sync(command);
 			return true;
 		}
@@ -873,21 +889,21 @@ public class GstdCli : GLib.Object
 		}
 		return false;
 	}
-	
-#if HAVE_READLINE
+
+	# if HAVE_READLINE
 	private bool set_strict (string[] args)
 	{
-		if(args.length < 2)
+		if (args.length < 2)
 		{
 			stdout.printf ("Set strict failed because of missing argument\n");
 			return false;
 		}
 
-		if(args[1].down() == "on")
+		if (args[1].down() == "on")
 		{
 			isStrict = true;
 		}
-		else if(args[1].down() == "off")
+		else if (args[1].down() == "off")
 		{
 			isStrict = false;
 		}
@@ -896,12 +912,13 @@ public class GstdCli : GLib.Object
 			stdout.printf ("Set strict failed because of unexpected argument '%s'\n", args[1]);
 			return false;
 		}
-		
+
 		stdout.printf ("Set strict = '%s'\n", args[1]);
-		
+
 		return true;
 	}
-#endif
+
+	# endif
 
 	/*
 	   *Create a proxy-object of the pipeline
@@ -911,12 +928,11 @@ public class GstdCli : GLib.Object
 		if (object_path == null)
 			return false;
 
-		/*Create a proxy-object of the pipeline */
-		pipeline = conn.get_object ("com.ridgerun.gstreamer.gstd",
-		                            object_path, "com.ridgerun.gstreamer.gstd.PipelineInterface");
-		try 
+		try
 		{
-			return pipeline.PipelineIsInitialized ();
+			/*Create a proxy-object of the pipeline */
+			pipeline = conn.get_proxy_sync ("com.ridgerun.gstreamer.gstd", object_path);
+			return true;
 		}
 		catch (Error e)
 		{
@@ -928,9 +944,9 @@ public class GstdCli : GLib.Object
 	   *Parse entry-options or flags:
 	   *_signals:  flag to enable signals reception,
 	 *           useful when executing interactive console.
-	 ****obj_path:  option to specified the pipeline
+	 ******obj_path:  option to specified the pipeline
 	 *           when executing a single command.
-	 ****_remaining_args: command to be executed remains here,
+	 ******_remaining_args: command to be executed remains here,
 	 *                 if there is no remaining args interactive
 	 *                 console is enable.
 	 */
@@ -964,9 +980,9 @@ public class GstdCli : GLib.Object
 	/*
 	 * Parse single command
 	 */
-	public bool parse_cmd (string[] args) throws DBus.Error, GLib.Error
+	public bool parse_cmd (string[] args) throws GLib.Error
 	{
-		bool success = create_proxypipe(obj_path); // May only be true in interactive none cli mode 
+		bool success = create_proxypipe(obj_path); // May only be true in interactive none cli mode
 		//print (@"Create proxy pipe $(success ? "succesful" : "failed").\n");
 		if (!success)
 		{
@@ -987,26 +1003,26 @@ public class GstdCli : GLib.Object
 				return false;
 			}
 		}
-		
+
 		/**
-		* Remark 02/23/11 RuH
-		* Disabled signal subscription beause
-		* - There is no mainloop which could receive incoming events.
-		* - There is no mechanism which prevent repeated subscription.
-		* - How must DBus signal parameters in Vala be handled?
-		* 
-		if (false && _signals && (null != pipeline))
-		{
-			//Enable the reception of signals, if _signals flag was activated 
-			//print ("Signals need to be fixed! \n");
-			if (args[0].down () != "create" && args[0].down () != "help")
-			{
-				print ("Activate signals:\n");
-				pipeline.Error.connect(this.Error_cb);
-				pipeline.EoS.connect( this.EoS_cb);
-				pipeline.StateChanged.connect(this.StateChanged_cb);
-			}
-		}*/
+		 * Remark 02/23/11 RuH
+		 * Disabled signal subscription beause
+		 * - There is no mainloop which could receive incoming events.
+		 * - There is no mechanism which prevent repeated subscription.
+		 * - How must DBus signal parameters in Vala be handled?
+		 *
+		   if (false && _signals && (null != pipeline))
+		   {
+		    //Enable the reception of signals, if _signals flag was activated
+		    //print ("Signals need to be fixed! \n");
+		    if (args[0].down () != "create" && args[0].down () != "help")
+		    {
+		        print ("Activate signals:\n");
+		        pipeline.Error.connect(this.Error_cb);
+		        pipeline.EoS.connect( this.EoS_cb);
+		        pipeline.StateChanged.connect(this.StateChanged_cb);
+		    }
+		   }*/
 
 		switch (args[0].down ())
 		{
@@ -1035,23 +1051,16 @@ public class GstdCli : GLib.Object
 				}
 				else
 					return pipeline_destroy (obj_path);
-			
+
 			case "destroy-all":
-				if(factory == null)
+				if (factory == null)
 					return false;
-	
+
 				active_pipe = null;
-				return factory.DestroyAll();
-				
+				return factory.destroy_all();
+
 			case "play":
 				return pipeline_play (pipeline, true);
-
-			case "tplay":
-				return pipeline_tplay (pipeline, int64.parse(args[1]));
-
-			case "abort-autostop":
-				pipeline_abort_autostop(pipeline);
-				return true;
 
 			case "ready":
 				return pipeline_ready (pipeline, true);
@@ -1088,7 +1097,7 @@ public class GstdCli : GLib.Object
 
 			case "get-state":
 				return pipeline_get_state (pipeline);
-			
+
 			case "get-elem-state":
 				return element_get_state (pipeline, args);
 
@@ -1122,7 +1131,7 @@ public class GstdCli : GLib.Object
 
 			case "ping":
 				return gstd_ping ();
-				
+
 			case "ping-pipe":
 				return pipeline_ping ();
 
@@ -1151,14 +1160,15 @@ public class GstdCli : GLib.Object
 			case "exit":
 				cli_enable = false;
 				return true;
-				
-#if HAVE_READLINE
+
+				# if HAVE_READLINE
 			case "strict":
 				return set_strict(args);
-#endif
+
+				# endif
 
 			case "version":
-				stdout.printf ("%s\n",Gstd.PACKAGE_VERSION);
+				stdout.printf ("%s\n", Gstd.PACKAGE_VERSION);
 				return true;
 
 			case "help":
@@ -1188,8 +1198,8 @@ public class GstdCli : GLib.Object
 					               "This is the list of supported commands:\n");
 					while (cmds[id, 0] != null)
 					{
-						stdout.printf (" %s:%s%s\n", cmds[id, 0], 
-						cmds[id, 0].length < 6 ? "\t\t" : "\t", cmds[id, 2]);
+						stdout.printf (" %s:%s%s\n", cmds[id, 0],
+						               cmds[id, 0].length < 6 ? "\t\t" : "\t", cmds[id, 2]);
 						id++;
 					}
 					stdout.printf ("\n");
@@ -1204,7 +1214,7 @@ public class GstdCli : GLib.Object
 		return true;
 	}
 
-#if HAVE_READLINE
+	# if HAVE_READLINE
 	/*
 	   *Interactive Console management
 	 */
@@ -1219,7 +1229,7 @@ public class GstdCli : GLib.Object
 		{
 			/*Get the command from the stdin */
 			var cmd_line = Readline.readline ((isInteractive) ? "gst-client$ " : "");
-			
+
 			/* we reached the end of file */
 			if (cmd_line == null)
 				break;
@@ -1237,7 +1247,7 @@ public class GstdCli : GLib.Object
 			if (args[0] != null && !(cmd_line.length >= 1 && cmd_line[0] == '#'))
 			{
 				bool result = parse_cmd (args);
-				if(!result && isStrict)
+				if (!result && isStrict)
 					return false;
 			}
 
@@ -1248,15 +1258,16 @@ public class GstdCli : GLib.Object
 		Readline.History.write (home + "/.gst-client_history");
 		return true;
 	}
-#endif
+
+	# endif
 
 	/*
 	 * Parse entry arguments
 	 * If there are no arguments,enable interactive console.
 	 */
-	public bool parse (string[] remainingArgs) throws DBus.Error, GLib.Error
+	public bool parse (string[] remainingArgs) throws GLib.Error
 	{
-#if HAVE_READLINE
+		# if HAVE_READLINE
 		if (isInteractive)
 		{
 			if (remainingArgs.length > 0)
@@ -1274,57 +1285,57 @@ public class GstdCli : GLib.Object
 		}
 		else
 		{
-			if(remainingArgs.length != 1)
+			if (remainingArgs.length != 1)
 			{
 				stdout.printf ("Please define the script file name.\n");
 				stdout.printf ("Furthermore you may use the standard options (signal, ...).\n");
 			}
 			// Let the command line interpreter read from the script file.
-			Readline.instream = FileStream.open(remainingArgs[0], "r");
+			//Readline.instream = FileStream.open(remainingArgs[0], "r");
 			Readline.outstream = FileStream.open("/dev/null", "w");
 			cli_enable = true;
 			return cli ();
 		}
-#else
-		if (remainingArgs.length > 0)
-		{
-			/*Parse single command */
-			return parse_cmd (remainingArgs);
-		} else {
-			stderr.printf("No parameters found\n");
-		}
+		# else
+			if (remainingArgs.length > 0)
+			{
+				/*Parse single command */
+				return parse_cmd (remainingArgs);
+			}
+			else
+			{
+				stderr.printf("No parameters found\n");
+			}
+
+
 		return false;
-#endif
+
+		# endif
 	}
 
 	static int main (string[] args)
 	{
 		try {
-#if HAVE_READLINE
-			if(args.length == 0)
+			# if HAVE_READLINE
+			if (args.length == 0)
 				return 1;
-			
+
 			/*stdout.printf("args:\n");
-			foreach(string arg in args)
-			{
-				stdout.printf(arg);
-				stdout.printf("\n");
-			}*/
-			
-			// Script execution? 
+			   foreach(string arg in args)
+			   {
+			    stdout.printf(arg);
+			    stdout.printf("\n");
+			   }*/
+
+			// Script execution?
 			isInteractive = !("interpreter" in args[0]);
-#endif
+			# endif
 			obj_path = null;
 			GstdCli cli = new GstdCli (args);
 
 			/*Parse commands */
 			if (!cli.parse (_remaining_args))
 				return 1;
-		}
-		catch (DBus.Error e)
-		{
-			stderr.printf ("gst-client> DBus failure: %s\n", e.message);
-			return 1;
 		}
 		catch (GLib.Error e)
 		{
@@ -1334,4 +1345,5 @@ public class GstdCli : GLib.Object
 
 		return 0;
 	}
+}
 }

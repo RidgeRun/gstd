@@ -8,37 +8,27 @@
  *
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
-using Gst;
 
-[DBus (name = "com.ridgerun.gstreamer.gstd.FactoryInterface", signals = "Alive")]
-
-public class Factory : GLib.Object
+namespace gstd
 {
-	private Pipeline[] pipes;
-	private const int num_pipes = 20;
-	/*private TimeoutSource timer = null;
-	   private uint _txCounter = 0;
-	   private uint _rxCounter = 0;*/
+public class Factory : GLib.Object, FactoryInterface
+{
+	private GLib.DBusConnection _conn;
+	private PipelineInterface[] _pipes;
+	private static const int _num_pipes = 20;
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
 	   factory messages
 	 */
-	public Factory ()
+	public Factory (GLib.DBusConnection conn)
 	{
-		pipes = new Pipeline[num_pipes];
-		for (int ids = 0; ids < pipes.length; ids++)
+		_conn = conn;
+		_pipes = new PipelineInterface[_num_pipes];
+		for (int ids = 0; ids < _pipes.length; ++ids)
 		{
-			pipes[ids] = null;
+			_pipes[ids] = null;
 		}
-
-		/*//signal alive every second
-		   timer = new TimeoutSource(1000);
-		   timer.set_callback(() => {
-		   CheckAlive();
-		   return true;
-		   });
-		   timer.attach(loop.get_context());*/
 	}
 
 	/**
@@ -48,30 +38,38 @@ public class Factory : GLib.Object
 	   @param debug, flag to enable debug information
 	   @return the dbus-path of the pipeline, or null if out of resources
 	 */
-	public string Create (string description)
+	public string create (string description)
 	{
-		/* Create our pipeline */
-		int next_id = 0;
-		while (pipes[next_id] != null)
+		try
 		{
-			next_id = (next_id + 1) % pipes.length;
-			if (next_id == 0)
+			/* Create our pipeline */
+			int next_id = 0;
+			while (_pipes[next_id] != null)
 			{
-				return "";
+				next_id = (next_id + 1) % _pipes.length;
+				if (next_id == 0)
+				{
+					return "";
+				}
 			}
-		}
-		pipes[next_id] = new Pipeline (description);
+			/* create GStreamer pipe */
+			Pipeline pipe = new Pipeline (description);
+			if (!pipe.pipeline_is_initialized())
+				return "";
 
-		if (!pipes[next_id].PipelineIsInitialized ())
+			/* store pointer */
+			_pipes[next_id] = pipe;
+
+			/* register to dbus*/
+			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
+			pipe.registration_id = _conn.register_object(objectpath, _pipes[next_id]);
+			pipe.path = objectpath;
+			return pipe.path;
+		}
+		catch (GLib.IOError error)
 		{
-			pipes[next_id] = null;
 			return "";
 		}
-		string objectpath =
-		    "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
-		conn.register_object (objectpath, pipes[next_id]);
-		pipes[next_id].PipelineSetPath (objectpath);
-		return objectpath;
 	}
 
 	/**
@@ -80,39 +78,71 @@ public class Factory : GLib.Object
 	   @return true, if succeded
 	   @see PipelineId
 	 */
-	public bool Destroy (string objectpath)
+	public bool destroy (string objectpath)
 	{
-		for (int index = 0; index < pipes.length; index++)
+		// find pipe and destroy it
+		bool destroyed = false;
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				if (pipes[index].PipelineGetPath () == objectpath)
+				Pipeline pipe = _pipes[index] as Pipeline;
+				if (pipe.path == objectpath)
 				{
-					pipes[index] = null;
-					return true;
+					Posix.syslog (Posix.LOG_ERR, "REFCOUNT: %u", pipe.ref_count);
+					if (!_conn.unregister_object(pipe.registration_id))
+						Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
+					_pipes[index] = null;
+					destroyed = true;
+					break;
 				}
 			}
 		}
 
-		Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
-		return false;
+		if (!destroyed)
+		{
+			Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
+			return false;
+		}
+
+		bool empty = true;
+		for (int index = 0; index < _pipes.length; ++index)
+		{
+			if (_pipes[index] != null)
+			{
+				empty = false;
+				break;
+			}
+		}
+
+		if (empty)
+		{
+			Posix.syslog (Posix.LOG_ERR, "Last pipe has been destroyed");
+			last_pipe_destroyed();
+		}
+
+		return true;
 	}
-	
+
 	/**
 	   Destroy all pipelines
 	   @return true, if succeded
 	   @see PipelineId
 	 */
-	public bool DestroyAll ()
+	public bool destroy_all ()
 	{
-		for (int index = 0; index < pipes.length; index++)
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				pipes[index] = null;
+				if (!_conn.unregister_object((_pipes[index] as Pipeline).registration_id))
+					Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
+				_pipes[index] = null;
 			}
 		}
-		
+
+		last_pipe_destroyed();
+
 		return true;
 	}
 
@@ -120,15 +150,15 @@ public class Factory : GLib.Object
 	   List the existing pipelines
 	   @return pipe_list with the corresponding paths
 	 */
-	public string[] List ()
+	public string[] list ()
 	{
 		string[] paths = {};
 
-		for (int index = 0; index < pipes.length; ++index)
+		for (int index = 0; index < _pipes.length; ++index)
 		{
-			if (pipes[index] != null)
+			if (_pipes[index] != null)
 			{
-				paths += pipes[index].PipelineGetPath ();
+				paths += (_pipes[index] as Pipeline).path;
 			}
 		}
 		return paths;
@@ -139,58 +169,15 @@ public class Factory : GLib.Object
 	   Some GStreamer elements use exit(), thus killing the daemon.
 	   @return true if alive
 	 */
-	public bool Ping ()
+	public bool ping ()
 	{
 		/*Gstd received the Ping method call */
 		return true;
 	}
 
-	/*private void CheckAlive ()
-	   {
-	   //increment counter
-	   ++_txCounter;
-
-	   //push event into each pipe
-	   uint nrOfPipes = 0;
-	   for (int index = 0; index < pipes.length; ++index) {
-	    if (pipes[index] == null)
-	      continue;
-	    if (!pipes[index].PipelineIsInitialized())
-	      continue;
-
-	    if (pipes[index].GetCounter() == 0) {
-	      pipes[index].SetCounter(_txCounter);
-	    }
-	    else {
-	      pipes[index].SendNewCounterEvent(_txCounter);
-	    }
-	   ++nrOfPipes;
-	   }
-
-	   //no pipe, no cry
-	   if (nrOfPipes == 0) {
-	    Alive();
-	    return;
-	   }
-
-	   //find smallest counter
-	   uint minCounter = _txCounter;
-	   for (int index = 0; index < pipes.length; ++index) {
-	    if (pipes[index] == null)
-	      continue;
-	    if (!pipes[index].PipelineIsInitialized())
-	      continue;
-	    uint counter = pipes[index].GetCounter();
-	    if (counter < minCounter)
-	        minCounter = counter;
-	   }
-
-	   if (_rxCounter != minCounter)
-	   {
-	    _rxCounter = minCounter;
-	    Alive();
-	   }
-	   }*/
-
-	//public signal void Alive();
+	/**
+	   Emitted when the last pipe has been destroyed.
+	 */
+	public signal void last_pipe_destroyed();
+}
 }

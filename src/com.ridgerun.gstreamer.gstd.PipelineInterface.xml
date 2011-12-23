@@ -42,8 +42,7 @@
     THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE. -->
 
-<node name="/com/ridgerun/gstreamer/gstd/PipelineInterface/v1_0">
-
+<node>
   <interface name="com.ridgerun.gstreamer.gstd.PipelineInterface">
 
     <!-- Method definitions -->
@@ -54,24 +53,16 @@
     <method name="PipelineGetId">
         <arg type="t" name ="id" direction="out"/>
     </method>
-    <method name="PipelineSetAutoStop">
-        <arg type="x" name = "timeout_ms" direction = "in" />
-        <arg type="b" name = "success" direction="out" >
-            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
-        </arg>
-    </method>
-	<method name="PipelineAbortAutoStop">
-            <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>
     <method name="PipelineSetState">
         <arg type="i" name = "state" direction = "in" />
         <arg type="b" name = "success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineAsyncSetState">
+    <method name="PipelineSetStateAsync">
         <arg type="i" name = "state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -81,6 +72,13 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
+    <method name="ElementSetPropertyBooleanAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="b" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>    
     <method name="ElementSetPropertyInt">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -88,6 +86,13 @@
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
+    </method>
+    <method name="ElementSetPropertyIntAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementSetPropertyInt64">
         <arg type="s" name ="element" direction = "in" />
@@ -97,6 +102,30 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
+    <method name="ElementSetPropertyInt64Async">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="x" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
+    <method name="ElementSetPropertyFraction">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="numerator" direction = "in" />
+        <arg type="i" name ="denominator" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="ElementSetPropertyFractionAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="numerator" direction = "in" />
+        <arg type="i" name ="denominator" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="ElementSetPropertyString">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -104,6 +133,13 @@
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
+    </method>
+    <method name="ElementSetPropertyStringAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="ElementGetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
@@ -125,6 +161,15 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="x" name = "val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
+    </method>
+    <method name="ElementGetPropertyFraction">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="numerator" direction = "out" />
+        <arg type="i" name ="denominator" direction = "out" />
         <arg type = "b" name = "success" direction = "out" >
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        
@@ -156,7 +201,7 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineSpeed">
+    <method name="PipelineSetSpeed">
         <arg type="d" name ="newrate" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
@@ -177,9 +222,10 @@
     <method name="PipelineStep">
         <arg type="t" name ="frames" direction = "in" />
     </method>
-    <method name="PipelineAsyncSeek">
-        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    <method name="PipelineSeekAsync">
         <arg type="x" name ="ipos_ns" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="PipelineGetState">
         <arg type="i" name ="state" direction = "out" >
@@ -192,13 +238,23 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
-    <method name="PipelineSendEoS"/>
+    <method name="PipelineSendEos"/>
+    <method name="PipelineSendEosAsync">
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="PipelineSendCustomEvent">
         <arg type="s" name ="type" direction = "in" />
         <arg type="s" name ="name" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
+    </method>
+    <method name="PipelineSendCustomEventAsync">
+        <arg type="s" name ="type" direction = "in" />
+        <arg type="s" name ="name" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
     <method name="SetWindowId">
         <arg type="t" name="winId" direction="in"/>
@@ -215,14 +271,15 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
-    <method name="ElementAsyncSetState">
+    <method name="ElementSetStateAsync">
         <arg type="s" name ="element" direction = "in" />
         <arg type="i" name ="state" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
 
     <!-- Signals definitions -->
-    <signal name="EoS">
+    <signal name="Eos">
         <arg type="t" name="pipe_id"/>
     </signal>
     <signal name="Error">
@@ -235,7 +292,7 @@
         <arg type="i" name="new_state"/>
         <arg type="s" name="src"/>
     </signal>
-    <signal name="QoS">
+    <signal name="Qos">
         <arg type="t" name="pipe_id"/>
         <arg type="b" name="live"/>
         <arg type="t" name="running_time"/>

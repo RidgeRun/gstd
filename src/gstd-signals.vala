@@ -14,18 +14,19 @@
  * GPL2 license - See http://www.opensource.org/licenses/gpl-2.0.php for complete text.
  */
 
-using GLib, Posix;
+namespace gstd
+{
 
-public class GstdSignals : Object {
+public class Signals : GLib.Object {
 #if GSTD_SUPPORT_SIGNALS
-	private Factory _factory = null;
+	private FactoryInterface _factory = null;
 	private MainLoop _loop = null;
 	private int _caught_intr = -1;
 	private unowned Thread<void*> _thread;
-	private	sigset_t _sigset;    // fixme: should be local to constructor - throws error: use of possibly unassigned local variable
-	private	sigset_t old_sigset; // fixme: should be local to constructor
+	private sigset_t _sigset;    // fixme: should be local to constructor - throws error: use of possibly unassigned local variable
+	private sigset_t old_sigset; // fixme: should be local to constructor
 
-	public GstdSignals () throws ThreadError {
+	public Signals () throws ThreadError {
 		int err;
 
 		sigfillset (_sigset);
@@ -39,12 +40,12 @@ public class GstdSignals : Object {
 		Posix.syslog (Posix.LOG_DEBUG, "Created signal monitor thread\n");
     	}
 
-	~GstdSignals () {
+	~Signals () {
 		Posix.syslog (Posix.LOG_DEBUG, "Destroying signal monitor thread\n");
 		_thread = null;
 	}
 
-	public void monitor(MainLoop loop, Factory factory, uint pollrate_ms) {
+	public void monitor(MainLoop loop, FactoryInterface factory, uint pollrate_ms) {
 		_loop = loop;
 		_factory = factory;
 
@@ -64,7 +65,7 @@ public class GstdSignals : Object {
 		switch (_caught_intr) {
 			case SIGTERM:
 				Posix.syslog (Posix.LOG_DEBUG, "Handling SIGTERM signal\n");
-				_factory.DestroyAll ();
+				_factory.destroy_all ();
 				_loop.quit ();
 				break;
 			default:
@@ -97,13 +98,16 @@ public class GstdSignals : Object {
 	}
 
 #else
-	public GstdSignals () {
+	public Signals () {
     	}
 
-	public void monitor(MainLoop loop, Factory factory, uint pollrate_ms) {
+	public void monitor(MainLoop loop, FactoryInterface factory, uint pollrate_ms) {
 	}
 
-	~GstdSignals () {
+	~Signals () {
    	}
 #endif
 }
+
+}
+
