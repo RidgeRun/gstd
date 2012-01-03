@@ -11,7 +11,6 @@
 
 namespace gstd
 {
-
 public class Factory : GLib.Object, FactoryInterface
 {
 	private GLib.DBusConnection _conn;
@@ -124,7 +123,7 @@ public class Factory : GLib.Object, FactoryInterface
 
 		return true;
 	}
-	
+
 	/**
 	   Destroy all pipelines
 	   @return true, if succeded
@@ -176,11 +175,9 @@ public class Factory : GLib.Object, FactoryInterface
 		return true;
 	}
 
-	/** 
+	/**
 	   Emitted when the last pipe has been destroyed.
-	  */
+	 */
 	public signal void last_pipe_destroyed();
 }
-
 }
-

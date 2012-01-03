@@ -22,9 +22,9 @@ private const GLib.OptionEntry[] options = {
 	{"busname", '\0', 0, OptionArg.STRING, ref busName, "Bus name, default is com.ridgerun.gstreamer.gstd", null},
 	{"autoterminate", '\0', 0, OptionArg.NONE, ref autoTerminate, "Automatically terminate gstd after the last pipe has been destroyed.", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
-#if GSTD_SUPPORT_SIGNALS
+	# if GSTD_SUPPORT_SIGNALS
 	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
-#endif
+	# endif
 	{null}
 };
 
@@ -54,16 +54,20 @@ public int main (string[] args)
 			throw new ErrorGstd.OPTION("OptionError failure: %s", e.message);
 		}
 
-		switch (debugLevel) {
-			case 0 :
+		switch (debugLevel)
+		{
+			case 0:
 				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_ERR));
 				break;
+
 			case 1:
 				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_WARNING));
 				break;
+
 			case 2:
 				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_INFO));
 				break;
+
 			default:
 				Posix.setlogmask(Posix.LOG_UPTO(Posix.LOG_DEBUG));
 				break;
@@ -84,44 +88,46 @@ public int main (string[] args)
 
 		/* Connect to DBus */
 		GLib.DBusConnection connection = GLib.Bus.get_sync((useSystemBus) ?
-		                                               GLib.BusType.SYSTEM :
-		                                               (useSessionBus) ?
-		                                                 GLib.BusType.SESSION :
-		                                                 GLib.BusType.STARTER);
+		                                                   GLib.BusType.SYSTEM :
+		                                                   (useSessionBus) ?
+		                                                   GLib.BusType.SESSION :
+		                                                   GLib.BusType.STARTER);
 
 		/* Create the factory */
 		gstd.Factory factory = new gstd.Factory(connection);
 
 		/* In case autoTerminate is enabled, quit mainloop after the last pipe has been destroyed */
 		if (autoTerminate)
-			factory.last_pipe_destroyed.connect(() => {loop.quit();});
+			factory.last_pipe_destroyed.connect(() => {loop.quit();
+												}
+			                                    );
 
 		/* Register factory to DBus */
 		GLib.Bus.own_name_on_connection (
-			connection,
-			busName,
-			GLib.BusNameOwnerFlags.NONE,
-			(connection, name) =>
-			{
-				try
-				{
-					connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
+		    connection,
+		    busName,
+		    GLib.BusNameOwnerFlags.NONE,
+		    (connection, name) =>
+		    {
+		        try
+		        {
+		            connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
 				}
-				catch (IOError e)
-				{
-					Posix.syslog(Posix.LOG_ERR, "Could not register service");
-					loop.quit();
+		        catch (IOError e)
+		        {
+		            Posix.syslog(Posix.LOG_ERR, "Could not register service");
+		            loop.quit();
 				}
 			},
-			(connection, name) => 
-			{
-				Posix.syslog(Posix.LOG_ERR, "Lost bus name");
-				loop.quit();
+		    (connection, name) =>
+		    {
+		        Posix.syslog(Posix.LOG_ERR, "Lost bus name");
+		        loop.quit();
 			}
-		);
+		    );
 
 		/* Start signal processor */
-		if (signal_processor != null) 
+		if (signal_processor != null)
 			signal_processor.monitor (loop, factory, signalPollRate);
 
 		/* Run main loop */
@@ -135,4 +141,3 @@ public int main (string[] args)
 	Posix.syslog(Posix.LOG_ERR, "Ended");
 	return 0;
 }
-
