@@ -96,11 +96,14 @@ struct _gstdPipelineInterfaceIface {
 	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
 	void (*element_set_property_int64_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+	gboolean (*element_set_property_fraction) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
+	void (*element_set_property_fraction_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
 	gboolean (*element_set_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 	void (*element_set_property_string_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 	void (*element_get_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
 	void (*element_get_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
 	void (*element_get_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
+	void (*element_get_property_fraction) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* numerator, gint* denominator, gboolean* success, GError** error);
 	void (*element_get_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
 	void (*element_get_property_buffer) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
 	gint64 (*pipeline_get_duration) (gstdPipelineInterface* self, GError** error);

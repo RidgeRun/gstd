@@ -364,6 +364,47 @@ public class Pipeline : GLib.Object, PipelineInterface
 	}
 
 	/**
+	   Sets an fraction property for an element on the pipeline
+	   @param element, whose property needs to be set
+	   @param property, property name
+	   @param numerator, numerator of property value
+	   @param denominator, denominator of property value */
+	public bool element_set_property_fraction(string element, string property, int numerator, int denominator)
+	{
+		var pipe = _pipeline as Gst.Pipeline;
+		var e = pipe.get_child_by_name (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		Gst.Value val = GLib.Value(typeof(Gst.Fraction));
+		val.set_fraction(numerator, denominator);
+		e.set_property (property, val);
+		return true;
+	}
+
+	public void element_set_property_fraction_async(string element, string property, int numerator, int denominator)
+	{
+		try
+		{
+			element_set_property_fraction(element, property, numerator, denominator);
+		}
+		catch (Error err)
+		{}
+	}
+
+
+	/**
 	   Sets a string property for an element on the pipeline
 	   @param element, whose property needs to be set
 	   @param property,property name
@@ -504,6 +545,46 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		e.get (property, &val, null);
 		return true;
+	}
+
+	/**
+	   Gets an element's fraction property value of a specific pipeline
+	   @param element, whose property value wants to be known
+	   @param property,property name
+	   @param numerator, numerator of property value
+	   @param denominator, denominator of property value */
+	public void element_get_property_fraction(string element, string property, out int numerator, out int denominator, out bool success)
+	{
+		success = element_get_property_fraction_impl(element, property, out numerator, out denominator);
+	}
+
+	private bool element_get_property_fraction_impl(string element, string property, out int numerator, out int denominator)
+	{
+		numerator = denominator = 0;
+
+		var pipe = _pipeline as Gst.Pipeline;
+		var e = pipe.get_child_by_name (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		Gst.Value val = GLib.Value(typeof(Gst.Fraction));
+		e.get_property (property, ref val);
+		
+		numerator = val.get_fraction_numerator();
+		denominator = val.get_fraction_denominator();
+
+		return true;		
 	}
 
 	public void element_get_property_string(string element, string property, out string val, out bool success)

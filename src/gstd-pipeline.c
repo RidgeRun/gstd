@@ -62,11 +62,14 @@ struct _gstdPipelineInterfaceIface {
 	void (*element_set_property_int_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint val, GError** error);
 	gboolean (*element_set_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
 	void (*element_set_property_int64_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+	gboolean (*element_set_property_fraction) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
+	void (*element_set_property_fraction_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
 	gboolean (*element_set_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 	void (*element_set_property_string_async) (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
 	void (*element_get_property_boolean) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gboolean* val, gboolean* success, GError** error);
 	void (*element_get_property_int) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* val, gboolean* success, GError** error);
 	void (*element_get_property_int64) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
+	void (*element_get_property_fraction) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint* numerator, gint* denominator, gboolean* success, GError** error);
 	void (*element_get_property_string) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
 	void (*element_get_property_buffer) (gstdPipelineInterface* self, const gchar* element, const gchar* property, gchar** caps, guint8** data, int* data_length1, gboolean* success, GError** error);
 	gint64 (*pipeline_get_duration) (gstdPipelineInterface* self, GError** error);
@@ -143,6 +146,9 @@ gboolean gstd_pipeline_interface_element_set_property_int (gstdPipelineInterface
 static gboolean gstd_pipeline_real_element_set_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error);
 static void gstd_pipeline_real_element_set_property_int64_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64 val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_int64 (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint64 val, GError** error);
+static gboolean gstd_pipeline_real_element_set_property_fraction (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
+static void gstd_pipeline_real_element_set_property_fraction_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
+gboolean gstd_pipeline_interface_element_set_property_fraction (gstdPipelineInterface* self, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error);
 static gboolean gstd_pipeline_real_element_set_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error);
 static void gstd_pipeline_real_element_set_property_string_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, const gchar* val, GError** error);
 gboolean gstd_pipeline_interface_element_set_property_string (gstdPipelineInterface* self, const gchar* element, const gchar* property, const gchar* val, GError** error);
@@ -152,6 +158,8 @@ static void gstd_pipeline_real_element_get_property_int (gstdPipelineInterface* 
 static gboolean gstd_pipeline_element_get_property_int_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint* val);
 static void gstd_pipeline_real_element_get_property_int64 (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint64* val, gboolean* success, GError** error);
 static gboolean gstd_pipeline_element_get_property_int64_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint64* val);
+static void gstd_pipeline_real_element_get_property_fraction (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint* numerator, gint* denominator, gboolean* success, GError** error);
+static gboolean gstd_pipeline_element_get_property_fraction_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint* numerator, gint* denominator);
 static void gstd_pipeline_real_element_get_property_string (gstdPipelineInterface* base, const gchar* element, const gchar* property, gchar** val, gboolean* success, GError** error);
 static gboolean gstd_pipeline_element_get_property_string_impl (gstdPipeline* self, const gchar* element, const gchar* property, gchar** val);
 static gint gstd_pipeline_real_element_get_state (gstdPipelineInterface* base, const gchar* element, GError** error);
@@ -1016,6 +1024,128 @@ static void gstd_pipeline_real_element_set_property_int64_async (gstdPipelineInt
 
 
 /**
+   Sets an fraction property for an element on the pipeline
+   @param element, whose property needs to be set
+   @param property, property name
+   @param numerator, numerator of property value
+   @param denominator, denominator of property value */
+static gboolean gstd_pipeline_real_element_set_property_fraction (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error) {
+	gstdPipeline * self;
+	gboolean result = FALSE;
+	GstElement* _tmp0_;
+	GstPipeline* _tmp1_;
+	GstPipeline* pipe;
+	GstPipeline* _tmp2_;
+	const gchar* _tmp3_;
+	GstObject* _tmp4_ = NULL;
+	GstElement* e;
+	GstElement* _tmp5_;
+	GstElement* _tmp7_;
+	GObjectClass* _tmp8_ = NULL;
+	const gchar* _tmp9_;
+	GParamSpec* _tmp10_ = NULL;
+	GParamSpec* _tmp11_;
+	GParamSpec* spec;
+	GParamSpec* _tmp12_;
+	GValue val = {0};
+	gint _tmp15_;
+	gint _tmp16_;
+	GstElement* _tmp17_;
+	const gchar* _tmp18_;
+	GValue _tmp19_;
+	self = (gstdPipeline*) base;
+	g_return_val_if_fail (element != NULL, FALSE);
+	g_return_val_if_fail (property != NULL, FALSE);
+	_tmp0_ = self->priv->_pipeline;
+	_tmp1_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp0_) ? ((GstPipeline*) _tmp0_) : NULL);
+	pipe = _tmp1_;
+	_tmp2_ = pipe;
+	_tmp3_ = element;
+	_tmp4_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) _tmp2_, _tmp3_);
+	e = GST_IS_ELEMENT (_tmp4_) ? ((GstElement*) _tmp4_) : NULL;
+	_tmp5_ = e;
+	if (_tmp5_ == NULL) {
+		const gchar* _tmp6_;
+		_tmp6_ = element;
+		syslog (LOG_WARNING, "Element %s not found on pipeline", _tmp6_, NULL);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	_tmp7_ = e;
+	_tmp8_ = G_OBJECT_GET_CLASS ((GObject*) _tmp7_);
+	_tmp9_ = property;
+	_tmp10_ = g_object_class_find_property (_tmp8_, _tmp9_);
+	_tmp11_ = _g_param_spec_ref0 (_tmp10_);
+	spec = _tmp11_;
+	_tmp12_ = spec;
+	if (_tmp12_ == NULL) {
+		const gchar* _tmp13_;
+		const gchar* _tmp14_;
+		_tmp13_ = element;
+		_tmp14_ = property;
+		syslog (LOG_WARNING, "Element %s does not have the property %s", _tmp13_, _tmp14_, NULL);
+		result = FALSE;
+		_g_param_spec_unref0 (spec);
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		return result;
+	}
+	g_value_init (&val, GST_TYPE_FRACTION);
+	_tmp15_ = numerator;
+	_tmp16_ = denominator;
+	gst_value_set_fraction (&val, _tmp15_, _tmp16_);
+	_tmp17_ = e;
+	_tmp18_ = property;
+	_tmp19_ = val;
+	g_object_set_property ((GObject*) _tmp17_, _tmp18_, &_tmp19_);
+	result = TRUE;
+	_g_param_spec_unref0 (spec);
+	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
+	return result;
+}
+
+
+static void gstd_pipeline_real_element_set_property_fraction_async (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint numerator, gint denominator, GError** error) {
+	gstdPipeline * self;
+	GError * _inner_error_ = NULL;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	{
+		const gchar* _tmp0_;
+		const gchar* _tmp1_;
+		gint _tmp2_;
+		gint _tmp3_;
+		_tmp0_ = element;
+		_tmp1_ = property;
+		_tmp2_ = numerator;
+		_tmp3_ = denominator;
+		gstd_pipeline_interface_element_set_property_fraction ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, _tmp3_, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			goto __catch8_g_error;
+		}
+	}
+	goto __finally8;
+	__catch8_g_error:
+	{
+		GError* err = NULL;
+		err = _inner_error_;
+		_inner_error_ = NULL;
+		_g_error_free0 (err);
+	}
+	__finally8:
+	if (_inner_error_ != NULL) {
+		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+		g_clear_error (&_inner_error_);
+		return;
+	}
+}
+
+
+/**
    Sets a string property for an element on the pipeline
    @param element, whose property needs to be set
    @param property,property name
@@ -1110,18 +1240,18 @@ static void gstd_pipeline_real_element_set_property_string_async (gstdPipelineIn
 		_tmp2_ = val;
 		gstd_pipeline_interface_element_set_property_string ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch8_g_error;
+			goto __catch9_g_error;
 		}
 	}
-	goto __finally8;
-	__catch8_g_error:
+	goto __finally9;
+	__catch9_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally8:
+	__finally9:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1457,6 +1587,144 @@ static gboolean gstd_pipeline_element_get_property_int64_impl (gstdPipeline* sel
 	_gst_object_unref0 (pipe);
 	if (val) {
 		*val = _vala_val;
+	}
+	return result;
+}
+
+
+/**
+   Gets an element's fraction property value of a specific pipeline
+   @param element, whose property value wants to be known
+   @param property,property name
+   @param numerator, numerator of property value
+   @param denominator, denominator of property value */
+static void gstd_pipeline_real_element_get_property_fraction (gstdPipelineInterface* base, const gchar* element, const gchar* property, gint* numerator, gint* denominator, gboolean* success, GError** error) {
+	gstdPipeline * self;
+	gint _vala_numerator = 0;
+	gint _vala_denominator = 0;
+	gboolean _vala_success = FALSE;
+	const gchar* _tmp0_;
+	const gchar* _tmp1_;
+	gint _tmp2_ = 0;
+	gint _tmp3_ = 0;
+	gboolean _tmp4_ = FALSE;
+	self = (gstdPipeline*) base;
+	g_return_if_fail (element != NULL);
+	g_return_if_fail (property != NULL);
+	_tmp0_ = element;
+	_tmp1_ = property;
+	_tmp4_ = gstd_pipeline_element_get_property_fraction_impl (self, _tmp0_, _tmp1_, &_tmp2_, &_tmp3_);
+	_vala_numerator = _tmp2_;
+	_vala_denominator = _tmp3_;
+	_vala_success = _tmp4_;
+	if (numerator) {
+		*numerator = _vala_numerator;
+	}
+	if (denominator) {
+		*denominator = _vala_denominator;
+	}
+	if (success) {
+		*success = _vala_success;
+	}
+}
+
+
+static gboolean gstd_pipeline_element_get_property_fraction_impl (gstdPipeline* self, const gchar* element, const gchar* property, gint* numerator, gint* denominator) {
+	gint _vala_numerator = 0;
+	gint _vala_denominator = 0;
+	gboolean result = FALSE;
+	gint _tmp0_;
+	GstElement* _tmp1_;
+	GstPipeline* _tmp2_;
+	GstPipeline* pipe;
+	GstPipeline* _tmp3_;
+	const gchar* _tmp4_;
+	GstObject* _tmp5_ = NULL;
+	GstElement* e;
+	GstElement* _tmp6_;
+	GstElement* _tmp8_;
+	GObjectClass* _tmp9_ = NULL;
+	const gchar* _tmp10_;
+	GParamSpec* _tmp11_ = NULL;
+	GParamSpec* _tmp12_;
+	GParamSpec* spec;
+	GParamSpec* _tmp13_;
+	GValue val = {0};
+	GstElement* _tmp16_;
+	const gchar* _tmp17_;
+	gint _tmp18_ = 0;
+	gint _tmp19_ = 0;
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (element != NULL, FALSE);
+	g_return_val_if_fail (property != NULL, FALSE);
+	_vala_denominator = 0;
+	_tmp0_ = _vala_denominator;
+	_vala_numerator = _tmp0_;
+	_tmp1_ = self->priv->_pipeline;
+	_tmp2_ = _gst_object_ref0 (GST_IS_PIPELINE (_tmp1_) ? ((GstPipeline*) _tmp1_) : NULL);
+	pipe = _tmp2_;
+	_tmp3_ = pipe;
+	_tmp4_ = element;
+	_tmp5_ = gst_child_proxy_get_child_by_name ((GstChildProxy*) _tmp3_, _tmp4_);
+	e = GST_IS_ELEMENT (_tmp5_) ? ((GstElement*) _tmp5_) : NULL;
+	_tmp6_ = e;
+	if (_tmp6_ == NULL) {
+		const gchar* _tmp7_;
+		_tmp7_ = element;
+		syslog (LOG_WARNING, "Element %s not found on pipeline", _tmp7_, NULL);
+		result = FALSE;
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		if (numerator) {
+			*numerator = _vala_numerator;
+		}
+		if (denominator) {
+			*denominator = _vala_denominator;
+		}
+		return result;
+	}
+	_tmp8_ = e;
+	_tmp9_ = G_OBJECT_GET_CLASS ((GObject*) _tmp8_);
+	_tmp10_ = property;
+	_tmp11_ = g_object_class_find_property (_tmp9_, _tmp10_);
+	_tmp12_ = _g_param_spec_ref0 (_tmp11_);
+	spec = _tmp12_;
+	_tmp13_ = spec;
+	if (_tmp13_ == NULL) {
+		const gchar* _tmp14_;
+		const gchar* _tmp15_;
+		_tmp14_ = element;
+		_tmp15_ = property;
+		syslog (LOG_WARNING, "Element %s does not have the property %s", _tmp14_, _tmp15_, NULL);
+		result = FALSE;
+		_g_param_spec_unref0 (spec);
+		_gst_object_unref0 (e);
+		_gst_object_unref0 (pipe);
+		if (numerator) {
+			*numerator = _vala_numerator;
+		}
+		if (denominator) {
+			*denominator = _vala_denominator;
+		}
+		return result;
+	}
+	g_value_init (&val, GST_TYPE_FRACTION);
+	_tmp16_ = e;
+	_tmp17_ = property;
+	g_object_get_property ((GObject*) _tmp16_, _tmp17_, &val);
+	_tmp18_ = gst_value_get_fraction_numerator (&val);
+	_vala_numerator = _tmp18_;
+	_tmp19_ = gst_value_get_fraction_denominator (&val);
+	_vala_denominator = _tmp19_;
+	result = TRUE;
+	_g_param_spec_unref0 (spec);
+	_gst_object_unref0 (e);
+	_gst_object_unref0 (pipe);
+	if (numerator) {
+		*numerator = _vala_numerator;
+	}
+	if (denominator) {
+		*denominator = _vala_denominator;
 	}
 	return result;
 }
@@ -2100,18 +2368,18 @@ static void gstd_pipeline_real_pipeline_send_eos_async (gstdPipelineInterface* b
 	{
 		gstd_pipeline_interface_pipeline_send_eos ((gstdPipelineInterface*) self, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch9_g_error;
+			goto __catch10_g_error;
 		}
 	}
-	goto __finally9;
-	__catch9_g_error:
+	goto __finally10;
+	__catch10_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally9:
+	__finally10:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -2233,18 +2501,18 @@ static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInt
 		_tmp1_ = name;
 		gstd_pipeline_interface_pipeline_send_custom_event ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch10_g_error;
+			goto __catch11_g_error;
 		}
 	}
-	goto __finally10;
-	__catch10_g_error:
+	goto __finally11;
+	__catch11_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally10:
+	__finally11:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -2445,11 +2713,14 @@ static void gstd_pipeline_gstd_pipeline_interface_interface_init (gstdPipelineIn
 	iface->element_set_property_int_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, GError**)) gstd_pipeline_real_element_set_property_int_async;
 	iface->element_set_property_int64 = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64;
 	iface->element_set_property_int64_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64, GError**)) gstd_pipeline_real_element_set_property_int64_async;
+	iface->element_set_property_fraction = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, gint, GError**)) gstd_pipeline_real_element_set_property_fraction;
+	iface->element_set_property_fraction_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint, gint, GError**)) gstd_pipeline_real_element_set_property_fraction_async;
 	iface->element_set_property_string = (gboolean (*)(gstdPipelineInterface*, const gchar*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_element_set_property_string;
 	iface->element_set_property_string_async = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, const gchar*, GError**)) gstd_pipeline_real_element_set_property_string_async;
 	iface->element_get_property_boolean = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gboolean*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_boolean;
 	iface->element_get_property_int = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int;
 	iface->element_get_property_int64 = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint64*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_int64;
+	iface->element_get_property_fraction = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gint*, gint*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_fraction;
 	iface->element_get_property_string = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gchar**, gboolean*, GError**)) gstd_pipeline_real_element_get_property_string;
 	iface->element_get_state = (gint (*)(gstdPipelineInterface*, const gchar*, GError**)) gstd_pipeline_real_element_get_state;
 	iface->element_get_property_buffer = (void (*)(gstdPipelineInterface*, const gchar*, const gchar*, gchar**, guint8**, int*, gboolean*, GError**)) gstd_pipeline_real_element_get_property_buffer;
