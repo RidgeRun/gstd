@@ -232,7 +232,7 @@ gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* descripti
 		_tmp1_ = gst_parse_launch (_tmp0_, &_inner_error_);
 		_tmp2_ = _tmp1_;
 		if (_inner_error_ != NULL) {
-			goto __catch4_g_error;
+			goto __catch3_g_error;
 		}
 		_gst_object_unref0 (self->priv->_pipeline);
 		self->priv->_pipeline = GST_IS_ELEMENT (_tmp2_) ? ((GstElement*) _tmp2_) : NULL;
@@ -249,8 +249,8 @@ gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* descripti
 		syslog (LOG_NOTICE, "Pipeline created, %s", _tmp7_, NULL);
 		_gst_object_unref0 (bus);
 	}
-	goto __finally4;
-	__catch4_g_error:
+	goto __finally3;
+	__catch3_g_error:
 	{
 		GError* e = NULL;
 		GError* _tmp8_;
@@ -262,7 +262,7 @@ gstdPipeline* gstd_pipeline_construct (GType object_type, const gchar* descripti
 		syslog (LOG_ERR, "Error constructing pipeline, %s", _tmp9_, NULL);
 		_g_error_free0 (e);
 	}
-	__finally4:
+	__finally3:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -778,18 +778,18 @@ static void gstd_pipeline_real_element_set_property_boolean_async (gstdPipelineI
 		_tmp2_ = val;
 		gstd_pipeline_interface_element_set_property_boolean ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch5_g_error;
+			goto __catch4_g_error;
 		}
 	}
-	goto __finally5;
-	__catch5_g_error:
+	goto __finally4;
+	__catch4_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally5:
+	__finally4:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -891,18 +891,18 @@ static void gstd_pipeline_real_element_set_property_int_async (gstdPipelineInter
 		_tmp2_ = val;
 		gstd_pipeline_interface_element_set_property_int ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch6_g_error;
+			goto __catch5_g_error;
 		}
 	}
-	goto __finally6;
-	__catch6_g_error:
+	goto __finally5;
+	__catch5_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally6:
+	__finally5:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1003,18 +1003,18 @@ static void gstd_pipeline_real_element_set_property_int64_async (gstdPipelineInt
 		_tmp2_ = val;
 		gstd_pipeline_interface_element_set_property_int64 ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch7_g_error;
+			goto __catch6_g_error;
 		}
 	}
-	goto __finally7;
-	__catch7_g_error:
+	goto __finally6;
+	__catch6_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally7:
+	__finally6:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1125,18 +1125,18 @@ static void gstd_pipeline_real_element_set_property_fraction_async (gstdPipeline
 		_tmp3_ = denominator;
 		gstd_pipeline_interface_element_set_property_fraction ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, _tmp3_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch8_g_error;
+			goto __catch7_g_error;
 		}
 	}
-	goto __finally8;
-	__catch8_g_error:
+	goto __finally7;
+	__catch7_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally8:
+	__finally7:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1240,18 +1240,18 @@ static void gstd_pipeline_real_element_set_property_string_async (gstdPipelineIn
 		_tmp2_ = val;
 		gstd_pipeline_interface_element_set_property_string ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, _tmp2_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch9_g_error;
+			goto __catch8_g_error;
 		}
 	}
-	goto __finally9;
-	__catch9_g_error:
+	goto __finally8;
+	__catch8_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally9:
+	__finally8:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -2368,18 +2368,18 @@ static void gstd_pipeline_real_pipeline_send_eos_async (gstdPipelineInterface* b
 	{
 		gstd_pipeline_interface_pipeline_send_eos ((gstdPipelineInterface*) self, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch10_g_error;
+			goto __catch9_g_error;
 		}
 	}
-	goto __finally10;
-	__catch10_g_error:
+	goto __finally9;
+	__catch9_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally10:
+	__finally9:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -2501,18 +2501,18 @@ static void gstd_pipeline_real_pipeline_send_custom_event_async (gstdPipelineInt
 		_tmp1_ = name;
 		gstd_pipeline_interface_pipeline_send_custom_event ((gstdPipelineInterface*) self, _tmp0_, _tmp1_, &_inner_error_);
 		if (_inner_error_ != NULL) {
-			goto __catch11_g_error;
+			goto __catch10_g_error;
 		}
 	}
-	goto __finally11;
-	__catch11_g_error:
+	goto __finally10;
+	__catch10_g_error:
 	{
 		GError* err = NULL;
 		err = _inner_error_;
 		_inner_error_ = NULL;
 		_g_error_free0 (err);
 	}
-	__finally11:
+	__finally10:
 	if (_inner_error_ != NULL) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);

@@ -355,7 +355,7 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 			_g_free0 (objectpath);
 			_g_object_unref0 (pipe);
 			if (_inner_error_->domain == G_IO_ERROR) {
-				goto __catch3_g_io_error;
+				goto __catch2_g_io_error;
 			}
 			_g_free0 (objectpath);
 			_g_object_unref0 (pipe);
@@ -377,8 +377,8 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 		_g_object_unref0 (pipe);
 		return result;
 	}
-	goto __finally3;
-	__catch3_g_io_error:
+	goto __finally2;
+	__catch2_g_io_error:
 	{
 		GError* _error_ = NULL;
 		gchar* _tmp36_;
@@ -389,7 +389,7 @@ static gchar* gstd_factory_real_create (gstdFactoryInterface* base, const gchar*
 		_g_error_free0 (_error_);
 		return result;
 	}
-	__finally3:
+	__finally2:
 	g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 	g_clear_error (&_inner_error_);
 	return NULL;

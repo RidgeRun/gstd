@@ -96,39 +96,34 @@ public int main (string[] args)
 		/* Create the factory */
 		gstd.Factory factory = new gstd.Factory(connection);
 
+		/* Register factory  on connection */
+		connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
+
 		/* In case autoTerminate is enabled, quit mainloop after the last pipe has been destroyed */
 		if (autoTerminate)
 			factory.last_pipe_destroyed.connect(() => {loop.quit();
 												}
 			                                    );
 
-		/* Register factory to DBus */
+		/* Start signal processor */
+		if (signal_processor != null)
+			signal_processor.monitor (loop, factory, signalPollRate);
+
+		/* Own busname */
 		GLib.Bus.own_name_on_connection (
 		    connection,
 		    busName,
 		    GLib.BusNameOwnerFlags.NONE,
 		    (connection, name) =>
 		    {
-		        try
-		        {
-		            connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
-				}
-		        catch (IOError e)
-		        {
-		            Posix.syslog(Posix.LOG_ERR, "Could not register service");
-		            loop.quit();
-				}
+		        Posix.syslog(Posix.LOG_ERR, "Registered busname");
 			},
 		    (connection, name) =>
 		    {
-		        Posix.syslog(Posix.LOG_ERR, "Lost bus name");
+		        Posix.syslog(Posix.LOG_ERR, "Failed to register busname");
 		        loop.quit();
 			}
 		    );
-
-		/* Start signal processor */
-		if (signal_processor != null)
-			signal_processor.monitor (loop, factory, signalPollRate);
 
 		/* Run main loop */
 		loop.run ();
