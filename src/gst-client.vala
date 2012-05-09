@@ -79,78 +79,86 @@ public class GstdCli : GLib.Object
 	/* Command descriptions for the help
 	   Each description is: name of the command, syntax, description
 	 */
-	private const string[, ] cmds = {
-		{ "create", "create <\"gst-launch like pipeline description in quotes\">",
-		  "Creates a new pipeline and returns the dbus-path to access it"},
-		{ "destroy", "destroy", "Destroys the pipeline specified by_path(-p) or the"
-		  + " active pipeline"},
-		{ "destroy-all", "destroy-all", "Destroys all pipelines on the factory."},
-		{ "play", "play", "Sets the pipeline specified by_path(-p) or the active "
-		  + "pipeline to play state"},
-		{ "ready", "ready", "Sets the pipeline specified by_path(-p) or the active "
-		  + "pipeline to ready state"},
-		{ "pause", "pause", "Sets the pipeline specified by_path(-p) or the active "
-		  + "pipeline to pause state"},
-		{ "null", "null", "Sets the pipeline specified by_path(-p) or active "
-		  + "pipeline to null state"},
-		{ "aplay", "play-async", "Sets the pipeline to play state, it does not "
-		  + "wait the change to be done"},
-		{ "aready", "ready-async", "Sets the pipeline to ready state, it does not "
-		  + "wait the change to be done"},
-		{ "apause", "pause-async", "Sets the pipeline to pause state, it does not "
-		  + "wait the change to be done"},
-		{ "anull", "null-async", "Sets the pipeline to null state, it does not wait "
-		  + "the change to be done"},
-		{ "set", "set <element_name> <property_name> <data-type> <value>",
+	private const string[] cmds = {
+		"create|"+"create <\"gst-launch like pipeline description in quotes\">|"
+		  + "Creates a new pipeline and returns the dbus-path to access it",
+		"destroy|"+"destroy|"+"Destroys the pipeline specified by_path(-p) or the"
+		  + " active pipeline",
+		"destroy-all|"+"destroy-all|"+"Destroys all pipelines on the factory.",
+		"play|"+"play|"+"Sets the pipeline specified by_path(-p) or the active "
+		  + "pipeline to play state",
+		"ready|"+"ready|"+"Sets the pipeline specified by_path(-p) or the active "
+		  + "pipeline to ready state",
+		"pause|"+"pause|"+"Sets the pipeline specified by_path(-p) or the active "
+		  + "pipeline to pause state",
+		"null|"+"null|"+"Sets the pipeline specified by_path(-p) or active "
+		  + "pipeline to null state",
+		"aplay|"+"play-async|"+"Sets the pipeline to play state, it does not "
+		  + "wait the change to be done",
+		"aready|"+"ready-async|"+"Sets the pipeline to ready state, it does not "
+		  + "wait the change to be done",
+		"apause|"+"pause-async|"+"Sets the pipeline to pause state, it does not "
+		  + "wait the change to be done",
+		"anull|"+"null-async|"+"Sets the pipeline to null state, it does not wait "
+		  + "the change to be done",
+		"set|"+"set <element_name> <property_name> <data-type> <value>|"+
 		  "Sets an element's property value of the pipeline\n" +
-		  "\t\tSupported <data-type>s include: boolean, integer, int64, and " +
-		  "string"},
-		{ "get", "get <element_name> <property_name> <data_type>",
-		  "Gets an element's property value of the pipeline"},
-		{ "get-duration", "get-duration", "Gets the pipeline duration time"},
-		{ "get-position", "get-position", "Gets the pipeline position"},
-		{ "sh", "sh \"<shell command with optional parameters>\"",
-		  "Execute a shell command using interactive console"},
-		{ "get-state", "get-state", "Get the state of a specific pipeline(-p flag)"
-		  + " or the active pipeline"},
-		{ "get-elem-state", "get-elem-state", "Get the state of a specific element of"
-		  + "the active pipeline"},
-		{ "list-pipes", "list-pipes", "Returns a list of all the dbus-path of"
-		  + "the existing pipelines"},
-		{ "ping", "ping", "Shows if gstd is alive"},
-		{ "ping-pipe", "ping-pipe", "Test if the active pipeline is alive"},
-		{ "active", "active <path>", "Sets the active pipeline,if no <path> is "
-		  + "passed:it returns the actual active pipeline"},
-		{ "seek", "seek <position[ms]>", "Moves current playing position to a new"
-		  + " one"},
-		{ "skip", "skip <period[ms]>", "Skips a period, if period is positive: it"
-		  + " moves forward, if negative: it moves backward"},
-		{ "speed", "speed <rate>", "Changes playback rate:\n" +
+		  "\t\tSupported <data-type>s include: boolean, integer, int64, double and " +
+		  "string",
+		"get|"+"get <element_name> <property_name> <data_type>|"+
+		  "Gets an element's property value of the pipeline",
+		"get-duration|"+"get-duration|"+"Gets the pipeline duration time",
+		"get-position|"+"get-position|"+"Gets the pipeline position",
+		"sh|"+"sh \"<shell command with optional parameters>\"|"+
+		  "Execute a shell command using interactive console",
+		"get-state|"+"get-state|"+"Get the state of a specific pipeline(-p flag)"
+		  + " or the active pipeline",
+		"get-elem-state|"+"get-elem-state|"+"Get the state of a specific element of"
+		  + "the active pipeline",
+		"list-pipes|"+"list-pipes|"+"Returns a list of all the dbus-path of"
+		  + "the existing pipelines",
+		"ping|"+"ping|"+"Shows if gstd is alive",
+		"ping-pipe|"+"ping-pipe|"+"Test if the active pipeline is alive",
+		"active|"+"active <path>|"+"Sets the active pipeline,if no <path> is "
+		  + "passed:it returns the actual active pipeline",
+		"seek|"+"seek <position[ms]>|"+"Moves current playing position to a new"
+		  + " one",
+		"skip|"+"skip <period[ms]>|"+"Skips a period, if period is positive: it"
+		  + " moves forward, if negative: it moves backward",
+		"speed|"+"speed <rate>|"+"Changes playback rate:\n" +
 		  "\t\t* rate>1.0: fast-forward playback,\n" +
 		  "\t\t* rate<1.0: slow-forward playback,\n" +
 		  "\t\t* rate=1.0: normal speed.\n" +
-		  "\t\tNegative rate causes reverse playback."},
-		{ "step", "step [number of frames]", "Step the number of frames, if no number is provided, 1 is assumed"},
-		{ "send-eos", "send-eos", "Send an EOS event on the pipeline"},
-		{ "send-custom-event", "send-custom-event <custom type> <name of event>",
+		  "\t\tNegative rate causes reverse playback.",
+		"step|"+"step [number of frames]|"+"Step the number of frames, if no number is provided, 1 is assumed",
+		"send-eos|"+"send-eos|"+"Send an EOS event on the pipeline",
+		"send-custom-event|"+"send-custom-event <custom type> <name of event>|"+
 		  "Send a custom event on the pipeline. The event type can be:\n" +
 		  "\t\t* UPSTREAM\n" +
 		  "\t\t* DOWNSTREAM\n" +
 		  "\t\t* DOWNSTREAM_OOB\n" +
 		  "\t\t* BOTH\n" +
-		  "\t\t* BOTH_OOB\n"},
-		{ "element-set-state", "element-set-state <element_name> <state>",
+		  "\t\t* BOTH_OOB\n",
+		"element-set-state|"+"element-set-state <element_name> <state>|"+
 		  "Sets the element state" +
-		  "\t\tSupported <state>s include: null, ready, paused, playing"},
-		{ "element-async-set-state", "element-async-set-state <element_name> <state>",
-		  "Sets the element state, it does not wait the change to be done"},
-		{ "exit", "exit", "Exit/quit active console"},
-		{ "quit", "quit", "Exit/quit active console"},
+		  "\t\tSupported <state>s include: null, ready, paused, playing",
+		"element-async-set-state|"+"element-async-set-state <element_name> <state>|"+
+		  "Sets the element state, it does not wait the change to be done",
+		"exit|"+"exit|"+"Exit/quit active console",
+		"quit|"+"quit|"+"Exit/quit active console",
 		# if HAVE_READLINE
-		{ "strict", "strict", "Enable/disable strict execution mode."},
+		"strict|"+"strict|"+"Enable/disable strict execution mode.",
 		# endif
-		{ "version", "version", "Show gst-client version."}
+		"version|"+"version|"+"Show gst-client version."
 	};
+
+	private string? Cmds(int idx0, int idx1)
+	{
+		if (idx0 >= cmds.length)
+			return null;
+		string[] cmd = cmds[idx0].split("|");
+		return cmd[idx1];
+	}
 
 	/*
 	 * Constructor
@@ -384,6 +392,19 @@ public class GstdCli : GLib.Object
 					               property, element, int64_v);
 					break;
 
+				case "double":
+					double double_v;
+					pipeline.element_get_property_double (element, property, out double_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %f\n",
+					               property, element, double_v);
+					break;
+
 				case "string":
 					string string_v;
 					pipeline.element_get_property_string (element, property, out string_v, out success);
@@ -455,6 +476,13 @@ public class GstdCli : GLib.Object
 					stdout.printf ("Trying to set '%s' on element '%s' to the value:%lld\n",
 					               property, element, int64_v);
 					ret = pipeline.element_set_property_int64 (element, property, int64_v);
+					break;
+
+				case "double":
+					double double_v = double.parse(args[4]);
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%f\n",
+					               property, element, double_v);
+					ret = pipeline.element_set_property_double (element, property, double_v);
 					break;
 
 				case "string":
@@ -1176,13 +1204,13 @@ public class GstdCli : GLib.Object
 				if (args.length > 1)
 				{
 					/* Help about some command */
-					while (cmds[id, 0] != null)
+					while (Cmds(id, 0) != null)
 					{
-						if (cmds[id, 0] == args[1])
+						if (Cmds(id, 0) == args[1])
 						{
 							stdout.printf ("Command: %s\n", args[1]);
-							stdout.printf ("Description:\t%s\n", cmds[id, 2]);
-							stdout.printf ("Syntax: %s\n", cmds[id, 1]);
+							stdout.printf ("Description:\t%s\n", Cmds(id, 2));
+							stdout.printf ("Syntax: %s\n", Cmds(id, 1));
 							return true;
 						}
 						id++;
@@ -1196,10 +1224,10 @@ public class GstdCli : GLib.Object
 					stdout.printf ("Request the syntax of an specific command with " +
 					               "\"help <command>\".\n" +
 					               "This is the list of supported commands:\n");
-					while (cmds[id, 0] != null)
+					while (Cmds(id, 0) != null)
 					{
-						stdout.printf (" %s:%s%s\n", cmds[id, 0],
-						               cmds[id, 0].length < 6 ? "\t\t" : "\t", cmds[id, 2]);
+						stdout.printf (" %s:%s%s\n", Cmds(id, 0),
+						               Cmds(id, 0).length < 6 ? "\t\t" : "\t", Cmds(id, 2));
 						id++;
 					}
 					stdout.printf ("\n");

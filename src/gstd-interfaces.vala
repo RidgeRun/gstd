@@ -75,6 +75,12 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyInt64Async", no_reply = true)]
 		public abstract void element_set_property_int64_async(string element, string property, int64 val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyDouble")]
+		public abstract bool element_set_property_double(string element, string property, double val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyDoubleAsync", no_reply = true)]
+		public abstract void element_set_property_double_async(string element, string property, double val) throws DBusError, IOError;
+
 		[DBus (name = "ElementSetPropertyFraction")]
 		public abstract bool element_set_property_fraction(string element, string property, int numerator, int denominator) throws DBusError, IOError;
 
@@ -95,6 +101,9 @@ namespace gstd {
 
 		[DBus (name = "ElementGetPropertyInt64")]
 		public abstract void element_get_property_int64(string element, string property, out int64 val, out bool success) throws DBusError, IOError;
+
+		[DBus (name = "ElementGetPropertyDouble")]
+		public abstract void element_get_property_double(string element, string property, out double val, out bool success) throws DBusError, IOError;
 
 		[DBus (name = "ElementGetPropertyFraction")]
 		public abstract void element_get_property_fraction(string element, string property, out int numerator, out int denominator, out bool success) throws DBusError, IOError;

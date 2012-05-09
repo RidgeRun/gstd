@@ -364,6 +364,43 @@ public class Pipeline : GLib.Object, PipelineInterface
 	}
 
 	/**
+	   Sets a double float property for an element on the pipeline
+	   @param element, whose property needs to be set
+	   @param property,property name
+	   @param val, double float property value     */
+	public bool element_set_property_double (string element, string property, double val)
+	{
+		var pipe = _pipeline as Gst.Pipeline;
+		var e = pipe.get_child_by_name (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		e.set (property, val, null);
+		return true;
+	}
+
+	public void element_set_property_double_async (string element, string property, double val)
+	{
+		try
+		{
+			element_set_property_double(element, property, val);
+		}
+		catch (Error err)
+		{}
+	}
+
+	/**
 	   Sets an fraction property for an element on the pipeline
 	   @param element, whose property needs to be set
 	   @param property, property name
@@ -544,6 +581,43 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 
 		e.get (property, &val, null);
+		return true;
+	}
+
+	public void element_get_property_double(string element, string property, out double val, out bool success)
+	{
+		success = element_get_property_double_impl(element, property, out val);
+	}
+
+	/**
+	   Gets an element's double float property value of a specific pipeline
+	   @param element, whose property value wants to be known
+	   @param property,property name
+	   @param val value of the property
+	 */
+	private bool element_get_property_double_impl (string element, string property, out double val)
+	{
+		val = 0;
+
+		var pipe = _pipeline as Gst.Pipeline;
+		var e = pipe.get_child_by_name (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		Gst.Value tmp = GLib.Value(typeof(double));
+		e.get_property (property, ref tmp);
+		val = tmp.get_double();
 		return true;
 	}
 
