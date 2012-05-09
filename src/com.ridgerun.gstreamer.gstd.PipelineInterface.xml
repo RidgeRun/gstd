@@ -109,6 +109,21 @@
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
+   <method name="ElementSetPropertyDouble">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="d" name ="val" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="ElementSetPropertyDoubleAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="d" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="ElementSetPropertyFraction">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -161,6 +176,14 @@
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
         <arg type="x" name = "val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>        
+    </method>
+    <method name="ElementGetPropertyDouble">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="d" name = "val" direction = "out" />
         <arg type = "b" name = "success" direction = "out" >
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        
