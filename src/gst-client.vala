@@ -258,7 +258,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.pipeline_async_set_state (state);
+				pipeline.pipeline_set_state_async (state);
 
 			stdout.printf ("Ok.\n");
 			return true;
@@ -638,7 +638,7 @@ public class GstdCli : GLib.Object
 
 		try
 		{
-			bool ret = pipeline.pipeline_speed (rate);
+			bool ret = pipeline.pipeline_set_speed (rate);
 			if (!ret)
 			{
 				stderr.printf ("Error:\nSpeed could not be set\n");
@@ -785,7 +785,7 @@ public class GstdCli : GLib.Object
 
 		try
 		{
-			pipeline.element_async_set_state (element, state);
+			pipeline.element_set_state_async (element, state);
 			return true;
 		}
 		catch (Error e)
@@ -1218,7 +1218,7 @@ public class GstdCli : GLib.Object
 	/*
 	   *Interactive Console management
 	 */
-	public bool cli () throws DBus.Error, GLib.Error
+	public bool cli () throws GLib.Error
 	{
 		string[] args;
 
