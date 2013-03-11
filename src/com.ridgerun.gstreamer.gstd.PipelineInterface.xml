@@ -250,6 +250,25 @@
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
+    <method name="PipelineSeekInterval">
+        <arg type="x" name ="start" direction = "in" />
+        <arg type="x" name ="stop" direction = "in" />
+        <arg type="i" name ="format" direction = "in" />
+		<arg type="i" name ="type" seekFlags = "in" />
+        <arg type="d" name ="rate" direction = "in" /> 
+        <arg type="b" name ="success" direction = "out" >
+        	<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+        </arg>
+    </method>
+    <method name="PipelineSeekIntervalAsync">
+        <arg type="x" name ="start" direction = "in" />
+        <arg type="x" name ="stop" direction = "in" />
+        <arg type="i" name ="format" direction = "in" />
+		<arg type="i" name ="type" seekFlags = "in" />
+        <arg type="d" name ="rate" direction = "in" /> 
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="PipelineGetState">
         <arg type="i" name ="state" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
