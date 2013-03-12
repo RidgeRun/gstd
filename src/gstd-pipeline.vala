@@ -830,13 +830,15 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param start start position
 		@param stop stop position
 		@param format The format of the seek values  (see GstFormat enumeration of GStreamer doc)
-		@param  type The type and flags for the new start/stop position (see GstSeekFlags enumeration of GStreamer doc)
-		@param  rate The new playback rate
+		@param start_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
+		@param rate The new playback rate
 	*/
-	private bool pipeline_seek_interval_impl(int64 start, int64 stop, int format, int type, double rate)
+	private bool pipeline_seek_interval_impl(int64 start, int64 stop, Gst.Format format, Gst.SeekType start_type, Gst.SeekType stop_type, Gst.SeekFlags flags, double rate)
 	{
 		/*Set the current positions */
-		if (!_pipeline.seek (rate, (Gst.Format)format, Gst.SeekFlags.FLUSH, (Gst.SeekType)type, start, (Gst.SeekType)type, stop))
+		if (!_pipeline.seek (rate, format, flags, start_type, start, stop_type, stop))
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -870,12 +872,16 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param start start position
 		@param stop stop position
 		@param format The format of the seek values  (see GstFormat enumeration of GStreamer doc)
-		@param  type The type and flags for the new start/stop position (see  GstSeekFlags enumeration of GStreamer doc)
-		@param  rate The new playback rate
+		@param start_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
+		@param rate The new playback rate
+		@return True, if seek-event was handled
 	*/
-	public bool pipeline_seek_interval(int64 start, int64 stop, int format, int type, double rate)
+
+	public bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate)
 	{
-		return pipeline_seek_interval_impl(start, stop, format, type, rate);
+		return pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate);
 	}
 
 	/**
@@ -883,12 +889,14 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param start start position
 		@param stop stop position
 		@param format The format of the seek values  (see GstFormat enumeration of GStreamer doc)
-		@param  type The type and flags for the new start/stop position (see GstSeekFlags enumeration of GStreamer doc)
-		@param  rate The new playback rate
+		@param start_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
+		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
+		@param rate The new playback rate
 	*/
-	public void pipeline_seek_interval_async(int64 start, int64 stop, int format, int type, double rate)
+	public void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate)
 	{
-		pipeline_seek_interval_impl(start, stop, format, type, rate);
+		pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate);
 	}
 
 	/**

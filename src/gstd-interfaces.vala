@@ -136,10 +136,10 @@ namespace gstd {
 		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekInterval")]
-		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int type, double rate) throws DBusError, IOError;
+		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekIntervalAsync", no_reply = true)]
-		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int type, double rate) throws DBusError, IOError;
+		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
@@ -278,10 +278,10 @@ namespace gstd {
 		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekInterval")]
-		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int type, double rate) throws DBusError, IOError;
+		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekIntervalAsync", no_reply = true)]
-		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int type, double rate) throws DBusError, IOError;
+		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
