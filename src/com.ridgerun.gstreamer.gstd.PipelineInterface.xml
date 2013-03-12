@@ -328,6 +328,11 @@
     <signal name="Eos">
         <arg type="t" name="pipe_id"/>
     </signal>
+     <signal name="SegmentDone">
+        <arg type="t" name="pipe_id"/>
+        <arg type="i" name="format"/>
+        <arg type="x" name="position"/>
+    </signal>
     <signal name="Error">
         <arg type="t" name="pipe_id"/>
         <arg type="s" name="err_message"/>

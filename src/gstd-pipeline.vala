@@ -98,7 +98,6 @@ public class Pipeline : GLib.Object, PipelineInterface
 		switch (message.type)
 		{
 			case Gst.MessageType.ERROR :
-
 				GLib.Error err;
 				string dbg;
 
@@ -112,13 +111,20 @@ public class Pipeline : GLib.Object, PipelineInterface
 				break;
 
 			case Gst.MessageType.EOS:
-
 				/*Sending Eos Signal */
 				eos (_id);
 				break;
 
-			case Gst.MessageType.STATE_CHANGED:
+			case Gst.MessageType.SEGMENT_DONE:
+				Gst.Format format;
+				int64 position;
+				message.parse_segment_done(out format, out position);
 
+				/* Send SegmentDone() signal */
+				segment_done (_id, format, position);
+				break;
+
+			case Gst.MessageType.STATE_CHANGED:
 				Gst.State oldstate;
 				Gst.State newstate;
 				Gst.State pending;

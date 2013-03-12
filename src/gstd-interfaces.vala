@@ -174,6 +174,9 @@ namespace gstd {
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);
 
+		[DBus (name = "SegmentDone")]
+		public signal void segment_done(uint64 pipe_id, int format, int64 position);
+
 		[DBus (name = "Error")]
 		public signal void error(uint64 pipe_id, string err_message);
 
@@ -315,6 +318,9 @@ namespace gstd {
 
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);
+
+		[DBus (name = "SegmentDone")]
+		public signal void segment_done(uint64 pipe_id, int format, int64 position);
 
 		[DBus (name = "Error")]
 		public signal void error(uint64 pipe_id, string err_message);
