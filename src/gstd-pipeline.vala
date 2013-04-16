@@ -162,12 +162,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 				qos(_id, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
-
 				# endif
+
+			case Gst.MessageType.ELEMENT:
+				/* Send signal_element() signal */
+				signal_element(_id, message.get_structure().to_string());
+				break;
+
 			default:
 				break;
 		}
-
+	
 		return true;
 	}
 

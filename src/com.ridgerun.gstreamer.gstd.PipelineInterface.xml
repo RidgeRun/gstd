@@ -356,8 +356,11 @@
         <arg type="i" name="format"/>
         <arg type="t" name="processed"/>
         <arg type="t" name="dropped"/>
-    </signal> 
-
+    </signal>
+    <signal name="SignalElement">
+        <arg type="t" name="pipe_id"/>
+        <arg type="s" name="structure"/>
+    </signal>
   </interface>
 </node>
 

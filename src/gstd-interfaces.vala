@@ -185,6 +185,9 @@ namespace gstd {
 
 		[DBus (name = "Qos")]
 		public signal void qos(uint64 pipe_id, bool live, uint64 running_time, uint64 stream_time, uint64 timestamp, uint64 duration, int64 jitter, double proportion, int quality, int format, uint64 processed, uint64 dropped);
+
+		[DBus (name = "SignalElement")]
+		public signal void signal_element(uint64 pipe_id, string structure);
 	}
 
 	[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", timeout = 120000)]
@@ -330,5 +333,8 @@ namespace gstd {
 
 		[DBus (name = "Qos")]
 		public signal void qos(uint64 pipe_id, bool live, uint64 running_time, uint64 stream_time, uint64 timestamp, uint64 duration, int64 jitter, double proportion, int quality, int format, uint64 processed, uint64 dropped);
+
+		[DBus (name = "SignalElement")]
+		public signal void signal_element(uint64 pipe_id, string structure);
 	}
 }
