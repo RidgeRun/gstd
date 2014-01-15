@@ -78,16 +78,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 		var pipe = _pipeline as Gst.Pipeline;
 		GLib.assert(pipe != null);
 
-		var sink = pipe.get_child_by_name("videosink") as Gst.Element;
-		if (sink == null)
-			return Gst.BusSyncReply.PASS;
+		string[] videoSinkNames = {"videosink", "videosink::" + message.src.name};
+		for (int i = 0; i < videoSinkNames.length; ++i)
+		{
+			var overlay = get_child_by_name_recursive(videoSinkNames[i]) as Gst.XOverlay;
+			if (overlay == null)
+				continue;
 
-		var overlay = sink as Gst.XOverlay;
-		if (overlay == null)
+			Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
+			overlay.set_xwindow_id((ulong)_windowId);
 			return Gst.BusSyncReply.PASS;
-
-		Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
-		overlay.set_xwindow_id((ulong)_windowId);
+		}
 
 		return Gst.BusSyncReply.PASS;
 	}
@@ -269,8 +270,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_boolean (string element, string property, bool val)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -307,8 +307,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_int (string element, string property, int val)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -344,8 +343,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param val, long property value     */
 	public bool element_set_property_int64 (string element, string property, int64 val)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -381,8 +379,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param val, double float property value     */
 	public bool element_set_property_double (string element, string property, double val)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -419,8 +416,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   @param denominator, denominator of property value */
 	public bool element_set_property_fraction(string element, string property, int numerator, int denominator)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -460,8 +456,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public bool element_set_property_string (string element, string property, string val)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -505,8 +500,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = false;
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -540,8 +534,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = 0;
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -575,8 +568,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = 0;
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -610,8 +602,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = 0;
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -647,8 +638,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		numerator = denominator = 0;
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -687,8 +677,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		val = "";
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -715,11 +704,10 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public int element_get_state (string element)
 	{
 		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
-			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline %s", element, pipe.get_name());
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline %s", element, _pipeline.get_name());
 			return Gst.State.NULL;
 		}
 
@@ -746,8 +734,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		caps = "";
 		data = new uint8[0];
 
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name (element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -1036,8 +1023,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	private bool element_set_state_impl (string element, Gst.State state)
 	{
-		var pipe = _pipeline as Gst.Pipeline;
-		var e = pipe.get_child_by_name(element) as Gst.Element;
+		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
@@ -1080,6 +1066,30 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public bool ping ()
 	{
 		return true;
+	}
+
+	private Gst.Object? get_child_by_name_recursive(string name)
+	{
+		string[] parts = name.split("::");
+		if (parts.length >= 2)
+		{
+			Gst.Object? object = _pipeline;
+			for (int i = 0; i < parts.length; ++i)
+			{
+				Gst.ChildProxy proxy = (object as Gst.ChildProxy);
+				if (proxy == null)
+					return null;
+
+				object = proxy.get_child_by_name(parts[i]);
+				if (object == null)
+					return null;
+			}
+			return object;
+		}
+		else
+		{
+			return (_pipeline as Gst.ChildProxy).get_child_by_name(name);
+		}
 	}
 }
 }
