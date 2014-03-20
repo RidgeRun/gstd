@@ -114,6 +114,9 @@ namespace gstd {
 		[DBus (name = "ElementGetPropertyBuffer")]
 		public abstract void element_get_property_buffer(string element, string property, out string caps, out uint8[] data, out bool success) throws DBusError, IOError;
 
+		[DBus (name = "PadGetActualCaps")]
+		public abstract void pad_get_actual_caps (string element, string pad, out string caps, out bool success) throws DBusError, IOError;
+
 		[DBus (name = "PipelineGetDuration")]
 		public abstract int64 pipeline_get_duration() throws DBusError, IOError;
 
@@ -178,7 +181,13 @@ namespace gstd {
 		public signal void segment_done(uint64 pipe_id, int format, int64 position);
 
 		[DBus (name = "Error")]
-		public signal void error(uint64 pipe_id, string err_message);
+		public signal void error(uint64 pipe_id, string err_message, string debug_message);
+
+		[DBus (name = "Warning")]
+		public signal void warning(uint64 pipe_id, string warning_message, string debug_message);
+
+		[DBus (name = "Information")]
+		public signal void information(uint64 pipe_id, string info_message, string debug_message);
 
 		[DBus (name = "StateChanged")]
 		public signal void state_changed(uint64 pipe_id, int old_state, int new_state, string src);
@@ -262,6 +271,9 @@ namespace gstd {
 		[DBus (name = "ElementGetPropertyBuffer")]
 		public abstract void element_get_property_buffer(string element, string property, out string caps, out uint8[] data, out bool success) throws DBusError, IOError;
 
+		[DBus (name = "PadGetActualCaps")]
+		public abstract void pad_get_actual_caps (string element, string pad, out string caps, out bool success) throws DBusError, IOError;
+
 		[DBus (name = "PipelineGetDuration")]
 		public abstract int64 pipeline_get_duration() throws DBusError, IOError;
 
@@ -326,7 +338,13 @@ namespace gstd {
 		public signal void segment_done(uint64 pipe_id, int format, int64 position);
 
 		[DBus (name = "Error")]
-		public signal void error(uint64 pipe_id, string err_message);
+		public signal void error(uint64 pipe_id, string err_message, string debug_message);
+
+		[DBus (name = "Warning")]
+		public signal void warning(uint64 pipe_id, string warning_message, string debug_message);
+
+		[DBus (name = "Information")]
+		public signal void information(uint64 pipe_id, string info_message, string debug_message);
 
 		[DBus (name = "StateChanged")]
 		public signal void state_changed(uint64 pipe_id, int old_state, int new_state, string src);

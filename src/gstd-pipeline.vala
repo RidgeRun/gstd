@@ -106,9 +106,35 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_error (out err, out dbg);
 
 				/*Sending Error Signal */
-				error(_id, err.message);
+				error(_id, err.message, dbg);
 
-				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline, %s", err.message);
+				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline: \"%s\"; debug info: \"%s\"", err.message, dbg);
+				break;
+
+			case Gst.MessageType.WARNING :
+				GLib.Error wrng;
+				string dbg;
+
+				/*Parse warning */
+				message.parse_warning (out wrng, out dbg);
+
+				/*Sending Warning Signal */
+				warning(_id, wrng.message, dbg);
+
+				Posix.syslog (Posix.LOG_DEBUG, "Warning on pipeline: \"%s\"; debug info: \"%s\"", wrng.message, dbg);
+				break;
+
+			case Gst.MessageType.INFO :
+				GLib.Error info;
+				string dbg;
+
+				/*Parse error */
+				message.parse_info (out info, out dbg);
+
+				/*Sending Information Signal */
+				information(_id, info.message, dbg);
+
+				Posix.syslog (Posix.LOG_DEBUG, "Information on pipeline: \"%s\"; debug info: \"%s\"", info.message, dbg);
 				break;
 
 			case Gst.MessageType.EOS:
@@ -758,6 +784,44 @@ public class Pipeline : GLib.Object, PipelineInterface
 			data = buffer.data;
 		}
 
+		return true;
+	}
+
+	public void pad_get_actual_caps (string element, string pad, out string caps, out bool success)
+	{
+		success = pad_get_actual_caps_impl (element, pad, out caps);
+	}
+
+ 	/**
+	   Gets the actual caps for a pad of an element in the pipeline.
+	   @param element, whose property value wants to be known
+	   @param pad, pad name
+	   @param caps, output of actual caps
+	   @return true if success, false, if failure
+	 */
+	public bool pad_get_actual_caps_impl (string element, string pad, out string caps)
+	{
+		caps = "";
+		var e = get_child_by_name_recursive (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+		Gst.Pad p = e.get_pad (pad) as Gst.Pad;
+		if (p == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Pad %s of element %s not found", pad, element);
+			return false;
+		}
+		Gst.Caps c = p.get_negotiated_caps() as Gst.Caps;
+		if (c == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Caps not found for pad %s of element %s", pad, element);
+			return false;
+		}
+
+		caps = c.to_string ();
 		return true;
 	}
 
