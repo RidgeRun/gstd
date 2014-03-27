@@ -106,9 +106,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_error (out err, out dbg);
 
 				/*Sending Error Signal */
-				error(_id, err.message, dbg);
+				error(_id, err.message, dbg ?? "");
 
-				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline: \"%s\"; debug info: \"%s\"", err.message, dbg);
+				Posix.syslog (Posix.LOG_DEBUG, "Error on pipeline: \"%s\"; debug info: \"%s\"", err.message, dbg ?? "");
 				break;
 
 			case Gst.MessageType.WARNING :
@@ -119,9 +119,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_warning (out wrng, out dbg);
 
 				/*Sending Warning Signal */
-				warning(_id, wrng.message, dbg);
+				warning(_id, wrng.message, dbg ?? "");
 
-				Posix.syslog (Posix.LOG_DEBUG, "Warning on pipeline: \"%s\"; debug info: \"%s\"", wrng.message, dbg);
+				Posix.syslog (Posix.LOG_DEBUG, "Warning on pipeline: \"%s\"; debug info: \"%s\"", wrng.message, dbg ?? "");
 				break;
 
 			case Gst.MessageType.INFO :
@@ -132,9 +132,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_info (out info, out dbg);
 
 				/*Sending Information Signal */
-				information(_id, info.message, dbg);
+				information(_id, info.message, dbg ?? "");
 
-				Posix.syslog (Posix.LOG_DEBUG, "Information on pipeline: \"%s\"; debug info: \"%s\"", info.message, dbg);
+				Posix.syslog (Posix.LOG_DEBUG, "Information on pipeline: \"%s\"; debug info: \"%s\"", info.message, dbg ?? "");
 				break;
 
 			case Gst.MessageType.EOS:
