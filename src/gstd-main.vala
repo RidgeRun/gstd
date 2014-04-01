@@ -33,7 +33,8 @@ public errordomain ErrorGstd
 
 public int main (string[] args)
 {
-	try {
+	try
+	{
 		Posix.openlog("gstd", Posix.LOG_PID, Posix.LOG_USER /*Posix.LOG_DAEMON*/);
 		Posix.syslog(Posix.LOG_ERR, "Started");
 
@@ -42,7 +43,8 @@ public int main (string[] args)
 		var opt = new GLib.OptionContext ("");
 		opt.add_main_entries (options, null);
 
-		try {
+		try
+		{
 			opt.parse (ref args);
 		}
 		catch (GLib.OptionError e)
@@ -121,6 +123,6 @@ public int main (string[] args)
 		Posix.syslog (Posix.LOG_ERR, "Error: %s", e.message);
 	}
 
-	Posix.syslog(Posix.LOG_ERR, "Ended");
+	Posix.syslog(Posix.LOG_ERR, "Terminated");
 	return 0;
 }
