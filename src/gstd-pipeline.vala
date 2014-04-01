@@ -11,6 +11,7 @@
 
 namespace gstd
 {
+
 public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
