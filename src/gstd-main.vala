@@ -15,16 +15,12 @@ private bool useSessionBus = false;
 private string busName;
 private bool autoTerminate = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
-private int signalPollRate = 0;
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"busname", '\0', 0, OptionArg.STRING, ref busName, "Bus name, default is com.ridgerun.gstreamer.gstd", null},
 	{"autoterminate", '\0', 0, OptionArg.NONE, ref autoTerminate, "Automatically terminate gstd after the last pipe has been destroyed.", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
-	# if GSTD_SUPPORT_SIGNALS
-	{"signals", 's', 0, OptionArg.INT, ref signalPollRate, "Enable running thread to catch Posix signals and set poll rate in milliseconds (--signals=1000)", null},
-	# endif
 	{null}
 };
 
@@ -75,8 +71,6 @@ public int main (string[] args)
 
 		Posix.syslog(Posix.LOG_DEBUG, "Debug logging enabled");
 
-		gstd.Signals signal_processor = (signalPollRate > 0) ? new gstd.Signals () : null;
-
 		if (useSystemBus && useSessionBus)
 			throw new ErrorGstd.BUS("you have to choose: system or session bus");
 
@@ -101,29 +95,23 @@ public int main (string[] args)
 
 		/* In case autoTerminate is enabled, quit mainloop after the last pipe has been destroyed */
 		if (autoTerminate)
-			factory.last_pipe_destroyed.connect(() => {loop.quit();
-												}
-			                                    );
-
-		/* Start signal processor */
-		if (signal_processor != null)
-			signal_processor.monitor (loop, factory, signalPollRate);
+			factory.last_pipe_destroyed.connect(() => {loop.quit();});
 
 		/* Own busname */
 		GLib.Bus.own_name_on_connection (
-		    connection,
-		    busName,
-		    GLib.BusNameOwnerFlags.NONE,
-		    (connection, name) =>
-		    {
-		        Posix.syslog(Posix.LOG_ERR, "Registered busname");
-			},
-		    (connection, name) =>
-		    {
-		        Posix.syslog(Posix.LOG_ERR, "Failed to register busname");
-		        loop.quit();
-			}
-		    );
+			connection,
+			busName,
+			GLib.BusNameOwnerFlags.NONE,
+			(connection, name) =>
+				{
+					Posix.syslog(Posix.LOG_ERR, "Registered busname");
+				},
+			(connection, name) =>
+				{
+					Posix.syslog(Posix.LOG_ERR, "Failed to register busname");
+					loop.quit();
+				}
+		);
 
 		/* Run main loop */
 		loop.run ();
