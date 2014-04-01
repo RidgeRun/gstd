@@ -80,7 +80,28 @@ public int main (string[] args)
 		Gst.init (ref args);
 
 		/* Creating a GLib main loop with a default context */
-		MainLoop loop = new MainLoop (null, false);
+		var loop = new MainLoop (null, false);
+
+		/* Disable all signals */
+		Posix.sigset_t sigSet = new Posix.sigset_t();
+		Posix.sigemptyset(sigSet);
+		Posix.sigaddset(sigSet, Posix.SIGPIPE);
+		Posix.sigset_t oldSet = new Posix.sigset_t();
+		Posix.sigprocmask(Posix.SIG_SETMASK, sigSet, oldSet);
+
+		/* Create the signalfd source and register it to the main loop*/
+		Posix.sigemptyset(sigSet);
+		Posix.sigaddset(sigSet, Posix.SIGTERM);
+		Posix.sigaddset(sigSet, Posix.SIGINT);
+		var signalFd = Linux.signalfd(-1, sigSet);
+		var signalChannel = new IOChannel.unix_new(0);
+		signalChannel.add_watch(IOCondition.IN, (source, condition) =>
+			{
+				Posix.syslog(Posix.LOG_ERR, "Received unix signal");
+				loop.quit();
+				return true;
+			}
+		);
 
 		/* Connect to DBus */
 		GLib.DBusConnection connection = GLib.Bus.get_sync((useSystemBus) ?
@@ -90,7 +111,7 @@ public int main (string[] args)
 		                                                   GLib.BusType.STARTER);
 
 		/* Create the factory */
-		gstd.Factory factory = new gstd.Factory(connection);
+		var factory = new gstd.Factory(connection);
 
 		/* Register factory  on connection */
 		connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));

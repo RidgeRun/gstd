@@ -226,7 +226,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
 gstd_SOURCES = gstd-interfaces.vala gstd-main.vala gstd-factory.vala gstd-pipeline.vala
 gstd_VALAFLAGS = --thread --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
-    --pkg gio-2.0 --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix \
+    --pkg gio-2.0 --pkg gstreamer-0.10 --pkg gstreamer-interfaces-0.10 --pkg posix --pkg linux \
     @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@
 
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GSTREAMER_INTERFACES_CFLAGS@ @GIO_CFLAGS@
