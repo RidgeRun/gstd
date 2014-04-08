@@ -16,6 +16,7 @@ public class Factory : GLib.Object, FactoryInterface
 	private GLib.DBusConnection _conn;
 	private PipelineInterface[] _pipes;
 	private static const int _num_pipes = 20;
+	private uint _nextPipeId = 0;
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
@@ -61,7 +62,8 @@ public class Factory : GLib.Object, FactoryInterface
 			_pipes[next_id] = pipe;
 
 			/* register to dbus*/
-			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + next_id.to_string ();
+			++_nextPipeId;
+			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + _nextPipeId.to_string ();
 			pipe.registration_id = _conn.register_object(objectpath, _pipes[next_id]);
 			pipe.path = objectpath;
 			return pipe.path;
