@@ -55,12 +55,14 @@
     </method>
     <method name="PipelineSetState">
         <arg type="i" name = "state" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <arg type="b" name = "success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
     </method>
     <method name="PipelineSetStateAsync">
         <arg type="i" name = "state" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
@@ -238,6 +240,7 @@
     </method>
     <method name="PipelineSeek">
         <arg type="x" name ="ipos_ns" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
@@ -247,6 +250,7 @@
     </method>
     <method name="PipelineSeekAsync">
         <arg type="x" name ="ipos_ns" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
@@ -257,7 +261,8 @@
         <arg type="i" name ="start_type" direction = "in" />
         <arg type="i" name ="stop_type" direction = "in" />
         <arg type="i" name ="flags" direction = "in" />
-        <arg type="d" name ="rate" direction = "in" /> 
+        <arg type="d" name ="rate" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <arg type="b" name ="success" direction = "out" >
         	<annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
         </arg>
@@ -269,7 +274,8 @@
         <arg type="i" name ="start_type" direction = "in" />
         <arg type="i" name ="stop_type" direction = "in" />
         <arg type="i" name ="flags" direction = "in" />
-        <arg type="d" name ="rate" direction = "in" /> 
+        <arg type="d" name ="rate" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
@@ -313,6 +319,7 @@
     <method name="ElementSetState">
         <arg type="s" name ="element" direction = "in" />
         <arg type="i" name ="state" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
@@ -320,6 +327,7 @@
     <method name="ElementSetStateAsync">
         <arg type="s" name ="element" direction = "in" />
         <arg type="i" name ="state" direction = "in" />
+        <arg type="b" name ="wait_transition_done" direction = "in" />
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>

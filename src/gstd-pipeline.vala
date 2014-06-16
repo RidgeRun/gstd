@@ -61,7 +61,8 @@ public class Pipeline : GLib.Object, PipelineInterface
 		/* Destroy the pipeline */
 		if (_initialized)
 		{
-			if (!pipeline_set_state_impl (Gst.State.NULL))
+			/* Call set state and wait until the transition to NULL is done */
+			if (!pipeline_set_state_impl (Gst.State.NULL, true))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
 		}
 	}
@@ -155,7 +156,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				uint64 processed;
 				uint64 dropped;
 
-				//plase note, if this doesn't compile, you need to apply gstreamer-0.10.vapi.patch
+				// Please note, if this doesn't compile, you need to apply gstreamer-0.10.vapi.patch
 				message.parse_qos(out live, out running_time, out stream_time, out timestamp, out duration);
 				message.parse_qos_values(out jitter, out proportion, out quality);
 				Gst.Format fmt;
@@ -178,37 +179,38 @@ public class Pipeline : GLib.Object, PipelineInterface
 		return true;
 	}
 
-	private bool pipeline_set_state_impl (Gst.State state)
+	private bool pipeline_set_state_impl (Gst.State state, bool wait_transition_done)
 	{
 		_pipeline.set_state (state);
 
-		/* Wait until state change is done */
-		Gst.State current, pending;
-		_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
-		if (current != state)
+		if (wait_transition_done)
 		{
-			Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
-			return false;
+			/* Wait until state change is done */
+			Gst.State current, pending;
+			
+			Posix.syslog (Posix.LOG_INFO, "Waiting until state change to %s is done", state.to_string ());
+
+			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+			if (current != state)
+			{
+				Posix.syslog (Posix.LOG_ERR, "Pipeline failed to change state to %s", state.to_string ());
+				return false;
+			}
 		}
+		else
+			Posix.syslog (Posix.LOG_INFO, "Not waiting until change state to %s is done", state.to_string ());
+
 		return true;
 	}
 
-	public bool pipeline_set_state (int state)
+	public bool pipeline_set_state (int state, bool wait_transition_done)
 	{
-		return pipeline_set_state_impl((Gst.State)(state));
+		return pipeline_set_state_impl((Gst.State)(state), wait_transition_done);
 	}
 
-	/** @Note This function is identically to pipeline_set_state(). The difference is, that is is marked as noreply method in the XML definition of the DBus interface.
-	 * Imagine, a client wants to reuse a pipeline to play several audio files, without blocking the client application (UI) when doing the DBus calls.
-	 * In this case, the client would send the following non-blocking DBus requests to gstd:
-	 * 1. pipeline_set_state_async(READY)
-	 * 2. element_set_property_async("filesrc", "location", "2.wav")
-	 * 3. pipeline_set_state_async(PLAY)
-	 * It needs to be ensured, that pipeline_set_state_async() has finished the state transtition to READY before gstd executes element_set_property_async().
-	 * Therefore, pipeline_set_state_async() needs to be synchronous internally. */
-	public void pipeline_set_state_async(int state)
+	public void pipeline_set_state_async(int state, bool wait_transition_done)
 	{
-		pipeline_set_state_impl((Gst.State)(state));
+		pipeline_set_state_impl((Gst.State)(state), wait_transition_done);
 	}
 
 	/**
@@ -813,7 +815,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		return position;
 	}
 
-	private bool pipeline_seek_impl (int64 ipos_ns)
+	private bool pipeline_seek_impl (int64 ipos_ns, bool wait_transition_done)
 	{
 		/*Set the current position */
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
@@ -821,6 +823,18 @@ public class Pipeline : GLib.Object, PipelineInterface
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
 		}
+		
+		
+		if (wait_transition_done)
+		{
+			/* Wait until state change is done */
+			Gst.State current, pending;
+
+			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		}
+		else
+			Posix.syslog (Posix.LOG_INFO, "Not waiting until state change is done");
+
 		return true;
 	}
 
@@ -832,9 +846,10 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param start_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
 		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
 		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
+		@param wait_transition_done If true, block until the seek event has been processed
 		@param rate The new playback rate
 	*/
-	private bool pipeline_seek_interval_impl(int64 start, int64 stop, Gst.Format format, Gst.SeekType start_type, Gst.SeekType stop_type, Gst.SeekFlags flags, double rate)
+	private bool pipeline_seek_interval_impl(int64 start, int64 stop, Gst.Format format, Gst.SeekType start_type, Gst.SeekType stop_type, Gst.SeekFlags flags, double rate, bool wait_transition_done)
 	{
 		/*Set the current positions */
 		if (!_pipeline.seek (rate, format, flags, start_type, start, stop_type, stop))
@@ -842,6 +857,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
 		}
+		
+		if (wait_transition_done)
+		{
+			/* Wait until state change is done */
+			Gst.State current, pending;
+
+			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
+		}
+		else
+			Posix.syslog (Posix.LOG_INFO, "Not waiting until stage change is done");
+
 		return true;
 	}
 
@@ -850,10 +876,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   Seeks a specific time position.
 	   Data in the pipeline is flushed.
 	   @param ipos_ns, absolute position in nanoseconds
+	   @param wait_transition_done If true, block until the seek event has been processed
 	 */
-	public bool pipeline_seek (int64 ipos_ns)
+	public bool pipeline_seek (int64 ipos_ns, bool wait_transition_done)
 	{
-		return pipeline_seek_impl(ipos_ns);
+		return pipeline_seek_impl(ipos_ns, wait_transition_done);
 	}
 
 	/**
@@ -861,9 +888,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   Data in the pipeline is flushed.
 	   @param ipos_ms, absolute position in nanoseconds
 	 */
-	public void pipeline_seek_async (int64 ipos_ns)
+	public void pipeline_seek_async (int64 ipos_ns, bool wait_transition_done)
 	{
-		pipeline_seek_impl(ipos_ns);
+		pipeline_seek_impl(ipos_ns, wait_transition_done);
 	}
 
 	/**
@@ -875,12 +902,13 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
 		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
 		@param rate The new playback rate
+		@param wait_transition_done If true, block until the seek event has been processed
 		@return True, if seek-event was handled
 	*/
 
-	public bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate)
+	public bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done)
 	{
-		return pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate);
+		return pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate, wait_transition_done);
 	}
 
 	/**
@@ -892,10 +920,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		@param stop_type The type and flags for the new start position (see GstSeekType enumeration of GStreamer doc)
 		@param flags Seek flags (see GstSeekFlags enumeration of GStreamer doc)
 		@param rate The new playback rate
+		@param wait_transition_done If true, block until the seek event has been processed
 	*/
-	public void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate)
+	public void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done)
 	{
-		pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate);
+		pipeline_seek_interval_impl(start, stop, (Gst.Format)format, (Gst.SeekType)start_type, (Gst.SeekType)stop_type, (Gst.SeekFlags)flags, rate, wait_transition_done);
 	}
 
 	/**
@@ -966,7 +995,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public void pipeline_step (uint64 frames)
 	{
 #if GSTREAMER_SUPPORT_STEP
-		pipeline_set_state_impl (Gst.State.PAUSED);
+		pipeline_set_state_impl (Gst.State.PAUSED, true); // set state and wait until transition to PAUSED is done
 		_pipeline.send_event(new Gst.Event.step(Gst.Format.BUFFERS, frames, 1.0, true, false));
 #else
 		Posix.syslog (Posix.LOG_ERR, "Your GStreamer version doesnt support step, need > 0.10.24\n");
@@ -1021,8 +1050,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 	   Sets an element to the specified state
 	   @param element, whose state is to be set
 	   @param state, desired element state
+	   @param wait_transition_done If true, block until the state has been changed
 	 */
-	private bool element_set_state_impl (string element, Gst.State state)
+	private bool element_set_state_impl (string element, Gst.State state, bool wait_transition_done)
 	{
 		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
@@ -1033,26 +1063,34 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		e.set_state (state);
 
-		/* Wait for the transition */
-		Gst.State current, pending;
-		e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE);
-		if (current != state)
+		if (wait_transition_done)
 		{
-			Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
-			return false;
+			/* Wait for the transition */
+			Posix.syslog (Posix.LOG_INFO, "Waiting until element %s state change to %s is done", element, state.to_string ());
+
+			Gst.State current, pending;
+			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE);
+			if (current != state)
+			{
+				Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
+				return false;
+			}
 		}
+		else
+			Posix.syslog (Posix.LOG_INFO, "Not waiting until element %s change state to %s is done", element, state.to_string ());
+
 		return true;
 	}
 
-	public bool element_set_state (string element, int state)
+	public bool element_set_state (string element, int state, bool wait_transition_done)
 	{
-		return element_set_state_impl(element, (Gst.State)(state));
+		return element_set_state_impl(element, (Gst.State)(state), wait_transition_done);
 	}
 
 	/** @note this function waits until the transition is done, see also pipeline_set_state_async */
-	public void element_set_state_async (string element, int state)
+	public void element_set_state_async (string element, int state, bool wait_transition_done)
 	{
-		element_set_state_impl(element, (Gst.State)(state));
+		element_set_state_impl(element, (Gst.State)(state), wait_transition_done);
 	}
 
 	public void set_window_id(uint64 winId)    //use uint64, because dbus-binding can't map type "ulong"

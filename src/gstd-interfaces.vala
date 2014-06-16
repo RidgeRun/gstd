@@ -52,10 +52,10 @@ namespace gstd {
 		public abstract uint64 pipeline_get_id() throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetState")]
-		public abstract bool pipeline_set_state(int state) throws DBusError, IOError;
+		public abstract bool pipeline_set_state(int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetStateAsync", no_reply = true)]
-		public abstract void pipeline_set_state_async(int state) throws DBusError, IOError;
+		public abstract void pipeline_set_state_async(int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
@@ -127,19 +127,19 @@ namespace gstd {
 		public abstract bool pipeline_skip(int64 period_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeek")]
-		public abstract bool pipeline_seek(int64 ipos_ns) throws DBusError, IOError;
+		public abstract bool pipeline_seek(int64 ipos_ns, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineStep")]
 		public abstract void pipeline_step(uint64 frames) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekAsync", no_reply = true)]
-		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
+		public abstract void pipeline_seek_async(int64 ipos_ns, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekInterval")]
-		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
+		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekIntervalAsync", no_reply = true)]
-		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
+		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
@@ -166,10 +166,10 @@ namespace gstd {
 		public abstract bool ping() throws DBusError, IOError;
 
 		[DBus (name = "ElementSetState")]
-		public abstract bool element_set_state(string element, int state) throws DBusError, IOError;
+		public abstract bool element_set_state(string element, int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetStateAsync", no_reply = true)]
-		public abstract void element_set_state_async(string element, int state) throws DBusError, IOError;
+		public abstract void element_set_state_async(string element, int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);
@@ -200,10 +200,10 @@ namespace gstd {
 		public abstract uint64 pipeline_get_id() throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetState")]
-		public abstract bool pipeline_set_state(int state) throws DBusError, IOError;
+		public abstract bool pipeline_set_state(int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetStateAsync", no_reply = true)]
-		public abstract void pipeline_set_state_async(int state) throws DBusError, IOError;
+		public abstract void pipeline_set_state_async(int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetPropertyBoolean")]
 		public abstract bool element_set_property_boolean(string element, string property, bool val) throws DBusError, IOError;
@@ -275,19 +275,19 @@ namespace gstd {
 		public abstract bool pipeline_skip(int64 period_ns) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeek")]
-		public abstract bool pipeline_seek(int64 ipos_ns) throws DBusError, IOError;
+		public abstract bool pipeline_seek(int64 ipos_ns, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineStep")]
 		public abstract void pipeline_step(uint64 frames) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekAsync", no_reply = true)]
-		public abstract void pipeline_seek_async(int64 ipos_ns) throws DBusError, IOError;
+		public abstract void pipeline_seek_async(int64 ipos_ns, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekInterval")]
-		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
+		public abstract bool pipeline_seek_interval(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineSeekIntervalAsync", no_reply = true)]
-		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate) throws DBusError, IOError;
+		public abstract void pipeline_seek_interval_async(int64 start, int64 stop, int format, int start_type, int stop_type, int flags, double rate, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetState")]
 		public abstract int pipeline_get_state() throws DBusError, IOError;
@@ -314,10 +314,10 @@ namespace gstd {
 		public abstract bool ping() throws DBusError, IOError;
 
 		[DBus (name = "ElementSetState")]
-		public abstract bool element_set_state(string element, int state) throws DBusError, IOError;
+		public abstract bool element_set_state(string element, int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "ElementSetStateAsync", no_reply = true)]
-		public abstract void element_set_state_async(string element, int state) throws DBusError, IOError;
+		public abstract void element_set_state_async(string element, int state, bool wait_transition_done) throws DBusError, IOError;
 
 		[DBus (name = "Eos")]
 		public signal void eos(uint64 pipe_id);

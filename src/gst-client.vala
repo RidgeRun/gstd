@@ -258,7 +258,7 @@ public class GstdCli : GLib.Object
 		try {
 			if (sync)
 			{
-				bool ret = pipeline.pipeline_set_state (state);
+				bool ret = pipeline.pipeline_set_state (state, true);
 				if (!ret)
 				{
 					stdout.printf ("Error:\nFailed to change pipeline state\n");
@@ -266,7 +266,7 @@ public class GstdCli : GLib.Object
 				}
 			}
 			else
-				pipeline.pipeline_set_state_async (state);
+				pipeline.pipeline_set_state_async (state, false);
 
 			stdout.printf ("Ok.\n");
 			return true;
@@ -611,7 +611,7 @@ public class GstdCli : GLib.Object
 
 		try
 		{
-			bool ret = pipeline.pipeline_seek (pos_ms);
+			bool ret = pipeline.pipeline_seek (pos_ms, false);
 			if (!ret)
 			{
 				stderr.printf ("Error:\nSeek fail: Media type not seekable\n");
@@ -782,7 +782,7 @@ public class GstdCli : GLib.Object
 
 		try
 		{
-			ret = pipeline.element_set_state (element, state);
+			ret = pipeline.element_set_state (element, state, true);
 			if (!ret)
 			{
 				stderr.printf ("Error:\nFailed to set element state: %s\n", args[2]);
@@ -813,7 +813,7 @@ public class GstdCli : GLib.Object
 
 		try
 		{
-			pipeline.element_set_state_async (element, state);
+			pipeline.element_set_state_async (element, state, false);
 			return true;
 		}
 		catch (Error e)
