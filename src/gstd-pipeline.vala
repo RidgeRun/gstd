@@ -136,7 +136,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				message.parse_state_changed (out oldstate, out newstate,
 				                             out pending);
 
-				Posix.syslog (Posix.LOG_INFO, "%s,changes state from %s to %s", src, oldstate.to_string (), newstate.to_string ());
+				Posix.syslog (Posix.LOG_DEBUG, "%s,changes state from %s to %s", src, oldstate.to_string (), newstate.to_string ());
 
 				/*Sending StateChanged Signal */
 				state_changed (_id, oldstate, newstate, src);
@@ -188,7 +188,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			/* Wait until state change is done */
 			Gst.State current, pending;
 			
-			Posix.syslog (Posix.LOG_INFO, "Waiting until state change to %s is done", state.to_string ());
+			Posix.syslog (Posix.LOG_DEBUG, "Waiting until state change to %s is done", state.to_string ());
 
 			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 			if (current != state)
@@ -198,7 +198,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			}
 		}
 		else
-			Posix.syslog (Posix.LOG_INFO, "Not waiting until change state to %s is done", state.to_string ());
+			Posix.syslog (Posix.LOG_DEBUG, "Not waiting until change state to %s is done", state.to_string ());
 
 		return true;
 	}
@@ -706,7 +706,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	 */
 	public int element_get_state (string element)
 	{
-		//Posix.syslog (Posix.LOG_INFO, "Searching element %s on pipeline.", element);
+		//Posix.syslog (Posix.LOG_DEBUG, "Searching element %s on pipeline.", element);
 		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
 		{
@@ -833,7 +833,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		}
 		else
-			Posix.syslog (Posix.LOG_INFO, "Not waiting until state change is done");
+			Posix.syslog (Posix.LOG_DEBUG, "Not waiting until state change is done");
 
 		return true;
 	}
@@ -866,7 +866,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			_pipeline.get_state (out current, out pending, (Gst.ClockTime)(Gst.CLOCK_TIME_NONE)); // Block
 		}
 		else
-			Posix.syslog (Posix.LOG_INFO, "Not waiting until stage change is done");
+			Posix.syslog (Posix.LOG_DEBUG, "Not waiting until stage change is done");
 
 		return true;
 	}
@@ -1066,7 +1066,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		if (wait_transition_done)
 		{
 			/* Wait for the transition */
-			Posix.syslog (Posix.LOG_INFO, "Waiting until element %s state change to %s is done", element, state.to_string ());
+			Posix.syslog (Posix.LOG_DEBUG, "Waiting until element %s state change to %s is done", element, state.to_string ());
 
 			Gst.State current, pending;
 			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE);
@@ -1077,7 +1077,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			}
 		}
 		else
-			Posix.syslog (Posix.LOG_INFO, "Not waiting until element %s change state to %s is done", element, state.to_string ());
+			Posix.syslog (Posix.LOG_DEBUG, "Not waiting until element %s change state to %s is done", element, state.to_string ());
 
 		return true;
 	}
