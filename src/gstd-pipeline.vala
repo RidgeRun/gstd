@@ -16,6 +16,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
 	private Gst.Element _pipeline;
+	private uint _callbackId = 0;
 	private uint64 _id = 0;
 	private bool _initialized = false;
 	private double _rate = 1.0;
@@ -36,7 +37,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			/*Get and watch bus */
 			Gst.Bus bus = _pipeline.get_bus ();
 			bus.set_sync_handler(bus_sync_callback);
-			bus.add_watch (bus_callback);
+			_callbackId = bus.add_watch (bus_callback);
 			/* The bus watch increases our ref count, so we need to unreference
 			 * ourselfs in order to provide properly release behavior of this
 			 * object
@@ -61,6 +62,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 		/* Destroy the pipeline */
 		if (_initialized)
 		{
+			/* Deregister the bus watch before destroying the pipe. This is needed to ensure, that we dont receive invalid callbacks. */
+			GLib.Source.remove(_callbackId);
+
 			/* Call set state and wait until the transition to NULL is done */
 			if (!pipeline_set_state_impl (Gst.State.NULL, true))
 				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
