@@ -10,15 +10,6 @@ namespace gstd {
 		[DBus (name = "Create")]
 		public abstract string create(string description) throws DBusError, IOError;
 
-		[DBus (name = "Destroy")]
-		public abstract bool destroy(string path) throws DBusError, IOError;
-
-		[DBus (name = "DestroyAll")]
-		public abstract bool destroy_all() throws DBusError, IOError;
-
-		[DBus (name = "List")]
-		public abstract string[] list() throws DBusError, IOError;
-
 		[DBus (name = "Ping")]
 		public abstract bool ping() throws DBusError, IOError;
 	}
@@ -29,21 +20,15 @@ namespace gstd {
 		[DBus (name = "Create")]
 		public abstract string create(string description) throws DBusError, IOError;
 
-		[DBus (name = "Destroy")]
-		public abstract bool destroy(string path) throws DBusError, IOError;
-
-		[DBus (name = "DestroyAll")]
-		public abstract bool destroy_all() throws DBusError, IOError;
-
-		[DBus (name = "List")]
-		public abstract string[] list() throws DBusError, IOError;
-
 		[DBus (name = "Ping")]
 		public abstract bool ping() throws DBusError, IOError;
 	}
 
 	[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", timeout = 120000)]
 	public interface PipelineInterface : GLib.Object {
+
+		[DBus (name = "PipelineDestroy")]
+		public abstract void pipeline_destroy() throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetId")]
 		public abstract void pipeline_set_id(uint64 id) throws DBusError, IOError;
@@ -192,6 +177,9 @@ namespace gstd {
 
 	[DBus (name = "com.ridgerun.gstreamer.gstd.PipelineInterface", timeout = 120000)]
 	public interface PipelineInterfaceSync : GLib.Object {
+
+		[DBus (name = "PipelineDestroy")]
+		public abstract void pipeline_destroy() throws DBusError, IOError;
 
 		[DBus (name = "PipelineSetId")]
 		public abstract void pipeline_set_id(uint64 id) throws DBusError, IOError;

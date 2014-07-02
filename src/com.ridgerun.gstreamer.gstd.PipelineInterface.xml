@@ -46,7 +46,7 @@
   <interface name="com.ridgerun.gstreamer.gstd.PipelineInterface">
 
     <!-- Method definitions -->
-
+    <method name="PipelineDestroy"/>
     <method name="PipelineSetId">
         <arg type="t" name ="id" direction="in"/>
     </method>

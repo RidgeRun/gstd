@@ -13,13 +13,11 @@
 private bool useSystemBus = false;
 private bool useSessionBus = false;
 private string busName;
-private bool autoTerminate = false;
 private int debugLevel = 0; // 0 - error, 1 - warning, 2 - info, 3 - debug
 private const GLib.OptionEntry[] options = {
 	{"system", '\0', 0, OptionArg.NONE, ref useSystemBus, "Use system bus", null},
 	{"session", '\0', 0, OptionArg.NONE, ref useSessionBus, "Use session bus", null},
 	{"busname", '\0', 0, OptionArg.STRING, ref busName, "Bus name, default is com.ridgerun.gstreamer.gstd", null},
-	{"autoterminate", '\0', 0, OptionArg.NONE, ref autoTerminate, "Automatically terminate gstd after the last pipe has been destroyed.", null},
 	{"debug", 'd', 0, OptionArg.INT, ref debugLevel, "Set debug level (0..3: error, warning, info, debug)", null},
 	{null}
 };
@@ -94,10 +92,6 @@ public int main (string[] args)
 
 		/* Register factory  on connection */
 		connection.register_object ("/com/ridgerun/gstreamer/gstd/factory", ((gstd.FactoryInterface)(factory)));
-
-		/* In case autoTerminate is enabled, quit mainloop after the last pipe has been destroyed */
-		if (autoTerminate)
-			factory.last_pipe_destroyed.connect(() => {loop.quit();});
 
 		/* Own busname */
 		GLib.Bus.own_name_on_connection (

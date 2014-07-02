@@ -15,60 +15,75 @@ namespace gstd
 public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
-	private Gst.Element _pipeline;
+	private Gst.Element _pipeline = null;
 	private uint _callbackId = 0;
 	private uint64 _id = 0;
-	private bool _initialized = false;
 	private double _rate = 1.0;
 	private uint64 _windowId = 0;
+	private static uint _nextPipeId = 0;
+	private uint _registrationId = 0;
+	private GLib.DBusConnection _connection = null;
+	private string _path = null;
 
 	/**
 	   Create a new instance of a Pipeline
 	   @param description, gst-launch style string description of the pipeline
 	   @param ids, pipeline identifier
 	 */
-	public Pipeline (string description)
+	public Pipeline (string description, GLib.DBusConnection conn) throws Error
 	{
-		try
-		{
-			/* Create the pipe */
-			_pipeline = Gst.parse_launch (description) as Gst.Element;
+		/* Create the pipe */
+		_pipeline = Gst.parse_launch (description) as Gst.Element;
 
-			/*Get and watch bus */
-			Gst.Bus bus = _pipeline.get_bus ();
-			bus.set_sync_handler(bus_sync_callback);
-			_callbackId = bus.add_watch (bus_callback);
-			/* The bus watch increases our ref count, so we need to unreference
-			 * ourselfs in order to provide properly release behavior of this
-			 * object
-			 */
-			unref();
+		/*Get and watch bus */
+		Gst.Bus bus = _pipeline.get_bus ();
+		bus.set_sync_handler(bus_sync_callback);
+		_callbackId = bus.add_watch (bus_callback);
 
-			/* Set pipeline state to initialized */
-			_initialized = true;
-			Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
-		}
-		catch (GLib.Error e)
-		{
-			Posix.syslog (Posix.LOG_ERR, "Error constructing pipeline, %s", e.message);
-		}
+		/* Finally, register ourself to dbus.*/
+		_connection = conn;
+		++_nextPipeId;
+		string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + _nextPipeId.to_string();
+		_registrationId = _connection.register_object(objectpath, (PipelineInterface)(this)); //this will increment the ref-count
+		_path = objectpath;
+
+		Posix.syslog (Posix.LOG_NOTICE, "Pipeline created, %s", description);
+	}
+
+	~Pipeline ()
+	{
+		assert (_pipeline == null); //because the dbus connection keeps a reference to us, and the only way to destroy ourself, is to call pipeline_destroy() which will shedule a call to the dtor after we deregistered from dbus
+		Posix.syslog (Posix.LOG_DEBUG, "Destroyed pipeline object");
 	}
 
 	/**
 	   Destroy a instance of a Pipeline
 	 */
-	~Pipeline ()
+	public void pipeline_destroy()
 	{
-		/* Destroy the pipeline */
-		if (_initialized)
-		{
-			/* Call set state and wait until the transition to NULL is done */
-			/*if (!pipeline_set_state_impl (Gst.State.NULL, true))
-				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");*/
+		if (_pipeline == null) //just ensure, that we cannot call the dtor twice
+			return;
 
-			/* Deregister the bus watch before destroying the pipe. This is needed to ensure, that we dont receive invalid callbacks. */
-			GLib.Source.remove(_callbackId);
-		}
+		Gst.Element pipe = _pipeline; //increase the ref-count, but ensure, _pipeline is null after we leave the method
+		_pipeline = null;
+		GLib.DBusConnection conn = _connection;
+		_connection = null; //ensure we break the circular dependency between this and _connection
+
+		if (Gst.StateChangeReturn.SUCCESS != pipe.set_state(Gst.State.NULL))
+			Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
+
+		GLib.Source.remove(_callbackId);
+
+		if (!conn.unregister_object(_registrationId))
+			Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
+	}
+
+	/**
+	   Set/get the dbus-path assigned when created
+	 */
+	public string path
+	{
+		get {return _path;}
 	}
 
 	private Gst.BusSyncReply bus_sync_callback (Gst.Bus bus, Gst.Message message)
@@ -218,14 +233,6 @@ public class Pipeline : GLib.Object, PipelineInterface
 	}
 
 	/**
-	   Returns initialized flag value.
-	 */
-	public bool pipeline_is_initialized ()
-	{
-		return _initialized;
-	}
-
-	/**
 	       Gets the id of the pipe.
 	 */
 	public uint64 pipeline_get_id()
@@ -239,24 +246,6 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public void pipeline_set_id(uint64 id)
 	{
 		_id = id;
-	}
-
-	/**
-	   Set/get the dbus-path assigned when created
-	 */
-	public string ? path {
-		get;
-		set;
-		default = null;
-	}
-
-	/**
-	   Set/get the DBus registration id assigned when created
-	 */
-	public uint registration_id {
-		get;
-		set;
-		default = 0;
 	}
 
 	/**

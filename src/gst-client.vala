@@ -84,7 +84,6 @@ public class GstdCli : GLib.Object
 		  + "Creates a new pipeline and returns the dbus-path to access it",
 		"destroy|"+"destroy|"+"Destroys the pipeline specified by_path(-p) or the"
 		  + " active pipeline",
-		"destroy-all|"+"destroy-all|"+"Destroys all pipelines on the factory.",
 		"play|"+"play|"+"Sets the pipeline specified by_path(-p) or the active "
 		  + "pipeline to play state",
 		"ready|"+"ready|"+"Sets the pipeline specified by_path(-p) or the active "
@@ -115,8 +114,6 @@ public class GstdCli : GLib.Object
 		  + " or the active pipeline",
 		"get-elem-state|"+"get-elem-state|"+"Get the state of a specific element of"
 		  + "the active pipeline",
-		"list-pipes|"+"list-pipes|"+"Returns a list of all the dbus-path of"
-		  + "the existing pipelines",
 		"ping|"+"ping|"+"Shows if gstd is alive",
 		"ping-pipe|"+"ping-pipe|"+"Test if the active pipeline is alive",
 		"active|"+"active <path>|"+"Sets the active pipeline,if no <path> is "
@@ -231,18 +228,13 @@ public class GstdCli : GLib.Object
 		}
 	}
 
-	private bool pipeline_destroy (string objpath)
+	private bool pipeline_destroy (PipelineInterface pipeline)
 	{
 		/*This needs to be reviewed, casting compiles but does not
 		   function */
 		try
 		{
-			if (!factory.destroy (objpath))
-			{
-				stderr.printf ("Error:\nFailed to put the pipeline to null\n");
-				return false;
-			}
-			stdout.printf ("Pipeline with path:%s, destroyed\n", objpath);
+			pipeline.pipeline_destroy();
 			stdout.printf ("Ok.\n");
 			return true;
 		}
@@ -878,32 +870,6 @@ public class GstdCli : GLib.Object
 		}
 	}
 
-	private bool pipeline_list ()
-	{
-		try
-		{
-			string[] paths = factory.list();
-
-			if (paths.length == 0)
-			{
-				stdout.printf ("There are no pipelines on factory!\n");
-				return true;
-			}
-
-			stdout.printf ("The actual pipelines are:\n");
-			for (int index = 0; index < paths.length; ++index)
-			{
-				stdout.printf ("  %i. %s\n", index + 1, paths[index]);
-			}
-			stdout.printf ("Ok.\n");
-			return true;
-		}
-		catch (Error e)
-		{
-			return false;
-		}
-	}
-
 	private bool shell (string command)
 	{
 		try
@@ -1021,7 +987,7 @@ public class GstdCli : GLib.Object
 			    && args[0].down () != "ping-pipe" && args[0].down () != "exit"
 			    && args[0].down () != "ping-pipe" && args[0].down () != "version"
 			    && args[0].down () != "sh" && args[0].down () != "strict"
-			    && args[0].down () != "destroy-all" && active_pipe == null)
+				&& active_pipe == null)
 			{
 				if (cli_enable)
 					stderr.printf ("There is no active pipeline." +
@@ -1068,7 +1034,7 @@ public class GstdCli : GLib.Object
 			case "destroy":
 				if (cli_enable)
 				{
-					bool ret = pipeline_destroy (active_pipe);
+					bool ret = pipeline_destroy (pipeline);
 					if (ret)
 					{
 						active_pipe = null;
@@ -1078,14 +1044,7 @@ public class GstdCli : GLib.Object
 						return false;
 				}
 				else
-					return pipeline_destroy (obj_path);
-
-			case "destroy-all":
-				if (factory == null)
-					return false;
-
-				active_pipe = null;
-				return factory.destroy_all();
+					return pipeline_destroy (pipeline);
 
 			case "play":
 				return pipeline_play (pipeline, true);
@@ -1153,9 +1112,6 @@ public class GstdCli : GLib.Object
 
 			case "send-custom-event":
 				return pipeline_send_custom_event (pipeline, args);
-
-			case "list-pipes":
-				return pipeline_list ();
 
 			case "ping":
 				return gstd_ping ();

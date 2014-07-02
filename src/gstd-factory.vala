@@ -14,9 +14,6 @@ namespace gstd
 public class Factory : GLib.Object, FactoryInterface
 {
 	private GLib.DBusConnection _conn;
-	private PipelineInterface[] _pipes;
-	private static const int _num_pipes = 20;
-	private uint _nextPipeId = 0;
 
 	/**
 	   Create a new instance of a factory server to process D-Bus
@@ -25,11 +22,6 @@ public class Factory : GLib.Object, FactoryInterface
 	public Factory (GLib.DBusConnection conn)
 	{
 		_conn = conn;
-		_pipes = new PipelineInterface[_num_pipes];
-		for (int ids = 0; ids < _pipes.length; ++ids)
-		{
-			_pipes[ids] = null;
-		}
 	}
 
 	/**
@@ -43,133 +35,14 @@ public class Factory : GLib.Object, FactoryInterface
 	{
 		try
 		{
-			/* Create our pipeline */
-			int next_id = 0;
-			while (_pipes[next_id] != null)
-			{
-				next_id = (next_id + 1) % _pipes.length;
-				if (next_id == 0)
-				{
-					return "";
-				}
-			}
 			/* create GStreamer pipe */
-			Pipeline pipe = new Pipeline (description);
-			if (!pipe.pipeline_is_initialized())
-				return "";
-
-			/* store pointer */
-			_pipes[next_id] = pipe;
-
-			/* register to dbus*/
-			++_nextPipeId;
-			string objectpath = "/com/ridgerun/gstreamer/gstd/pipe" + _nextPipeId.to_string ();
-			pipe.registration_id = _conn.register_object(objectpath, _pipes[next_id]);
-			pipe.path = objectpath;
+			Pipeline pipe = new Pipeline (description, _conn);
 			return pipe.path;
 		}
-		catch (GLib.IOError error)
+		catch (GLib.Error error)
 		{
 			return "";
 		}
-	}
-
-	/**
-	   Destroy a pipeline
-	   @param id, the pipeline id assigned when created
-	   @return true, if succeded
-	   @see PipelineId
-	 */
-	public bool destroy (string objectpath)
-	{
-		// find pipe and destroy it
-		bool destroyed = false;
-		for (int index = 0; index < _pipes.length; ++index)
-		{
-			if (_pipes[index] != null)
-			{
-				Pipeline pipe = _pipes[index] as Pipeline;
-				if (pipe.path == objectpath)
-				{
-					if (pipe.pipeline_is_initialized()){
-						/* Call set state and wait until the transition to NULL is done */
-						if (!pipe.pipeline_set_state (Gst.State.NULL, true))
-							Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
-					}
-	
-					Posix.syslog (Posix.LOG_ERR, "REFCOUNT: %u", pipe.ref_count);
-					if (!_conn.unregister_object(pipe.registration_id))
-						Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
-					_pipes[index] = null;
-					destroyed = true;
-					break;
-				}
-			}
-		}
-
-		if (!destroyed)
-		{
-			Posix.syslog (Posix.LOG_ERR, "Fail to destroy pipeline");
-			return false;
-		}
-
-		bool empty = true;
-		for (int index = 0; index < _pipes.length; ++index)
-		{
-			if (_pipes[index] != null)
-			{
-				empty = false;
-				break;
-			}
-		}
-
-		if (empty)
-		{
-			Posix.syslog (Posix.LOG_ERR, "Last pipe has been destroyed");
-			last_pipe_destroyed();
-		}
-
-		return true;
-	}
-
-	/**
-	   Destroy all pipelines
-	   @return true, if succeded
-	   @see PipelineId
-	 */
-	public bool destroy_all ()
-	{
-		for (int index = 0; index < _pipes.length; ++index)
-		{
-			if (_pipes[index] != null)
-			{
-				if (!_conn.unregister_object((_pipes[index] as Pipeline).registration_id))
-					Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");
-				_pipes[index] = null;
-			}
-		}
-
-		last_pipe_destroyed();
-
-		return true;
-	}
-
-	/**
-	   List the existing pipelines
-	   @return pipe_list with the corresponding paths
-	 */
-	public string[] list ()
-	{
-		string[] paths = {};
-
-		for (int index = 0; index < _pipes.length; ++index)
-		{
-			if (_pipes[index] != null)
-			{
-				paths += (_pipes[index] as Pipeline).path;
-			}
-		}
-		return paths;
 	}
 
 	/**
@@ -182,10 +55,5 @@ public class Factory : GLib.Object, FactoryInterface
 		/*Gstd received the Ping method call */
 		return true;
 	}
-
-	/**
-	   Emitted when the last pipe has been destroyed.
-	 */
-	public signal void last_pipe_destroyed();
 }
 }
