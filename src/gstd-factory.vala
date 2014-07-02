@@ -91,6 +91,12 @@ public class Factory : GLib.Object, FactoryInterface
 				Pipeline pipe = _pipes[index] as Pipeline;
 				if (pipe.path == objectpath)
 				{
+					if (pipe.pipeline_is_initialized()){
+						/* Call set state and wait until the transition to NULL is done */
+						if (!pipe.pipeline_set_state (Gst.State.NULL, true))
+							Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
+					}
+	
 					Posix.syslog (Posix.LOG_ERR, "REFCOUNT: %u", pipe.ref_count);
 					if (!_conn.unregister_object(pipe.registration_id))
 						Posix.syslog (Posix.LOG_ERR, "Failed to unregister dbus object");

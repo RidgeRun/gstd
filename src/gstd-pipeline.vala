@@ -63,8 +63,8 @@ public class Pipeline : GLib.Object, PipelineInterface
 		if (_initialized)
 		{
 			/* Call set state and wait until the transition to NULL is done */
-			if (!pipeline_set_state_impl (Gst.State.NULL, true))
-				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");
+			/*if (!pipeline_set_state_impl (Gst.State.NULL, true))
+				Posix.syslog (Posix.LOG_ERR, "Failed to destroy pipeline");*/
 
 			/* Deregister the bus watch before destroying the pipe. This is needed to ensure, that we dont receive invalid callbacks. */
 			GLib.Source.remove(_callbackId);
