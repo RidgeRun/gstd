@@ -216,6 +216,14 @@
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        
     </method>
+    <method name="PadGetActualCaps">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="pad" direction = "in" />
+        <arg type="s" name ="caps" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>
+    </method>
     <method name="PipelineGetDuration">
         <arg type="x" name ="duration" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
@@ -344,6 +352,17 @@
     <signal name="Error">
         <arg type="t" name="pipe_id"/>
         <arg type="s" name="err_message"/>
+        <arg type="s" name="debug_info"/>
+    </signal>
+    <signal name="Warning">
+        <arg type="t" name="pipe_id"/>
+        <arg type="s" name="warning_message"/>
+        <arg type="s" name="debug_info"/>
+    </signal>
+    <signal name="Information">
+        <arg type="t" name="pipe_id"/>
+        <arg type="s" name="info_message"/>
+        <arg type="s" name="debug_info"/>
     </signal>
     <signal name="StateChanged">
         <arg type="t" name="pipe_id"/>
