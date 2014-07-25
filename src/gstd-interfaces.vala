@@ -78,6 +78,18 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyStringAsync", no_reply = true)]
 		public abstract void element_set_property_string_async(string element, string property, string val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyEnumByName")]
+		public abstract bool element_set_property_enum_by_name(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnumByNameAsync", no_reply = true)]
+		public abstract void element_set_property_enum_by_name_async(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnum")]
+		public abstract bool element_set_property_enum(string element, string property, int val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnumAsync", no_reply = true)]
+		public abstract void element_set_property_enum_async(string element, string property, int val) throws DBusError, IOError;
+
 		[DBus (name = "ElementGetPropertyBoolean")]
 		public abstract void element_get_property_boolean(string element, string property, out bool val, out bool success) throws DBusError, IOError;
 
@@ -98,6 +110,9 @@ namespace gstd {
 
 		[DBus (name = "ElementGetPropertyBuffer")]
 		public abstract void element_get_property_buffer(string element, string property, out string caps, out uint8[] data, out bool success) throws DBusError, IOError;
+
+		[DBus (name = "ElementGetPropertyEnum")]
+		public abstract void element_get_property_enum(string element, string property, out int val, out bool success) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetDuration")]
 		public abstract int64 pipeline_get_duration() throws DBusError, IOError;
@@ -229,6 +244,18 @@ namespace gstd {
 		[DBus (name = "ElementSetPropertyStringAsync", no_reply = true)]
 		public abstract void element_set_property_string_async(string element, string property, string val) throws DBusError, IOError;
 
+		[DBus (name = "ElementSetPropertyEnumByName")]
+		public abstract bool element_set_property_enum_by_name(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnumByNameAsync", no_reply = true)]
+		public abstract void element_set_property_enum_by_name_async(string element, string property, string val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnum")]
+		public abstract bool element_set_property_enum(string element, string property, int val) throws DBusError, IOError;
+
+		[DBus (name = "ElementSetPropertyEnumAsync", no_reply = true)]
+		public abstract void element_set_property_enum_async(string element, string property, int val) throws DBusError, IOError;
+
 		[DBus (name = "ElementGetPropertyBoolean")]
 		public abstract void element_get_property_boolean(string element, string property, out bool val, out bool success) throws DBusError, IOError;
 
@@ -249,6 +276,9 @@ namespace gstd {
 
 		[DBus (name = "ElementGetPropertyBuffer")]
 		public abstract void element_get_property_buffer(string element, string property, out string caps, out uint8[] data, out bool success) throws DBusError, IOError;
+
+		[DBus (name = "ElementGetPropertyEnum")]
+		public abstract void element_get_property_enum(string element, string property, out int val, out bool success) throws DBusError, IOError;
 
 		[DBus (name = "PipelineGetDuration")]
 		public abstract int64 pipeline_get_duration() throws DBusError, IOError;

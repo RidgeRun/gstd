@@ -409,7 +409,18 @@ public class GstdCli : GLib.Object
 					stdout.printf ("The '%s' value on element '%s' is: %s\n",
 					               property, element, string_v);
 					break;
-
+				case "enum":
+					int integer_v;
+					pipeline.element_get_property_enum (element, property, out integer_v, out success);
+					if (!success)
+					{
+						stdout.printf("Failed to get property value");
+						ret = false;
+						break;
+					}
+					stdout.printf ("The '%s' value on element '%s' is: %d\n",
+					               property, element, integer_v);
+					break;
 				default:
 					stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
 					return false;
@@ -484,6 +495,18 @@ public class GstdCli : GLib.Object
 					ret = pipeline.element_set_property_string (element, property, string_v);
 					break;
 
+				case "enum":
+					int integer_v = int.parse(args[4]);
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%d\n",
+					               property, element, integer_v);
+					ret = pipeline.element_set_property_enum (element, property, integer_v);
+					break;
+				case "enum-by-name":
+					string string_v = args[4];
+					stdout.printf ("Trying to set '%s' on element '%s' to the value:%s\n",
+					               property, element, string_v);
+					ret = pipeline.element_set_property_enum_by_name (element, property, string_v);
+					break;
 				default:
 					stderr.printf ("Error:\nDatatype not supported: %s\n", args[3]);
 					return false;

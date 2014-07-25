@@ -158,6 +158,36 @@
         <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
         <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
     </method>
+    <method name="ElementSetPropertyEnumByName">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="val" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="ElementSetPropertyEnumByNameAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="s" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
+        <method name="ElementSetPropertyEnum">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "in" />
+        <arg type="b" name ="success" direction="out" >
+            <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+         </arg>
+    </method>
+    <method name="ElementSetPropertyEnumAsync">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "in" />
+        <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+        <annotation name="org.freedesktop.DBus.GLib.NoReply" value="true"/>
+    </method>
     <method name="ElementGetPropertyBoolean">
         <arg type="s" name ="element" direction = "in" />
         <arg type="s" name ="property" direction = "in" />
@@ -215,6 +245,14 @@
         <arg type = "b" name = "success" direction = "out" >
             <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
         </arg>        
+    </method>
+    <method name="ElementGetPropertyEnum">
+        <arg type="s" name ="element" direction = "in" />
+        <arg type="s" name ="property" direction = "in" />
+        <arg type="i" name ="val" direction = "out" />
+        <arg type = "b" name = "success" direction = "out" >
+            <annotation name = "org.freedesktop.DBus.GLib.ReturnVal" value = ""/>
+        </arg>
     </method>
     <method name="PipelineGetDuration">
         <arg type="x" name ="duration" direction="out" >

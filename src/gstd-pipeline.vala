@@ -481,6 +481,82 @@ public class Pipeline : GLib.Object, PipelineInterface
 		catch (Error err)
 		{}
 	}
+	
+	/**
+	   Set a enum property for an element on the pipeline
+	   @param element, whose property needs to be set
+	   @param property,property name
+	   @param val,string property value
+	 */
+	public bool element_set_property_enum_by_name (string element, string property, string val)
+	{
+		var e = get_child_by_name_recursive (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		Gst.util_set_object_arg((Gst.Object)(e), property, val);
+
+		return true;
+	}
+
+	public void element_set_property_enum_by_name_async (string element, string property, string val)
+	{
+		try
+		{
+			element_set_property_enum_by_name(element, property, val);
+		}
+		catch (Error err)
+		{}
+	}
+
+	/**
+	   Set a enum property for an element on the pipeline
+	   @param element, whose property needs to be set
+	   @param property,property name
+	   @param val,string property value
+	 */
+	public bool element_set_property_enum (string element, string property, int val)
+	{
+		var e = get_child_by_name_recursive (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		e.set (property, val, null);
+
+		return true;
+	}
+
+	public void element_set_property_enum_async (string element, string property, int val)
+	{
+		try
+		{
+			element_set_property_enum(element, property, val);
+		}
+		catch (Error err)
+		{}
+	}
 
 	public void element_get_property_boolean(string element, string property, out bool val, out bool success)
 	{
@@ -672,6 +748,40 @@ public class Pipeline : GLib.Object, PipelineInterface
 	private bool element_get_property_string_impl (string element, string property, out string val)
 	{
 		val = "";
+
+		var e = get_child_by_name_recursive (element) as Gst.Element;
+		if (e == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s not found on pipeline", element);
+			return false;
+		}
+
+		var spec = e.get_class ().find_property (property);
+		if (spec == null)
+		{
+			Posix.syslog (Posix.LOG_WARNING, "Element %s does not have the property %s",
+			              element, property);
+			return false;
+		}
+
+		e.get (property, &val, null);
+		return true;
+	}
+	
+	public void element_get_property_enum(string element, string property, out int val, out bool success)
+	{
+		success = element_get_property_enum_impl(element, property, out val);
+	}
+
+	/**
+	   Gets an element's int property value of a specific pipeline
+	   @param element, whose property value wants to be known
+	   @param property,property name
+	   @param val value of the property
+	 */
+	private bool element_get_property_enum_impl (string element, string property, out int val)
+	{
+		val = 0;
 
 		var e = get_child_by_name_recursive (element) as Gst.Element;
 		if (e == null)
