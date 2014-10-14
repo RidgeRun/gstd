@@ -38,8 +38,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		/*Get and watch bus */
 		Gst.Bus bus = _pipeline.get_bus ();
 		bus.set_sync_handler(bus_sync_callback);
+#if HAVE_GSTREAMER_1_0
+		_callbackId = bus.add_watch (GLib.Priority.DEFAULT, bus_callback);
+#else
 		_callbackId = bus.add_watch (bus_callback);
-
+#endif
 		/* Finally, register ourself to dbus.*/
 		_connection = conn;
 		++_nextPipeId;
@@ -111,7 +114,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				continue;
 
 #if HAVE_GSTREAMER_1_0
-			overlay.set_window_handle((uint)_windowId);
+			overlay.set_window_handle((uint*)_windowId);
 #else
  			overlay.set_xwindow_id((ulong)_windowId);
 #endif
@@ -436,9 +439,13 @@ public class Pipeline : GLib.Object, PipelineInterface
 			              element, property);
 			return false;
 		}
-
+#if HAVE_GSTREAMER_1_0
+		GLib.Value val = GLib.Value(typeof(Gst.Fraction));
+		Gst.Value.set_fraction(val, numerator, denominator);
+#else
 		Gst.Value val = GLib.Value(typeof(Gst.Fraction));
 		val.set_fraction(numerator, denominator);
+#endif
 		e.set_property (property, val);
 		return true;
 	}
@@ -514,9 +521,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 			              element, property);
 			return false;
 		}
-
+#if HAVE_GSTREAMER_1_0
+		Gst.Util.set_object_arg((Gst.Object)(e), property, val);
+#else
 		Gst.util_set_object_arg((Gst.Object)(e), property, val);
-
+#endif
 		return true;
 	}
 
@@ -699,7 +708,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return false;
 		}
 
+#if HAVE_GSTREAMER_1_0
+		GLib.Value tmp = GLib.Value(typeof(double));
+#else
 		Gst.Value tmp = GLib.Value(typeof(double));
+#endif
 		e.get_property (property, ref tmp);
 		val = tmp.get_double();
 		return true;
@@ -735,11 +748,20 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return false;
 		}
 
+#if HAVE_GSTREAMER_1_0
+		GLib.Value val = GLib.Value(typeof(Gst.Fraction));
+#else
 		Gst.Value val = GLib.Value(typeof(Gst.Fraction));
+#endif
 		e.get_property (property, ref val);
-		
+
+#if HAVE_GSTREAMER_1_0
+		numerator = Gst.Value.get_fraction_numerator(val);
+		denominator = Gst.Value.get_fraction_denominator(val);
+#else
 		numerator = val.get_fraction_numerator();
 		denominator = val.get_fraction_denominator();
+#endif
 
 		return true;		
 	}
@@ -870,8 +892,17 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		if (buffer != null)
 		{
+#if HAVE_GSTREAMER_1_0
+			Gst.MapInfo buffer_map_info;
+			buffer.map(out buffer_map_info, Gst.MapFlags.READ);
+			data = buffer_map_info.data;
+			
+			Gst.Pad pad = e.get_static_pad("sink");
+			caps = (pad.get_current_caps() != null) ? pad.get_current_caps().to_string() : "";
+#else			
 			caps = (buffer.caps != null) ? buffer.caps.to_string() : "";
 			data = buffer.data;
+#endif
 		}
 
 		return true;
@@ -886,7 +917,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		/* Query duration */
 		var format = Gst.Format.TIME;
 		int64 duration = 0;
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.query_duration (format, out duration))
+#else
 		if (!_pipeline.query_duration (ref format, out duration))
+#endif
 		{
 			return -1;
 		}
@@ -912,7 +947,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		var format = Gst.Format.TIME;
 		int64 position = 0;
 
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.query_position (format, out position))
+#else
 		if (!_pipeline.query_position (ref format, out position))
+#endif
 		{
 			return -1;
 		}
@@ -931,7 +970,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 	private bool pipeline_seek_impl (int64 ipos_ns, bool wait_transition_done)
 	{
 		/*Set the current position */
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+#else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+#endif
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -1052,7 +1095,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		int64 cur_pos_ns = 0;
 
 		/*Gets the current position */
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.query_position (format, out cur_pos_ns))
+#else
 		if (!_pipeline.query_position (ref format, out cur_pos_ns))
+#endif
 		{
 			return false;
 		}
@@ -1061,7 +1108,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		int64 seek_ns = cur_pos_ns + period_ns;
 
 		/*Set the current position */
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+#else
 		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+#endif
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
@@ -1082,7 +1133,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		_rate = new_rate;
 
 		/*Changes the rate on the pipeline */
+#if HAVE_GSTREAMER_1_0
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+#else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
+#endif
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Speed could not be changed");
 			return false;
@@ -1232,7 +1287,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 				if (proxy == null)
 					return null;
 
+#if HAVE_GSTREAMER_1_0
+				object = (Gst.Object?)proxy.get_child_by_name(parts[i]);
+#else
 				object = proxy.get_child_by_name(parts[i]);
+#endif
 				if (object == null)
 					return null;
 			}
@@ -1240,7 +1299,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 		else
 		{
+#if HAVE_GSTREAMER_1_0
+			return (Gst.Object?)((_pipeline as Gst.ChildProxy).get_child_by_name(name));
+#else
 			return (_pipeline as Gst.ChildProxy).get_child_by_name(name);
+#endif
 		}
 	}
 }
