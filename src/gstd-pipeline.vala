@@ -102,12 +102,22 @@ public class Pipeline : GLib.Object, PipelineInterface
 		string[] videoSinkNames = {"videosink", "videosink::" + message.src.name};
 		for (int i = 0; i < videoSinkNames.length; ++i)
 		{
-			var overlay = get_child_by_name_recursive(videoSinkNames[i]) as Gst.XOverlay;
+#if HAVE_GSTREAMER_1_0
+			var overlay = get_child_by_name_recursive(videoSinkNames[i]) as Gst.Video.Overlay;
+#else
+ 			var overlay = get_child_by_name_recursive(videoSinkNames[i]) as Gst.XOverlay;
+#endif
 			if (overlay == null)
 				continue;
 
+#if HAVE_GSTREAMER_1_0
+			overlay.set_window_handle((uint)_windowId);
+#else
+ 			overlay.set_xwindow_id((ulong)_windowId);
+#endif
+
 			Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
-			overlay.set_xwindow_id((ulong)_windowId);
+
 			return Gst.BusSyncReply.PASS;
 		}
 
