@@ -79,7 +79,7 @@ POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in $(srcdir)/gstd-1.3.pc.in \
+	$(srcdir)/config.h.in $(srcdir)/gstd-1.4.pc.in \
 	$(srcdir)/com.ridgerun.gstreamer.gstd.service.in README \
 	compile depcomp install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -90,7 +90,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = gstd-1.3.pc com.ridgerun.gstreamer.gstd.service
+CONFIG_CLEAN_FILES = gstd-1.4.pc com.ridgerun.gstreamer.gstd.service
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -333,12 +333,12 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = gstd-1.3.pc
+pkgconfig_DATA = gstd-1.4.pc
 dbusdir = $(datadir)/dbus-1/system-services/
 dbus_DATA = com.ridgerun.gstreamer.gstd.service
 dbusconfdir = $(sysconfdir)/dbus-1/system.d/
 dbusconf_DATA = gstd.conf
-EXTRA_DIST = gstd-1.3.pc.in com.ridgerun.gstreamer.gstd.service.in gstd.conf
+EXTRA_DIST = gstd-1.4.pc.in com.ridgerun.gstreamer.gstd.service.in gstd.conf
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -392,7 +392,7 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-gstd-1.3.pc: $(top_builddir)/config.status $(srcdir)/gstd-1.3.pc.in
+gstd-1.4.pc: $(top_builddir)/config.status $(srcdir)/gstd-1.4.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 com.ridgerun.gstreamer.gstd.service: $(top_builddir)/config.status $(srcdir)/com.ridgerun.gstreamer.gstd.service.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
