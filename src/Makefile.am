@@ -42,7 +42,7 @@ endif
 install-data-hook:
 	cd $(bindir) ; rm -f gst-client-interpreter ; $(LN_S) gst-client gst-client-interpreter
 
-interfaces_xml := com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
+interfaces_xml = com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
  com.ridgerun.gstreamer.gstd.PipelineInterface.xml
 
 EXTRA_DIST= $(interfaces_xml)
