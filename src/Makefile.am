@@ -6,7 +6,7 @@ bin_PROGRAMS = gstd gst-client
 gstd_SOURCES = gstd-interfaces.vala gstd-main.vala gstd-factory.vala gstd-pipeline.vala
 gstd_VALAFLAGS = --thread --vapidir=@VAPIDIR@ --vapidir=. --pkg gstd-config \
     --pkg gio-2.0 --pkg @GSTREAMER_VERSION@ --pkg posix \
-    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@
+    @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ @HAVE_GSTREAMER_1_0@
 
 gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GIO_CFLAGS@
 gstd_LDADD = @GSTREAMER_LIBS@ @GIO_LIBS@
