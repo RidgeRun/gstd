@@ -899,6 +899,8 @@ public class Pipeline : GLib.Object, PipelineInterface
 			
 			Gst.Pad pad = e.get_static_pad("sink");
 			caps = (pad.get_current_caps() != null) ? pad.get_current_caps().to_string() : "";
+
+			buffer.unmap(buffer_map_info);
 #else			
 			caps = (buffer.caps != null) ? buffer.caps.to_string() : "";
 			data = buffer.data;
