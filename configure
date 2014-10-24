@@ -651,20 +651,15 @@ LIBOBJS
 VAPIDIR
 GIO_LIBS
 GIO_CFLAGS
-GSTREAMER_INTERFACES_LIBS
-GSTREAMER_INTERFACES_CFLAGS
-GSTREAMER_VIDEO_LIBS
-GSTREAMER_VIDEO_CFLAGS
-GSTREAMER_BASE_LIBS
-GSTREAMER_BASE_CFLAGS
-GSTREAMER_SUPPORT_STEP
-GSTREAMER_SUPPORT_QOS_SIGNAL
-GSTREAMER_VERSION
-GSTREAMER_1_0
-GSTREAMER_1_0_FALSE
-GSTREAMER_1_0_TRUE
-GSTREAMER_LIBS
-GSTREAMER_CFLAGS
+HAVE_GSTREAMER_1_FALSE
+HAVE_GSTREAMER_1_TRUE
+gstversion
+GST_EXTRA_MODULES_LIBS
+GST_EXTRA_MODULES_CFLAGS
+GST_SUPPORT_STEP
+GST_SUPPORT_QOS_SIGNAL
+GST_LIBS
+GST_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -763,6 +758,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
+with_gstreamer_version
 with_vapidir
 '
       ac_precious_vars='build_alias
@@ -777,14 +773,10 @@ CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-GSTREAMER_CFLAGS
-GSTREAMER_LIBS
-GSTREAMER_BASE_CFLAGS
-GSTREAMER_BASE_LIBS
-GSTREAMER_VIDEO_CFLAGS
-GSTREAMER_VIDEO_LIBS
-GSTREAMER_INTERFACES_CFLAGS
-GSTREAMER_INTERFACES_LIBS
+GST_CFLAGS
+GST_LIBS
+GST_EXTRA_MODULES_CFLAGS
+GST_EXTRA_MODULES_LIBS
 GIO_CFLAGS
 GIO_LIBS
 VAPIDIR'
@@ -1412,6 +1404,10 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-gstreamer-version=VERSION
+                          gstreamer version to use. E.g.
+                          --with-gstreamer-version=1.0 or
+                          --with-gstreamer-version=0.10
   --with-vapidir=<path>   Set the path for the vapidir
 
 Some influential environment variables:
@@ -1428,22 +1424,12 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  GSTREAMER_CFLAGS
-              C compiler flags for GSTREAMER, overriding pkg-config
-  GSTREAMER_LIBS
-              linker flags for GSTREAMER, overriding pkg-config
-  GSTREAMER_BASE_CFLAGS
-              C compiler flags for GSTREAMER_BASE, overriding pkg-config
-  GSTREAMER_BASE_LIBS
-              linker flags for GSTREAMER_BASE, overriding pkg-config
-  GSTREAMER_VIDEO_CFLAGS
-              C compiler flags for GSTREAMER_VIDEO, overriding pkg-config
-  GSTREAMER_VIDEO_LIBS
-              linker flags for GSTREAMER_VIDEO, overriding pkg-config
-  GSTREAMER_INTERFACES_CFLAGS
-              C compiler flags for GSTREAMER_INTERFACES, overriding pkg-config
-  GSTREAMER_INTERFACES_LIBS
-              linker flags for GSTREAMER_INTERFACES, overriding pkg-config
+  GST_CFLAGS  C compiler flags for GST, overriding pkg-config
+  GST_LIBS    linker flags for GST, overriding pkg-config
+  GST_EXTRA_MODULES_CFLAGS
+              C compiler flags for GST_EXTRA_MODULES, overriding pkg-config
+  GST_EXTRA_MODULES_LIBS
+              linker flags for GST_EXTRA_MODULES, overriding pkg-config
   GIO_CFLAGS  C compiler flags for GIO, overriding pkg-config
   GIO_LIBS    linker flags for GIO, overriding pkg-config
   VAPIDIR     path for the vala bindings
@@ -3920,7 +3906,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_HAVE_PKGCONFIG="yes"
+    ac_cv_prog_HAVE_PKGCONFIG=""
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3928,7 +3914,10 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_prog_HAVE_PKGCONFIG" && ac_cv_prog_HAVE_PKGCONFIG="no"
+  test -z "$ac_cv_prog_HAVE_PKGCONFIG" && ac_cv_prog_HAVE_PKGCONFIG="
+		as_fn_error $? "You need to have pkg-config installed!" "$LINENO" 5
+
+"
 fi
 fi
 HAVE_PKGCONFIG=$ac_cv_prog_HAVE_PKGCONFIG
@@ -3942,9 +3931,43 @@ fi
 
 
 
-if test "x$HAVE_PKGCONFIG" = "xno"; then
-  as_fn_error $? "you need to have pkgconfig installed !" "$LINENO" 5
+
+# Check whether --with-gstreamer-version was given.
+if test "${with_gstreamer_version+set}" = set; then :
+  withval=$with_gstreamer_version;
+    		case "${withval}" in
+    			1.0)
+				GST_REQUIRED=1.4.3
+				GSTPB_REQUIRED=1.4.3
+				checkqosstep=no
+    				;;
+    			0.10)
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+    				;;
+    			*)
+    				as_fn_error $? "bad value ${withval} for --with-gstreamer-version, use 0.10 or 1.0" "$LINENO" 5
+    				;;
+    		esac
+    		{ $as_echo "$as_me:${as_lineno-$LINENO}: using seelcted version: $withval" >&5
+$as_echo "$as_me: using seelcted version: $withval" >&6;}
+    		gstversion=$withval
+    		usedefault=no
+
+else
+
+  		{ $as_echo "$as_me:${as_lineno-$LINENO}: gstreamer version not specified, try to use latest version: 1.0" >&5
+$as_echo "$as_me: gstreamer version not specified, try to use latest version: 1.0" >&6;}
+  		gstversion=1.0
+		GST_REQUIRED=1.4.3
+		GSTPB_REQUIRED=1.4.3
+		usedefault=yes
+		checkqosstep=no
+
+
 fi
+
 
 
 
@@ -4067,35 +4090,59 @@ $as_echo "no" >&6; }
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
-$as_echo_n "checking for GSTREAMER... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GST" >&5
+$as_echo_n "checking for GST... " >&6; }
 
-if test -n "$GSTREAMER_CFLAGS"; then
-    pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
+if test -n "$GST_CFLAGS"; then
+    pkg_cv_GST_CFLAGS="$GST_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+		gstreamer-\$gstversion >= \$GST_REQUIRED
+		gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+		gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+	\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_CFLAGS=`$PKG_CONFIG --cflags "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$GSTREAMER_LIBS"; then
-    pkg_cv_GSTREAMER_LIBS="$GSTREAMER_LIBS"
+if test -n "$GST_LIBS"; then
+    pkg_cv_GST_LIBS="$GST_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+		gstreamer-\$gstversion >= \$GST_REQUIRED
+		gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+		gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+	\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gstreamer-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_LIBS=`$PKG_CONFIG --libs "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4115,60 +4162,85 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-1.0 >= 1.4.3 " 2>&1`
+	        GST_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	" 2>&1`
         else
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-1.0 >= 1.4.3 " 2>&1`
+	        GST_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$GSTREAMER_PKG_ERRORS" >&5
+	echo "$GST_PKG_ERRORS" >&5
 
-	HAVE_GSTREAMER=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	HAVE_GSTREAMER=no
-else
-	GSTREAMER_CFLAGS=$pkg_cv_GSTREAMER_CFLAGS
-	GSTREAMER_LIBS=$pkg_cv_GSTREAMER_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	HAVE_GSTREAMER=yes
-fi
 
-if test "x$HAVE_GSTREAMER" = "xno"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: gstreamer development packages >= 1.4.3 are not installed! checking for older version... " >&5
-$as_echo "gstreamer development packages >= 1.4.3 are not installed! checking for older version... " >&6; }
+		case "${usedefault}" in
+			yes)
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: default gstreamer version 1.0 not found, checking for 0.10" >&5
+$as_echo "$as_me: default gstreamer version 1.0 not found, checking for 0.10" >&6;}
+				gstversion=0.10
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
-$as_echo_n "checking for GSTREAMER... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GST" >&5
+$as_echo_n "checking for GST... " >&6; }
 
-if test -n "$GSTREAMER_CFLAGS"; then
-    pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
+if test -n "$GST_CFLAGS"; then
+    pkg_cv_GST_CFLAGS="$GST_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.22 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+						gstreamer-\$gstversion >= \$GST_REQUIRED
+						gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+						gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+					\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-0.10 >= 0.10.22 " 2>/dev/null`
+  pkg_cv_GST_CFLAGS=`$PKG_CONFIG --cflags "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$GSTREAMER_LIBS"; then
-    pkg_cv_GSTREAMER_LIBS="$GSTREAMER_LIBS"
+if test -n "$GST_LIBS"; then
+    pkg_cv_GST_LIBS="$GST_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10 >= 0.10.22 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+						gstreamer-\$gstversion >= \$GST_REQUIRED
+						gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+						gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+					\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gstreamer-0.10 >= 0.10.22 " 2>/dev/null`
+  pkg_cv_GST_LIBS=`$PKG_CONFIG --libs "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4188,145 +4260,273 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-0.10 >= 0.10.22 " 2>&1`
+	        GST_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>&1`
         else
-	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-0.10 >= 0.10.22 " 2>&1`
+	        GST_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$GSTREAMER_PKG_ERRORS" >&5
+	echo "$GST_PKG_ERRORS" >&5
 
-	HAVE_GSTREAMER=no
+	as_fn_error $? "gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system." "$LINENO" 5
+
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	HAVE_GSTREAMER=no
+	as_fn_error $? "gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system." "$LINENO" 5
+
 else
-	GSTREAMER_CFLAGS=$pkg_cv_GSTREAMER_CFLAGS
-	GSTREAMER_LIBS=$pkg_cv_GSTREAMER_LIBS
+	GST_CFLAGS=$pkg_cv_GST_CFLAGS
+	GST_LIBS=$pkg_cv_GST_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	HAVE_GSTREAMER=yes
-fi
-  if test "x$HAVE_GSTREAMER" = "xno"; then
-    as_fn_error $? "you need gstreamer development packages installed >= 0.10.22 !" "$LINENO" 5
-  else
-    if test -n "$GSTREAMER_VERSION"; then
-    pkg_cv_GSTREAMER_VERSION="$GSTREAMER_VERSION"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-0.10\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-0.10") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_VERSION=`$PKG_CONFIG --modversion "gstreamer-0.10" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-    GSTREAMER_VERSION="gstreamer-0.10"
-  fi
-else
-  if test -n "$GSTREAMER_VERSION"; then
-    pkg_cv_GSTREAMER_VERSION="$GSTREAMER_VERSION"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-1.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-1.0") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_VERSION=`$PKG_CONFIG --modversion "gstreamer-1.0" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-  GSTREAMER_VERSION="gstreamer-1.0"
-  GSTREAMER_1_0="yes"
-   if test "$GSTREAMER_1_0" = yes; then
-  GSTREAMER_1_0_TRUE=
-  GSTREAMER_1_0_FALSE='#'
-else
-  GSTREAMER_1_0_TRUE='#'
-  GSTREAMER_1_0_FALSE=
-fi
 
+												GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
 
 fi
+				;;
+			no|*)
+				as_fn_error $? "The requested gstreamer version $gstversion was not found" "$LINENO" 5
+				;;
+		esac
 
-GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS $GSTREAMER_ERROR"
 
 
-
-
-
-GSTREAMER_MAJOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\1/"`
-GSTREAMER_MINOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\2/"`
-GSTREAMER_RELEASE=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking if gstreamer version has support for QOS signals" >&5
-$as_echo_n "checking Checking if gstreamer version has support for QOS signals... " >&6; }
-if test $GSTREAMER_RELEASE -ge 29 ; then
-    GSTREAMER_SUPPORT_QOS_SIGNAL="-D GSTREAMER_SUPPORT_QOS_SIGNAL"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-    GSTREAMER_SUPPORT_QOS_SIGNAL=
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+
+		case "${usedefault}" in
+			yes)
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: default gstreamer version 1.0 not found, checking for 0.10" >&5
+$as_echo "$as_me: default gstreamer version 1.0 not found, checking for 0.10" >&6;}
+				gstversion=0.10
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GST" >&5
+$as_echo_n "checking for GST... " >&6; }
+
+if test -n "$GST_CFLAGS"; then
+    pkg_cv_GST_CFLAGS="$GST_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+						gstreamer-\$gstversion >= \$GST_REQUIRED
+						gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+						gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+					\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GST_CFLAGS=`$PKG_CONFIG --cflags "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GST_LIBS"; then
+    pkg_cv_GST_LIBS="$GST_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+						gstreamer-\$gstversion >= \$GST_REQUIRED
+						gstreamer-base-\$gstversion >= \$GSTPB_REQUIRED
+						gstreamer-controller-\$gstversion >= \$GST_REQUIRED
+					\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GST_LIBS=`$PKG_CONFIG --libs "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking if gstreamer version has support for step" >&5
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        GST_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>&1`
+        else
+	        GST_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$GST_PKG_ERRORS" >&5
+
+	as_fn_error $? "gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system." "$LINENO" 5
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	as_fn_error $? "gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system." "$LINENO" 5
+
+else
+	GST_CFLAGS=$pkg_cv_GST_CFLAGS
+	GST_LIBS=$pkg_cv_GST_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+												GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
+
+fi
+				;;
+			no|*)
+				as_fn_error $? "The requested gstreamer version $gstversion was not found" "$LINENO" 5
+				;;
+		esac
+
+
+
+else
+	GST_CFLAGS=$pkg_cv_GST_CFLAGS
+	GST_LIBS=$pkg_cv_GST_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+				GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
+
+fi
+
+if test "x$checkqosstep" = "xyes"; then
+		if test -n "$GST_VERSION"; then
+    pkg_cv_GST_VERSION="$GST_VERSION"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-\$gstversion\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gstreamer-$gstversion") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GST_VERSION=`$PKG_CONFIG --modversion "gstreamer-$gstversion" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+	GST_RELEASE=`echo $pkg_cv_GST_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking if gstreamer version has support for step" >&5
 $as_echo_n "checking Checking if gstreamer version has support for step... " >&6; }
-if test $GSTREAMER_RELEASE -ge 24 ; then
-    GSTREAMER_SUPPORT_STEP="-D GSTREAMER_SUPPORT_STEP"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+	if test $GST_RELEASE -ge 24 ; then
+    		GST_SUPPORT_STEP="-D GST_SUPPORT_STEP"
+    		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-else
-    GSTREAMER_SUPPORT_STEP=
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+	else
+    		GST_SUPPORT_STEP=
+    		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+	fi
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking if gstreamer version has support for QOS signals" >&5
+$as_echo_n "checking Checking if gstreamer version has support for QOS signals... " >&6; }
+	if test $GST_RELEASE -ge 29 ; then
+   		GST_SUPPORT_QOS_SIGNAL="-D GST_SUPPORT_QOS_SIGNAL"
+    		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+    		GST_SUPPORT_QOS_SIGNAL=
+    		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	fi
+
+
+
 fi
 
-
-if test "x$GSTREAMER_VERSION" = "xgstreamer-1.0"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Using gstreamer version 1.0" >&5
-$as_echo "Using gstreamer version 1.0" >&6; };
+case "${gstversion}" in
+	1.0)
+		have_gstreamer_1=yes
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER_BASE" >&5
-$as_echo_n "checking for GSTREAMER_BASE... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GST_EXTRA_MODULES" >&5
+$as_echo_n "checking for GST_EXTRA_MODULES... " >&6; }
 
-if test -n "$GSTREAMER_BASE_CFLAGS"; then
-    pkg_cv_GSTREAMER_BASE_CFLAGS="$GSTREAMER_BASE_CFLAGS"
+if test -n "$GST_EXTRA_MODULES_CFLAGS"; then
+    pkg_cv_GST_EXTRA_MODULES_CFLAGS="$GST_EXTRA_MODULES_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-base-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-base-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+				gstreamer-video-\$gstversion >= \$GST_REQUIRED
+			\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_BASE_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-base-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_EXTRA_MODULES_CFLAGS=`$PKG_CONFIG --cflags "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$GSTREAMER_BASE_LIBS"; then
-    pkg_cv_GSTREAMER_BASE_LIBS="$GSTREAMER_BASE_LIBS"
+if test -n "$GST_EXTRA_MODULES_LIBS"; then
+    pkg_cv_GST_EXTRA_MODULES_LIBS="$GST_EXTRA_MODULES_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-base-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-base-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+				gstreamer-video-\$gstversion >= \$GST_REQUIRED
+			\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_BASE_LIBS=`$PKG_CONFIG --libs "gstreamer-base-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_EXTRA_MODULES_LIBS=`$PKG_CONFIG --libs "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4346,64 +4546,84 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_BASE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-base-1.0 >= 1.4.3 " 2>&1`
+	        GST_EXTRA_MODULES_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			" 2>&1`
         else
-	        GSTREAMER_BASE_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-base-1.0 >= 1.4.3 " 2>&1`
+	        GST_EXTRA_MODULES_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$GSTREAMER_BASE_PKG_ERRORS" >&5
+	echo "$GST_EXTRA_MODULES_PKG_ERRORS" >&5
 
-	HAVE_GSTREAMER_BASE=no
+
+				as_fn_error $? "you need gstreamer-video installed !" "$LINENO" 5
+
+
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	HAVE_GSTREAMER_BASE=no
+
+				as_fn_error $? "you need gstreamer-video installed !" "$LINENO" 5
+
+
 else
-	GSTREAMER_BASE_CFLAGS=$pkg_cv_GSTREAMER_BASE_CFLAGS
-	GSTREAMER_BASE_LIBS=$pkg_cv_GSTREAMER_BASE_LIBS
+	GST_EXTRA_MODULES_CFLAGS=$pkg_cv_GST_EXTRA_MODULES_CFLAGS
+	GST_EXTRA_MODULES_LIBS=$pkg_cv_GST_EXTRA_MODULES_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	HAVE_GSTREAMER_BASE=yes
+
+				GST_CFLAGS="$GST_CFLAGS $GST_EXTRA_MODULES_CFLAGS"
+				GST_LIBS="$GST_LIBS $GST_EXTRA_MODULES_LIBS"
+
 fi
-
-        if test "x$HAVE_GSTREAMER_BASE" = "xno"; then
-        as_fn_error $? "you need gstreamer-video development packages installed !" "$LINENO" 5
-    fi
-
-
-
-
+		;;
+	0.10)
+		have_gstreamer_1=no
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER_VIDEO" >&5
-$as_echo_n "checking for GSTREAMER_VIDEO... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GST_EXTRA_MODULES" >&5
+$as_echo_n "checking for GST_EXTRA_MODULES... " >&6; }
 
-if test -n "$GSTREAMER_VIDEO_CFLAGS"; then
-    pkg_cv_GSTREAMER_VIDEO_CFLAGS="$GSTREAMER_VIDEO_CFLAGS"
+if test -n "$GST_EXTRA_MODULES_CFLAGS"; then
+    pkg_cv_GST_EXTRA_MODULES_CFLAGS="$GST_EXTRA_MODULES_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-video-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-video-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+				gstreamer-interfaces-\$gstversion >= \$GST_REQUIRED
+			\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_VIDEO_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-video-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_EXTRA_MODULES_CFLAGS=`$PKG_CONFIG --cflags "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$GSTREAMER_VIDEO_LIBS"; then
-    pkg_cv_GSTREAMER_VIDEO_LIBS="$GSTREAMER_VIDEO_LIBS"
+if test -n "$GST_EXTRA_MODULES_LIBS"; then
+    pkg_cv_GST_EXTRA_MODULES_LIBS="$GST_EXTRA_MODULES_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-video-1.0 >= 1.4.3 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-video-1.0 >= 1.4.3 ") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"
+				gstreamer-interfaces-\$gstversion >= \$GST_REQUIRED
+			\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_VIDEO_LIBS=`$PKG_CONFIG --libs "gstreamer-video-1.0 >= 1.4.3 " 2>/dev/null`
+  pkg_cv_GST_EXTRA_MODULES_LIBS=`$PKG_CONFIG --libs "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4423,112 +4643,58 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_VIDEO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-video-1.0 >= 1.4.3 " 2>&1`
+	        GST_EXTRA_MODULES_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			" 2>&1`
         else
-	        GSTREAMER_VIDEO_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-video-1.0 >= 1.4.3 " 2>&1`
+	        GST_EXTRA_MODULES_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$GSTREAMER_VIDEO_PKG_ERRORS" >&5
+	echo "$GST_EXTRA_MODULES_PKG_ERRORS" >&5
 
-	HAVE_GSTREAMER_VIDEO=no
+
+				as_fn_error $? "you need gstreamer-interfaces installed !" "$LINENO" 5
+
+
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	HAVE_GSTREAMER_VIDEO=no
+
+				as_fn_error $? "you need gstreamer-interfaces installed !" "$LINENO" 5
+
+
 else
-	GSTREAMER_VIDEO_CFLAGS=$pkg_cv_GSTREAMER_VIDEO_CFLAGS
-	GSTREAMER_VIDEO_LIBS=$pkg_cv_GSTREAMER_VIDEO_LIBS
+	GST_EXTRA_MODULES_CFLAGS=$pkg_cv_GST_EXTRA_MODULES_CFLAGS
+	GST_EXTRA_MODULES_LIBS=$pkg_cv_GST_EXTRA_MODULES_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	HAVE_GSTREAMER_VIDEO=yes
+
+				GST_CFLAGS="$GST_CFLAGS $GST_EXTRA_MODULES_CFLAGS"
+				GST_LIBS="$GST_LIBS $GST_EXTRA_MODULES_LIBS"
+
 fi
+		;;
+	*)
+		as_fn_error $? "Gstreamer version not found !" "$LINENO" 5
+		;;
+esac
 
-        if test "x$HAVE_GSTREAMER_VIDEO" = "xno"; then
-        as_fn_error $? "you need gstreamer-video development packages installed !" "$LINENO" 5
-    fi
 
 
-
+ if test x$have_gstreamer_1 = xyes; then
+  HAVE_GSTREAMER_1_TRUE=
+  HAVE_GSTREAMER_1_FALSE='#'
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Using gstreamer version 0.10" >&5
-$as_echo "Using gstreamer version 0.10" >&6; };
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER_INTERFACES" >&5
-$as_echo_n "checking for GSTREAMER_INTERFACES... " >&6; }
-
-if test -n "$GSTREAMER_INTERFACES_CFLAGS"; then
-    pkg_cv_GSTREAMER_INTERFACES_CFLAGS="$GSTREAMER_INTERFACES_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-interfaces-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-interfaces-0.10 >= 0.10.22 ") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_INTERFACES_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-interfaces-0.10 >= 0.10.22 " 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GSTREAMER_INTERFACES_LIBS"; then
-    pkg_cv_GSTREAMER_INTERFACES_LIBS="$GSTREAMER_INTERFACES_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-interfaces-0.10 >= 0.10.22 \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gstreamer-interfaces-0.10 >= 0.10.22 ") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GSTREAMER_INTERFACES_LIBS=`$PKG_CONFIG --libs "gstreamer-interfaces-0.10 >= 0.10.22 " 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
+  HAVE_GSTREAMER_1_TRUE='#'
+  HAVE_GSTREAMER_1_FALSE=
 fi
 
 
 
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        GSTREAMER_INTERFACES_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-interfaces-0.10 >= 0.10.22 " 2>&1`
-        else
-	        GSTREAMER_INTERFACES_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-interfaces-0.10 >= 0.10.22 " 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$GSTREAMER_INTERFACES_PKG_ERRORS" >&5
-
-	HAVE_GSTREAMER_INTERFACES=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	HAVE_GSTREAMER_INTERFACES=no
-else
-	GSTREAMER_INTERFACES_CFLAGS=$pkg_cv_GSTREAMER_INTERFACES_CFLAGS
-	GSTREAMER_INTERFACES_LIBS=$pkg_cv_GSTREAMER_INTERFACES_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	HAVE_GSTREAMER_INTERFACES=yes
-fi
-
-        if test "x$HAVE_GSTREAMER_INTERFACES" = "xno"; then
-        as_fn_error $? "you need gst-plugins-base development packages installed !" "$LINENO" 5
-    fi
 
 
-
-fi
 
 
 pkg_failed=no
@@ -4760,8 +4926,8 @@ if test -z "${HAVE_READLINE_TRUE}" && test -z "${HAVE_READLINE_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_READLINE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${GSTREAMER_1_0_TRUE}" && test -z "${GSTREAMER_1_0_FALSE}"; then
-  as_fn_error $? "conditional \"GSTREAMER_1_0\" was never defined.
+if test -z "${HAVE_GSTREAMER_1_TRUE}" && test -z "${HAVE_GSTREAMER_1_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_GSTREAMER_1\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

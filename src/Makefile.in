@@ -78,18 +78,12 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = gstd$(EXEEXT) gst-client$(EXEEXT)
-@GSTREAMER_1_0_FALSE@am__append_1 = --pkg gstreamer-interfaces-0.10
-@GSTREAMER_1_0_FALSE@am__append_2 = @GSTREAMER_INTERFACES_LIBS@
-@GSTREAMER_1_0_FALSE@am__append_3 = @GSTREAMER_INTERFACES_CFLAGS@
-@GSTREAMER_1_0_TRUE@am__append_4 = --pkg gstreamer-video-1.0 --pkg gstreamer-base-1.0
-@GSTREAMER_1_0_TRUE@am__append_5 = @GSTREAMER_VIDEO_LIBS@ @GSTREAMER_BASE_LIBS@
-@GSTREAMER_1_0_TRUE@am__append_6 = @GSTREAMER_VIDEO_CFLAGS@ @GSTREAMER_BASE_CFLAGS@
-@GSTREAMER_1_0_FALSE@am__append_7 = --pkg gstreamer-interfaces-0.10
-@GSTREAMER_1_0_FALSE@am__append_8 = @GSTREAMER_INTERFACES_LIBS@
-@GSTREAMER_1_0_FALSE@am__append_9 = @GSTREAMER_INTERFACES_CFLAGS@
-@GSTREAMER_1_0_TRUE@am__append_10 = --pkg gstreamer-video-1.0 --pkg gstreamer-base-1.0
-@GSTREAMER_1_0_TRUE@am__append_11 = @GSTREAMER_VIDEO_LIBS@ @GSTREAMER_BASE_LIBS@
-@GSTREAMER_1_0_TRUE@am__append_12 = @GSTREAMER_VIDEO_CFLAGS@ @GSTREAMER_BASE_CFLAGS@
+
+# add extra flags depending on gstreamer version
+@HAVE_GSTREAMER_1_TRUE@am__append_1 = --pkg gstreamer-video-@gstversion@ -D GSTREAMER_1_X
+@HAVE_GSTREAMER_1_TRUE@am__append_2 = --pkg gstreamer-video-@gstversion@ -D GSTREAMER_1_X
+@HAVE_GSTREAMER_1_FALSE@am__append_3 = --pkg gstreamer-interfaces-@gstversion@
+@HAVE_GSTREAMER_1_FALSE@am__append_4 = --pkg gstreamer-interfaces-@gstversion@
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	gstd-interfaces.c gst-client.c gstd-main.c gstd-factory.c \
@@ -108,15 +102,14 @@ PROGRAMS = $(bin_PROGRAMS)
 am_gst_client_OBJECTS = gst_client-gstd-interfaces.$(OBJEXT) \
 	gst_client-gst-client.$(OBJEXT)
 gst_client_OBJECTS = $(am_gst_client_OBJECTS)
-am__DEPENDENCIES_1 =
-gst_client_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+gst_client_DEPENDENCIES =
 gst_client_LINK = $(CCLD) $(gst_client_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_gstd_OBJECTS = gstd-gstd-interfaces.$(OBJEXT) \
 	gstd-gstd-main.$(OBJEXT) gstd-gstd-factory.$(OBJEXT) \
 	gstd-gstd-pipeline.$(OBJEXT)
 gstd_OBJECTS = $(am_gstd_OBJECTS)
-gstd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+gstd_DEPENDENCIES =
 gstd_LINK = $(CCLD) $(gstd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
@@ -232,18 +225,12 @@ ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
 GIO_CFLAGS = @GIO_CFLAGS@
 GIO_LIBS = @GIO_LIBS@
-GSTREAMER_1_0 = @GSTREAMER_1_0@
-GSTREAMER_BASE_CFLAGS = @GSTREAMER_BASE_CFLAGS@
-GSTREAMER_BASE_LIBS = @GSTREAMER_BASE_LIBS@
-GSTREAMER_CFLAGS = @GSTREAMER_CFLAGS@
-GSTREAMER_INTERFACES_CFLAGS = @GSTREAMER_INTERFACES_CFLAGS@
-GSTREAMER_INTERFACES_LIBS = @GSTREAMER_INTERFACES_LIBS@
-GSTREAMER_LIBS = @GSTREAMER_LIBS@
-GSTREAMER_SUPPORT_QOS_SIGNAL = @GSTREAMER_SUPPORT_QOS_SIGNAL@
-GSTREAMER_SUPPORT_STEP = @GSTREAMER_SUPPORT_STEP@
-GSTREAMER_VERSION = @GSTREAMER_VERSION@
-GSTREAMER_VIDEO_CFLAGS = @GSTREAMER_VIDEO_CFLAGS@
-GSTREAMER_VIDEO_LIBS = @GSTREAMER_VIDEO_LIBS@
+GST_CFLAGS = @GST_CFLAGS@
+GST_EXTRA_MODULES_CFLAGS = @GST_EXTRA_MODULES_CFLAGS@
+GST_EXTRA_MODULES_LIBS = @GST_EXTRA_MODULES_LIBS@
+GST_LIBS = @GST_LIBS@
+GST_SUPPORT_QOS_SIGNAL = @GST_SUPPORT_QOS_SIGNAL@
+GST_SUPPORT_STEP = @GST_SUPPORT_STEP@
 HAVE_PKGCONFIG = @HAVE_PKGCONFIG@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -295,6 +282,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gstversion = @gstversion@
 host_alias = @host_alias@
 htmldir = @htmldir@
 includedir = @includedir@
@@ -324,23 +312,21 @@ ACLOCAL_AMFLAGS = -I m4
 # gstd
 gstd_SOURCES = gstd-interfaces.vala gstd-main.vala gstd-factory.vala gstd-pipeline.vala
 gstd_VALAFLAGS = --thread --vapidir=@VAPIDIR@ --vapidir=. --pkg \
-	gstd-config --pkg gio-2.0 --pkg @GSTREAMER_VERSION@ --pkg \
-	posix @GSTREAMER_SUPPORT_QOS_SIGNAL@ @GSTREAMER_SUPPORT_STEP@ \
-	$(am__append_1) $(am__append_4)
-gstd_CFLAGS = @GSTREAMER_CFLAGS@ @GIO_CFLAGS@ $(am__append_3) \
-	$(am__append_6)
-gstd_LDADD = @GSTREAMER_LIBS@ @GIO_LIBS@ $(am__append_2) \
-	$(am__append_5)
+	gstd-config --pkg gstreamer-@gstversion@ --pkg \
+	gstreamer-base-@gstversion@ --pkg \
+	gstreamer-controller-@gstversion@ --pkg gio-2.0 --pkg posix \
+	@GST_SUPPORT_QOS_SIGNAL@ @GST_SUPPORT_STEP@ -D VERSION_MAJOR \
+	$(am__append_1) $(am__append_3)
+gstd_CFLAGS = @GST_CFLAGS@ @GIO_CFLAGS@
+gstd_LDADD = @GST_LIBS@ @GIO_LIBS@
 
 # gst_client
 gst_client_SOURCES = gstd-interfaces.vala gst-client.vala
 gst_client_VALAFLAGS = --vapidir=@VAPIDIR@ --vapidir=. --pkg \
-	gstd-config --pkg gio-2.0 --pkg @GSTREAMER_VERSION@ --pkg \
-	posix @READLINE_SUPPORT@ $(am__append_7) $(am__append_10)
-gst_client_CFLAGS = @GSTREAMER_CFLAGS@ $(am__append_9) \
-	$(am__append_12)
-gst_client_LDADD = @GSTREAMER_LIBS@ @GIO_LIBS@ @READLINE_LIBS@ \
-	$(am__append_8) $(am__append_11)
+	gstd-config --pkg gio-2.0 --pkg posix @READLINE_SUPPORT@ \
+	$(am__append_2) $(am__append_4)
+gst_client_CFLAGS = @GST_CFLAGS@
+gst_client_LDADD = @GST_LIBS@ @GIO_LIBS@ @READLINE_LIBS@
 interfaces_xml = com.ridgerun.gstreamer.gstd.FactoryInterface.xml \
  com.ridgerun.gstreamer.gstd.PipelineInterface.xml
 

@@ -23,107 +23,169 @@ AM_COND_IF([HAVE_READLINE],
 AC_SUBST([READLINE_SUPPORT])
 AC_SUBST([READLINE_LIBS])
 
-dnl Check for pkgconfig first
-AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
+dnl give error and exit if we don't have pkgconfig
+AC_CHECK_PROG(HAVE_PKGCONFIG,
+	pkg-config,
+	[],
+	[
+		AC_MSG_ERROR([You need to have pkg-config installed!])
+	]
+)
 
-dnl Give error and exit if we don't have pkgconfig
-if test "x$HAVE_PKGCONFIG" = "xno"; then
-  AC_MSG_ERROR(you need to have pkgconfig installed !)
+dnl obtain the gstreamer version desired by the user
+AC_ARG_WITH(
+	gstreamer-version,
+	AS_HELP_STRING(
+		[--with-gstreamer-version=VERSION],
+		[gstreamer version to use. E.g. --with-gstreamer-version=1.0 or --with-gstreamer-version=0.10]
+    	),
+    	[
+    		case "${withval}" in
+    			1.0)
+				GST_REQUIRED=1.4.3
+				GSTPB_REQUIRED=1.4.3
+				checkqosstep=no
+    				;;
+    			0.10)
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+    				;;
+    			*)
+    				AC_MSG_ERROR([bad value ${withval} for --with-gstreamer-version, use 0.10 or 1.0])
+    				;;
+    		esac
+    		AC_MSG_NOTICE([using seelcted version: $withval])
+    		gstversion=$withval
+    		usedefault=no
+    	],
+  	[
+  		AC_MSG_NOTICE([gstreamer version not specified, try to use latest version: 1.0])
+  		gstversion=1.0
+		GST_REQUIRED=1.4.3
+		GSTPB_REQUIRED=1.4.3
+		usedefault=yes
+		checkqosstep=no
+  	]
+)
+
+dnl checking gstreamer
+PKG_CHECK_MODULES(GST,
+	[
+		gstreamer-$gstversion >= $GST_REQUIRED
+		gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+		gstreamer-controller-$gstversion >= $GST_REQUIRED
+	],
+	[
+		dnl append GST_ERROR cflags to GST_CFLAGS
+		GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
+	],
+	[
+		case "${usedefault}" in
+			yes)
+				AC_MSG_NOTICE([default gstreamer version 1.0 not found, checking for 0.10])
+				gstversion=0.10
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+				PKG_CHECK_MODULES(GST,
+					[
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					],
+					[
+						dnl append GST_ERROR cflags to GST_CFLAGS
+						GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
+					],
+					[AC_MSG_ERROR(gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system.)]
+				)
+				;;
+			no|*)
+				AC_MSG_ERROR([The requested gstreamer version $gstversion was not found])
+				;;
+		esac
+
+	]
+)
+
+dnl checking for qos and step support -> this is only for gstreamer 0.10, since in gstreamer 1.0 it will be present
+if test "x$checkqosstep" = "xyes"; then
+	dnl obtain the gstreamer complete version and extract the micro version
+	_PKG_CONFIG([GST_VERSION], [modversion], [gstreamer-$gstversion])
+	GST_RELEASE=`echo $pkg_cv_GST_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
+
+	dnl check step support
+	AC_MSG_CHECKING(Checking if gstreamer version has support for step)
+	if test $GST_RELEASE -ge 24 ; then
+    		GST_SUPPORT_STEP="-D GST_SUPPORT_STEP"
+    		AC_MSG_RESULT(yes)
+	else
+    		GST_SUPPORT_STEP=
+    		AC_MSG_RESULT(no)
+	fi
+
+	dnl check qos support
+	AC_MSG_CHECKING(Checking if gstreamer version has support for QOS signals)
+	if test $GST_RELEASE -ge 29 ; then
+   		GST_SUPPORT_QOS_SIGNAL="-D GST_SUPPORT_QOS_SIGNAL"
+    		AC_MSG_RESULT(yes)
+	else
+    		GST_SUPPORT_QOS_SIGNAL=
+    		AC_MSG_RESULT(no)
+	fi
+
+	AC_SUBST(GST_SUPPORT_QOS_SIGNAL)
+	AC_SUBST(GST_SUPPORT_STEP)
 fi
 
-dnl Now we're ready to ask for gstreamer -> check latest version first (1.0)
-PKG_CHECK_MODULES(GSTREAMER, gstreamer-1.0 >= 1.4.3 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
+dnl Check for modules depending on the gstreamer version and assign HAVE_GSTREAMER_1 conditional
+case "${gstversion}" in
+	1.0)
+		have_gstreamer_1=yes
+		PKG_CHECK_MODULES(GST_EXTRA_MODULES,
+			[
+				gstreamer-video-$gstversion >= $GST_REQUIRED
+			],
+			[
+				GST_CFLAGS="$GST_CFLAGS $GST_EXTRA_MODULES_CFLAGS"
+				GST_LIBS="$GST_LIBS $GST_EXTRA_MODULES_LIBS"
+			],
+			[
+				AC_MSG_ERROR([you need gstreamer-video installed !])
+			]
+		)
+		;;
+	0.10)
+		have_gstreamer_1=no
+		PKG_CHECK_MODULES(GST_EXTRA_MODULES,
+			[
+				gstreamer-interfaces-$gstversion >= $GST_REQUIRED
+			],
+			[
+				GST_CFLAGS="$GST_CFLAGS $GST_EXTRA_MODULES_CFLAGS"
+				GST_LIBS="$GST_LIBS $GST_EXTRA_MODULES_LIBS"
+			],
+			[
+				AC_MSG_ERROR([you need gstreamer-interfaces installed !])
+			]
+		)
+		;;
+	*)
+		AC_MSG_ERROR([Gstreamer version not found !])
+		;;
+esac
 
-dnl Give error and exit if we don't have gstreamer
-if test "x$HAVE_GSTREAMER" = "xno"; then
-  AC_MSG_RESULT(gstreamer development packages >= 1.4.3 are not installed! checking for older version... )
-  dnl Check for an older gstreamer version (0.10)
-  PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 >= 0.10.22 , HAVE_GSTREAMER=yes, HAVE_GSTREAMER=no)
-  if test "x$HAVE_GSTREAMER" = "xno"; then
-    AC_MSG_ERROR([you need gstreamer development packages installed >= 0.10.22 !])
-  else
-    _PKG_CONFIG([GSTREAMER_VERSION], [modversion], [gstreamer-0.10])
-    GSTREAMER_VERSION="gstreamer-0.10"
-  fi
-else
-  _PKG_CONFIG([GSTREAMER_VERSION], [modversion], [gstreamer-1.0])
-  GSTREAMER_VERSION="gstreamer-1.0"
-  GSTREAMER_1_0="yes"
-  AM_CONDITIONAL(GSTREAMER_1_0, test "$GSTREAMER_1_0" = yes)
-  AC_SUBST(GSTREAMER_1_0)
-fi
+dnl make gstreamer version available
+AC_SUBST(gstversion)
 
-dnl append GSTREAMER_ERROR cflags to GSTREAMER_CFLAGS
-GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS $GSTREAMER_ERROR"
+dnl create conditional variable HAVE_GSTREAMER_1
+AM_CONDITIONAL([HAVE_GSTREAMER_1], [test x$have_gstreamer_1 = xyes])
 
-dnl make GSTREAMER_CFLAGS, GSTREAMER_LIBS and GSTREAMER_VERSION available
-AC_SUBST(GSTREAMER_CFLAGS)
-AC_SUBST(GSTREAMER_LIBS)
-AC_SUBST(GSTREAMER_VERSION)
+dnl make cflags and libs available
+AC_SUBST(GST_CFLAGS)
+AC_SUBST(GST_LIBS)
 
-GSTREAMER_MAJOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\1/"`
-GSTREAMER_MINOR=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\2/"`
-GSTREAMER_RELEASE=`echo $pkg_cv_GSTREAMER_VERSION | sed "s/\(.*\)\.\(.*\)\.\(.*\)/\3/"`
-AC_MSG_CHECKING(Checking if gstreamer version has support for QOS signals)
-if test $GSTREAMER_RELEASE -ge 29 ; then
-    GSTREAMER_SUPPORT_QOS_SIGNAL="-D GSTREAMER_SUPPORT_QOS_SIGNAL"
-    AC_MSG_RESULT(yes)
-else
-    GSTREAMER_SUPPORT_QOS_SIGNAL=
-    AC_MSG_RESULT(no)
-fi
-AC_SUBST(GSTREAMER_SUPPORT_QOS_SIGNAL)
-
-AC_MSG_CHECKING(Checking if gstreamer version has support for step)
-if test $GSTREAMER_RELEASE -ge 24 ; then
-    GSTREAMER_SUPPORT_STEP="-D GSTREAMER_SUPPORT_STEP"
-    AC_MSG_RESULT(yes)
-else
-    GSTREAMER_SUPPORT_STEP=
-    AC_MSG_RESULT(no)
-fi
-AC_SUBST(GSTREAMER_SUPPORT_STEP)
-
-dnl Check for modules depending on the gstreamer version
-if test "x$GSTREAMER_VERSION" = "xgstreamer-1.0"; then
-    AC_MSG_RESULT(Using gstreamer version 1.0);
-    dnl ---------------------------- gstreamer-base ----------------------------
-    PKG_CHECK_MODULES(GSTREAMER_BASE, gstreamer-base-1.0 >= 1.4.3 , HAVE_GSTREAMER_BASE=yes, HAVE_GSTREAMER_BASE=no)
-
-    dnl Give error and exit if we don't have gstreamer
-    if test "x$HAVE_GSTREAMER_BASE" = "xno"; then
-        AC_MSG_ERROR([you need gstreamer-video development packages installed !])
-    fi
-
-    dnl make GSTREAMER_BASE_CFLAGS and GSTREAMER_BASE_LIBS available
-    AC_SUBST(GSTREAMER_BASE_CFLAGS)
-    AC_SUBST(GSTREAMER_BASE_LIBS)
-
-    dnl ---------------------------- gstreamer-video ----------------------------
-    PKG_CHECK_MODULES(GSTREAMER_VIDEO, gstreamer-video-1.0 >= 1.4.3 , HAVE_GSTREAMER_VIDEO=yes, HAVE_GSTREAMER_VIDEO=no)
-
-    dnl Give error and exit if we don't have gstreamer
-    if test "x$HAVE_GSTREAMER_VIDEO" = "xno"; then
-        AC_MSG_ERROR([you need gstreamer-video development packages installed !])
-    fi
-
-    dnl make GSTREAMER_VIDEO_CFLAGS and GSTREAMER_VIDEO_LIBS available
-    AC_SUBST(GSTREAMER_VIDEO_CFLAGS)
-    AC_SUBST(GSTREAMER_VIDEO_LIBS)
-else
-    AC_MSG_RESULT(Using gstreamer version 0.10);
-    dnl ---------------------------- gstreamer-interfaces ----------------------------
-    PKG_CHECK_MODULES(GSTREAMER_INTERFACES, gstreamer-interfaces-0.10 >= 0.10.22 , HAVE_GSTREAMER_INTERFACES=yes, HAVE_GSTREAMER_INTERFACES=no)
-
-    dnl Give error and exit if we don't have gstreamer
-    if test "x$HAVE_GSTREAMER_INTERFACES" = "xno"; then
-        AC_MSG_ERROR([you need gst-plugins-base development packages installed !])
-    fi
-
-    dnl make GSTREAMER_INTERFACES_CFLAGS and GSTREAMER_INTERFACES_LIBS available
-    AC_SUBST(GSTREAMER_INTERFACES_CFLAGS)
-    AC_SUBST(GSTREAMER_INTERFACES_LIBS)
-fi
 
 dnl Now we're ready to ask for gio-2.0
 PKG_CHECK_MODULES(GIO, gio-2.0 >= 2.0 , HAVE_GIO=yes, HAVE_GIO=no)
