@@ -187,13 +187,16 @@ AC_SUBST(GST_CFLAGS)
 AC_SUBST(GST_LIBS)
 
 
-dnl Now we're ready to ask for gio-2.0
-PKG_CHECK_MODULES(GIO, gio-2.0 >= 2.0 , HAVE_GIO=yes, HAVE_GIO=no)
-
-dnl Give error and exit if we don't have gio-2.0
-if test "x$HAVE_GIO" = "xno"; then
-  AC_MSG_ERROR([you need gio-2.0 development packages installed >= 2.0 !])
-fi
+dnl now we're ready to ask for gio-2.0
+PKG_CHECK_MODULES(GIO,
+	[
+		gio-2.0 >= 2.0
+	],
+	[],
+	[
+		AC_MSG_ERROR([you need gio-2.0 development packages installed >= 2.0 !])
+	]
+)
 
 dnl make GIO_CFLAGS and GIO_LIBS available
 AC_SUBST(GIO_CFLAGS)
