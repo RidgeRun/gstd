@@ -128,7 +128,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 	private bool bus_callback (Gst.Bus bus, Gst.Message message)
 	{
+#if GSTREAMER_1_X
+		Posix.syslog (Posix.LOG_DEBUG, "received message %s", Gst.MessageType.get_name(message.type));
+#else
 		Posix.syslog (Posix.LOG_DEBUG, "received message %s", message.type.to_string());
+#endif
 		switch (message.type)
 		{
 			case Gst.MessageType.ERROR :
