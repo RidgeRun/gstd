@@ -32,13 +32,42 @@ AC_CHECK_PROG(HAVE_PKGCONFIG,
 	]
 )
 
-dnl set the default gstreamer version to the latest
-AC_MSG_NOTICE([attempting to use latest gstreamer version: 1.x])
-gstversion=1.0
-GST_REQUIRED=1.4.3
-GSTPB_REQUIRED=1.4.3
-usedefault=yes
-checkqosstep=no
+dnl obtain the gstreamer version desired by the user
+AC_ARG_WITH(
+	gstreamer-version,
+	AS_HELP_STRING(
+		[--with-gstreamer-version=VERSION],
+		[gstreamer version to use. E.g. --with-gstreamer-version=1.0 or --with-gstreamer-version=0.10]
+    	),
+    	[
+    		case "${withval}" in
+    			1.0)
+				GST_REQUIRED=1.4.3
+				GSTPB_REQUIRED=1.4.3
+				checkqosstep=no
+    				;;
+    			0.10)
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+    				;;
+    			*)
+    				AC_MSG_ERROR([bad value ${withval} for --with-gstreamer-version, use 0.10 or 1.0])
+    				;;
+    		esac
+    		AC_MSG_NOTICE([using selected version: $withval])
+    		gstversion=$withval
+    		usedefault=no
+    	],
+  	[
+  		AC_MSG_NOTICE([gstreamer version not specified, try to use latest version: 1.0])
+  		gstversion=1.0
+		GST_REQUIRED=1.4.3
+		GSTPB_REQUIRED=1.4.3
+		usedefault=yes
+		checkqosstep=no
+  	]
+)
 
 dnl checking gstreamer
 PKG_CHECK_MODULES(GST,
@@ -52,23 +81,30 @@ PKG_CHECK_MODULES(GST,
 		GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
 	],
 	[
-		AC_MSG_NOTICE([default gstreamer version 1.0 not found, checking for 0.10])
-		gstversion=0.10
-		GST_REQUIRED=0.10.22
-		GSTPB_REQUIRED=0.10.22
-		checkqosstep=yes
-		PKG_CHECK_MODULES(GST,
-			[
-				gstreamer-$gstversion >= $GST_REQUIRED
-				gstreamer-base-$gstversion >= $GSTPB_REQUIRED
-				gstreamer-controller-$gstversion >= $GST_REQUIRED
-			],
-			[
-				dnl append GST_ERROR cflags to GST_CFLAGS
-				GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
-			],
-			[AC_MSG_ERROR(gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system.)]
-		)
+		case "${usedefault}" in
+			yes)
+				AC_MSG_NOTICE([default gstreamer version 1.0 not found, checking for 0.10])
+				gstversion=0.10
+				GST_REQUIRED=0.10.22
+				GSTPB_REQUIRED=0.10.22
+				checkqosstep=yes
+				PKG_CHECK_MODULES(GST,
+					[
+						gstreamer-$gstversion >= $GST_REQUIRED
+						gstreamer-base-$gstversion >= $GSTPB_REQUIRED
+						gstreamer-controller-$gstversion >= $GST_REQUIRED
+					],
+					[
+						dnl append GST_ERROR cflags to GST_CFLAGS
+						GST_CFLAGS="$GST_CFLAGS $GST_ERROR"
+					],
+					[AC_MSG_ERROR(gstreamer version 0.10 not found. You need to install or upgrade the Gstreamer development packages on you system.)]
+				)
+				;;
+			no|*)
+				AC_MSG_ERROR([The requested gstreamer version $gstversion was not found])
+				;;
+		esac
 	]
 )
 
