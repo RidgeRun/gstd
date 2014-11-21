@@ -112,13 +112,13 @@ public class Pipeline : GLib.Object, PipelineInterface
 			if (overlay == null)
 				continue;
 
+			Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
+
 #if GSTREAMER_1_X
 			overlay.set_window_handle((uint*)_windowId);
 #else
  			overlay.set_xwindow_id((ulong)_windowId);
 #endif
-
-			Posix.syslog (Posix.LOG_DEBUG, "set xwindow-id %llu", _windowId);
 
 			return Gst.BusSyncReply.PASS;
 		}
