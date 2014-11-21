@@ -978,7 +978,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		/*Set the current position */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, -1))
 #else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
@@ -1116,7 +1116,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		/*Set the current position */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, -1))
 #else
 		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
@@ -1141,7 +1141,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		/*Changes the rate on the pipeline */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, -1, Gst.SeekType.NONE, -1))
 #else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
