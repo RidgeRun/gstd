@@ -898,7 +898,9 @@ public class Pipeline : GLib.Object, PipelineInterface
 #if GSTREAMER_1_X
 			Gst.MapInfo buffer_map_info;
 			buffer.map(out buffer_map_info, Gst.MapFlags.READ);
-			data = buffer_map_info.data;
+
+			/* Copy the buffer data since we need to unmap it */
+			Memory.copy(data, buffer_map_info.data, buffer_map_info.size);
 			
 			Gst.Pad pad = e.get_static_pad("sink");
 			caps = (pad.get_current_caps() != null) ? pad.get_current_caps().to_string() : "";
