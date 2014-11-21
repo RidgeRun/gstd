@@ -4474,10 +4474,13 @@ $as_echo "yes" >&6; }
     		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	fi
-
-
-
+else
+		GST_SUPPORT_STEP="-D GST_SUPPORT_STEP"
+	GST_SUPPORT_QOS_SIGNAL="-D GST_SUPPORT_QOS_SIGNAL"
 fi
+
+
+
 
 case "${gstversion}" in
 	1.0)

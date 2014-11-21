@@ -133,10 +133,14 @@ if test "x$checkqosstep" = "xyes"; then
     		GST_SUPPORT_QOS_SIGNAL=
     		AC_MSG_RESULT(no)
 	fi
-
-	AC_SUBST(GST_SUPPORT_QOS_SIGNAL)
-	AC_SUBST(GST_SUPPORT_STEP)
+else
+	dnl for gstreamer 1.x qos and support are always available
+	GST_SUPPORT_STEP="-D GST_SUPPORT_STEP"
+	GST_SUPPORT_QOS_SIGNAL="-D GST_SUPPORT_QOS_SIGNAL"
 fi
+
+AC_SUBST(GST_SUPPORT_QOS_SIGNAL)
+AC_SUBST(GST_SUPPORT_STEP)
 
 dnl Check for modules depending on the gstreamer version and assign HAVE_GSTREAMER_1 conditional
 case "${gstversion}" in
