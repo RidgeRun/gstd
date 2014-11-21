@@ -42,8 +42,8 @@ AC_ARG_WITH(
     	[
     		case "${withval}" in
     			1.0)
-				GST_REQUIRED=1.4.3
-				GSTPB_REQUIRED=1.4.3
+				GST_REQUIRED=1.0.0
+				GSTPB_REQUIRED=1.0.0
 				checkqosstep=no
     				;;
     			0.10)
@@ -62,8 +62,8 @@ AC_ARG_WITH(
   	[
   		AC_MSG_NOTICE([gstreamer version not specified, try to use latest version: 1.0])
   		gstversion=1.0
-		GST_REQUIRED=1.4.3
-		GSTPB_REQUIRED=1.4.3
+		GST_REQUIRED=1.0.0
+		GSTPB_REQUIRED=1.0.0
 		usedefault=yes
 		checkqosstep=no
   	]
