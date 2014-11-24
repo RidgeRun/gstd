@@ -14,7 +14,7 @@ namespace gstd
 public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
-	private Gst.Element _pipeline = null;
+	private Gst.Element _pipeline = null; //TODO make it of type Pipeline
 	private uint _callbackId = 0;
 	private uint64 _id = 0;
 	private double _rate = 1.0;
@@ -32,7 +32,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public Pipeline (string description, GLib.DBusConnection conn) throws Error
 	{
 		/* Create the pipe */
-		_pipeline = Gst.parse_launch (description) as Gst.Element;
+		_pipeline = Gst.parse_launch (description) as Gst.Element; //TODO static cast to pipeline
 
 		/*Get and watch bus */
 		Gst.Bus bus = _pipeline.get_bus ();
@@ -98,7 +98,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return Gst.BusSyncReply.PASS;
 
 		Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
-		var pipe = _pipeline as Gst.Pipeline;
+		var pipe = _pipeline as Gst.Pipeline; //TODO remove pipe variable
 		GLib.assert(pipe != null);
 
 		string[] videoSinkNames = {"videosink", "videosink::" + message.src.name};
@@ -167,7 +167,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				Gst.State newstate;
 				Gst.State pending;
 
-				string src = (message.src as Gst.Element).get_name ();
+				string src = (message.src as Gst.Element).get_name (); //TODO satic cast
 				message.parse_state_changed (out oldstate, out newstate,
 				                             out pending);
 
@@ -200,7 +200,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 				qos(_id, live, running_time, stream_time, timestamp, duration, jitter, proportion, quality, format, processed, dropped);
 				break;
-				# endif
+#endif
 
 			case Gst.MessageType.ELEMENT:
 				/* Send signal_element() signal */
@@ -898,14 +898,12 @@ public class Pipeline : GLib.Object, PipelineInterface
 #if GSTREAMER_1_X
 			Gst.MapInfo buffer_map_info;
 			buffer.map(out buffer_map_info, Gst.MapFlags.READ);
-
 			/* Copy the buffer data since we need to unmap it */
 			Memory.copy(data, buffer_map_info.data, buffer_map_info.size);
+			buffer.unmap(buffer_map_info);
 			
 			Gst.Pad pad = e.get_static_pad("sink");
 			caps = (pad.get_current_caps() != null) ? pad.get_current_caps().to_string() : "";
-
-			buffer.unmap(buffer_map_info);
 #else			
 			caps = (buffer.caps != null) ? buffer.caps.to_string() : "";
 			data = buffer.data;
@@ -985,8 +983,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		{
 			Posix.syslog (Posix.LOG_WARNING, "Media type not seekable");
 			return false;
-		}
-		
+		}		
 		
 		if (wait_transition_done)
 		{
@@ -1244,7 +1241,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 			Posix.syslog (Posix.LOG_DEBUG, "Waiting until element %s state change to %s is done", element, state.to_string ());
 
 			Gst.State current, pending;
-			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE);
+			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE); //TODO
 			if (current != state)
 			{
 				Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
@@ -1306,11 +1303,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 		else
 		{
-#if GSTREAMER_1_X
-			return (Gst.Object?)((_pipeline as Gst.ChildProxy).get_child_by_name(name));
-#else
-			return (_pipeline as Gst.ChildProxy).get_child_by_name(name);
-#endif
+			return (Gst.Object?)(((Gst.ChildProxy)(_pipeline)).get_child_by_name(name)));
 		}
 	}
 }
