@@ -14,7 +14,7 @@ namespace gstd
 public class Pipeline : GLib.Object, PipelineInterface
 {
 	/* Private data */
-	private Gst.Element _pipeline = null; //TODO make it of type Pipeline
+	private Gst.Pipeline _pipeline = null;
 	private uint _callbackId = 0;
 	private uint64 _id = 0;
 	private double _rate = 1.0;
@@ -32,7 +32,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	public Pipeline (string description, GLib.DBusConnection conn) throws Error
 	{
 		/* Create the pipe */
-		_pipeline = Gst.parse_launch (description) as Gst.Element; //TODO static cast to pipeline
+		_pipeline = (Gst.Pipeline) Gst.parse_launch (description);
 
 		/*Get and watch bus */
 		Gst.Bus bus = _pipeline.get_bus ();
@@ -98,8 +98,8 @@ public class Pipeline : GLib.Object, PipelineInterface
 			return Gst.BusSyncReply.PASS;
 
 		Posix.syslog (Posix.LOG_DEBUG, "requested xwindow-id");
-		var pipe = _pipeline as Gst.Pipeline; //TODO remove pipe variable
-		GLib.assert(pipe != null);
+
+		GLib.assert(_pipeline != null);
 
 		string[] videoSinkNames = {"videosink", "videosink::" + message.src.name};
 		for (int i = 0; i < videoSinkNames.length; ++i)
@@ -167,7 +167,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 				Gst.State newstate;
 				Gst.State pending;
 
-				string src = (message.src as Gst.Element).get_name (); //TODO satic cast
+				string src = ((Gst.Element) (message.src)).get_name ();
 				message.parse_state_changed (out oldstate, out newstate,
 				                             out pending);
 
@@ -976,7 +976,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 	{
 		/*Set the current position */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, -1))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, -1)) //TODO: remove workaround introduced because CLOCK_TIME_NONE is now of tyoe ClockTime and not int
 #else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, ipos_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
@@ -1113,7 +1113,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		/*Set the current position */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, -1))
+		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, -1)) //TODO: remove workaround introduced because CLOCK_TIME_NONE is now of tyoe ClockTime and not int
 #else
 		if (!_pipeline.seek (_rate, format, Gst.SeekFlags.FLUSH, Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
@@ -1138,7 +1138,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 
 		/*Changes the rate on the pipeline */
 #if GSTREAMER_1_X
-		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, -1, Gst.SeekType.NONE, -1))
+		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, -1, Gst.SeekType.NONE, -1)) //TODO: remove workaround introduced because CLOCK_TIME_NONE is now of tyoe ClockTime and not int
 #else
 		if (!_pipeline.seek (_rate, Gst.Format.TIME, Gst.SeekFlags.SKIP | Gst.SeekFlags.FLUSH, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE, Gst.SeekType.NONE, Gst.CLOCK_TIME_NONE))
 #endif
@@ -1241,7 +1241,11 @@ public class Pipeline : GLib.Object, PipelineInterface
 			Posix.syslog (Posix.LOG_DEBUG, "Waiting until element %s state change to %s is done", element, state.to_string ());
 
 			Gst.State current, pending;
-			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE); //TODO
+#if GSTREAMER_1_X
+			e.get_state (out current, out pending, Gst.CLOCK_TIME_NONE);
+#else
+			e.get_state (out current, out pending, (Gst.ClockTime)Gst.CLOCK_TIME_NONE);
+#endif
 			if (current != state)
 			{
 				Posix.syslog (Posix.LOG_ERR, "Element, failed to change state %s", state.to_string ());
@@ -1303,7 +1307,7 @@ public class Pipeline : GLib.Object, PipelineInterface
 		}
 		else
 		{
-			return (Gst.Object?)(((Gst.ChildProxy)(_pipeline)).get_child_by_name(name)));
+			return (Gst.Object?)(((Gst.ChildProxy)(_pipeline)).get_child_by_name(name));
 		}
 	}
 }
