@@ -25,6 +25,18 @@ public class Factory : GLib.Object, FactoryInterface
 	}
 
 	/**
+	   Gets the version of the GStreamer
+	   @param major, the major version
+	   @param minor, the minor version
+	   @param micro, the micro version
+	   @param nano, the nano version
+	 */
+	public void gst_version(out uint major, out uint minor, out uint micro, out uint nano)
+	{
+		Gst.version(out major, out minor, out micro, out nano);
+	}
+
+	/**
 	   Creates a pipeline from a gst-launch like description using or not
 	   debug information
 	   @param description, gst-launch like description of the pipeline

@@ -10,6 +10,9 @@ namespace gstd {
 		[DBus (name = "Create")]
 		public abstract string create(string description) throws DBusError, IOError;
 
+		[DBus (name = "GstVersion")]
+		public abstract void gst_version(out uint major, out uint minor, out uint micro, out uint nano) throws DBusError, IOError;
+
 		[DBus (name = "Ping")]
 		public abstract bool ping() throws DBusError, IOError;
 	}
@@ -19,6 +22,9 @@ namespace gstd {
 
 		[DBus (name = "Create")]
 		public abstract string create(string description) throws DBusError, IOError;
+
+		[DBus (name = "GstVersion")]
+		public abstract void gst_version(out uint major, out uint minor, out uint micro, out uint nano) throws DBusError, IOError;
 
 		[DBus (name = "Ping")]
 		public abstract bool ping() throws DBusError, IOError;

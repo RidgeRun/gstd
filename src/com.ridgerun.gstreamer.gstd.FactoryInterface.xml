@@ -53,6 +53,12 @@
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
          </arg>
     </method>
+    <method name="GstVersion">
+        <arg type="u" name = "major" direction="out" />
+        <arg type="u" name = "minor" direction="out" />
+        <arg type="u" name = "micro" direction="out" />
+        <arg type="u" name = "nano" direction="out" />
+    </method>
     <method name="Ping">
         <arg type="b" name ="success" direction="out" >
             <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
